@@ -32,7 +32,7 @@
 
      "issue_details": {
       "type": "object",
-      "properties": {
+      "issue_details_properties": {
         "place_of_issue": { "type": "string" },
         "date_of_issue": { "type": "number", "format":"date-time" }
       }
@@ -42,7 +42,7 @@
 
     "master_info": {
       "type": "object",
-      "properties": {
+      "master_info_properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"}
@@ -52,7 +52,7 @@
 
     "agent_for_master": {
       "type": "object",
-      "properties": {
+      "agent_for_master_properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"}
@@ -63,7 +63,7 @@
 
   "agent_for_owner": {
       "type": "object",
-      "properties": {
+      "agent_for_owner_properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"},

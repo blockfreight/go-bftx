@@ -194,107 +194,64 @@ func between(value string, a string, b string) string {
     	return value[posFirstAdjusted:posLast]
 }
 
-func getStructure() []string{
+func getStructure() []string {
+	wd,_ := os.Getwd()		//Check!
+	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_schema_pub_var_rfc2.json"
+	schemeJSON := readJSON(schemePath)
+	cj := compileJSON(schemeJSON)
 	return []string{
-		"{\"type\":\"",
-		"\",\"properties\":{\"shipper\":{\"type\":\"",
-		"\"},\"BOL_NUM\":{\"type\":",
-		"},\"REF_NUM\":{\"type\":",
-		"},\"consignee\":{\"type\":",
-		"},\"vessel\":{\"type\":",
-		"},\"port_of_loading\":{\"type\":",
-		"},\"port_of_discharge\":{\"type\":",
-		"},\"nofity_address\":{\"type\":\"",
-		"\"},\"desc_of_goods\":{\"type\":\"",
-		"\"},\"gross_weight\":{\"type\":",
-		"},\"freight_payable_amt\":{\"type\":",
-		"},\"freight_adv_amt\":{\"type\":",
-		"},\"general_instructions\":{\"type\":\"",
-		"\"},\"date_shipped\":{\"type\":",
-		",\"format\":\"",
-		"\"},\"issue_details\":{\"type\":\"",
-		"\",\"issue_details_properties\":{\"place_of_issue\":{\"type\":\"",
-		"\"},\"date_of_issue\":{\"type\":",
-		",\"format\":\"",				//Check! (Duplicated)
-		"\"}}},\"num_BOL\":{\"type\":",
-		"},\"master_info\":{\"type\":\"",
-		"\",\"master_info_properties\":{\"first_name\":{\"type\":\"",
-		"\"},\"last_name\":{\"type\":\"",
-		"\"},\"sig\":{\"type\":",
-		"}}},\"agent_for_master\":{\"type\":\"",
-		"\",\"agent_for_master_properties\":{\"first_name\":{\"type\":\"",
-		"\"},\"last_name\":{\"type\":\"",
-		"\"},\"sig\":{\"type\":",		//Check! (Duplicated)
-		"}}},\"agent_for_owner\":{\"type\":\"",
-		"\",\"agent_for_owner_properties\":{\"first_name\":{\"type\":\"",
-		"\"},\"last_name\":{\"type\":\"",	//Check! (Duplicated)
-		"\"},\"sig\":{\"type\":",		//Check! (Duplicated)
-		"},\"conditions_for_carriage\":{\"type\":\"",
-		"\"}}}}}",
+		cj[0:9],
+		cj[15:50],		
+		cj[56:77],		//BOL_NUM
+		cj[85:105],		//REF_NUM
+		cj[113:135],	//consignee
+		cj[141:160],	//vessel
+		cj[168:196],	//port_of_loading
+		cj[204:234],	//port_of_discharge
+		cj[242:270],	//notify_address
+		cj[276:304],	//desc_of_goods
+		cj[310:336],	//gross_weight
+		cj[344:376],	//freight_payable_amt
+		cj[384:412],	//freight_adv_amt
+		cj[420:454],	//general_instructions
+		cj[460:486],	//date_shipped
+		cj[494:505],	//format
+		cj[514:542],	//issue_details
+		cj[548:604],	//place_of_issue
+		cj[610:637],	//date_of_issue
+		//cj[645:656],	//format 			//Check n-th element
+		cj[665:688],	//num_BOL
+		cj[696:721],	//master_info
+		cj[727:777],	//first_name
+		cj[783:807],	//last_name
+		cj[813:830],	//sig
+		cj[836:868],	//agent_for_master
+		cj[874:929],	//first_name
+		//cj[935:959],	//last_name 		//Check n-th element
+		//cj[965:982],	//sig 				//Check n-th element
+		cj[988:1019],	//agent_for_owner
+		cj[1025:1079],	//first_name
+		//cj[1085:1109],	//last_name 	//Check n-th element
+		//cj[1115:1132],	//sig 			//Check n-th element
+		cj[1138:1175],	//conditions_for_carriage
+		cj[1181:1187],
 	}
 }
 
 func compareJSON(schemeContent string, exampleContent string) string {
-	match := false
-	//i := -1
+	//match := true
 	fmt.Printf("\nValidating...\n")
-	
 	structure := getStructure();
-	fmt.Println("Structure Len: "+strconv.Itoa(len(structure)))
-	//for i, seg := range structure {
+	//fmt.Println("Structure Len: "+strconv.Itoa(len(structure)))
 	for i := 0; i < len(structure)-1; i++ {
-		//fmt.Println("-: "+seg)
-    	//fmt.Println(between(exampleContent, seg, structure[i+1]))
-    	fmt.Println(between(exampleContent, structure[i], structure[i+1]))
+		if between(exampleContent, structure[i], structure[i+1]) == "" {
+			//match = false
+			return "The JSON did not accomplish the required structure."
+		}
+    	//fmt.Println("seg: "+structure[i])
+    	//fmt.Println("data: "+between(exampleContent, structure[i], structure[i+1]))
 	}
-
-	/*seg_1 := "{\"type\":\""
-	i = strings.Index(exampleContent,seg_1)
-	if i != -1 {
-		match = true
-	}
-	fmt.Println("Index: "+strconv.Itoa(i), "Value: "+string(exampleContent[i+9:i+15]))
-	
-	seg_2 := "\",\"properties\":{\"shipper\":{\"type\":\""
-	i = strings.Index(exampleContent,seg_2)
-	if i != -1 {
-		match = true
-	}
-	fmt.Println("Index: "+strconv.Itoa(i), "Value: "+string(exampleContent[i+35:i+45]))
-
-	seg_3 := "\"},\"BOL_NUM\":{\"type\":"
-	i = strings.Index(exampleContent,seg_3)
-	if i != -1 {
-		match = true
-	}
-	fmt.Println("Index: "+strconv.Itoa(i), "Value: "+string(exampleContent[i+21:i+26]))
-	
-	seg_4 := "},\"REF_NUM\":{\"type\":"
-	i = strings.Index(exampleContent,seg_4)
-	if i != -1 {
-		match = true
-	}
-	fmt.Println("Index: "+strconv.Itoa(i), "Value: "+string(exampleContent[i+20:i+29]))
-
-    // Test between func.
-    fmt.Println(getStructure())*/
-	
-	//fmt.Println(strings.Index(compactedScheme,"{\"type\":\""))
-	/*splittedScheme := strings.Split(compactedScheme, ",")
-	splittedExample := strings.Split(compactedExample, ",")
-	fmt.Printf("\nScheme:\n\n")
-	for _, value := range splittedScheme {
-		fmt.Println(value)
-	}
-	fmt.Printf("\nExample:\n\n")
-	for _, value := range splittedExample {
-		fmt.Println(value)
-	}*/
-	if match {
-		return "The JSON accomplished the required structure."
-	} else {
-		return "The JSON did not accomplish the required structure."
-	}
+	return "The JSON accomplished the required structure."
 }
 
 func printStructure(file JSONObject) {
@@ -373,11 +330,11 @@ func main() {
 	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_schema_pub_var_rfc2.json"
 	schemeJSON := readJSON(schemePath)
 	compactedScheme := compileJSON(schemeJSON)
-	fmt.Println(compactedScheme)
+	//fmt.Println(compactedScheme)
 	examplePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_example.json"
 	exampleJSON := readJSON(examplePath)
 	compactedExample := compileJSON(exampleJSON)
-	fmt.Println(compactedExample)
+	//fmt.Println(compactedExample)
 
 	//Validate structure
 	fmt.Println(compareJSON(compactedScheme, compactedExample)+"\n")
