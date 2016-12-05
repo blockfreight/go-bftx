@@ -16,7 +16,7 @@
 
     "port_of_discharge":{"type":"number"},
 
-    "nofity_address":{"type":"string"},
+    "notify_address":{"type":"string"},
 
     "desc_of_goods":{"type":"string"},
 

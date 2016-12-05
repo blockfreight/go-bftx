@@ -9,6 +9,7 @@ import (
 	"strconv"
 )
 
+//Declaration of structure
 type JSONObject struct {
     Type string
     Properties PropertiesType
@@ -22,7 +23,7 @@ type PropertiesType struct {
     Vessel VesselType
     Port_Of_Loading PortOfLoadingType
     Port_Of_Discharge PortOfDischargeType
-    Nofity_Address NotifyAddressType		/*Nofity o notify?*/
+    Notify_Address NotifyAddressType
     Desc_Of_Goods DescOfGoodsType
     Gross_Weight GrossWeightType
     Freight_Payable_Amt FreightPayableAmtType
@@ -166,7 +167,7 @@ func readJSON(path string) []byte {
 	fmt.Println("\nReading "+path+"\n")
 	file, e := ioutil.ReadFile(path)
 	if e != nil {
-		fmt.Println("File error: %v\n", e)
+		fmt.Printf("File error: %v\n", e)
 		os.Exit(1)
 	}
 	//fmt.Println(string(file))
@@ -177,26 +178,39 @@ func compileJSON(file []byte) string {
 	return strings.Replace(strings.Replace(string(file), "\n", "", -1), " ", "", -1)
 }
 
-func between(value string, a string, b string) string {
+func between(value string, a string, b string, n int) string {
     // Get substring between two strings.
-    posFirst := strings.Index(value, a)
-    if posFirst == -1 {
-		return ""
+    var posLast int
+    if n < 1 {
+    	n = 1
     }
-    posLast := strings.Index(value, b)
-    if posLast == -1 {
-		return ""
+    for i := 1; i <= n; i++ {
+    	posFirst := strings.Index(value, a)
+    	if posFirst == -1 {
+			return ""
+    	}
+    	posLast = strings.Index(value, b)
+    	if posLast == -1 {
+			return ""
+    	}
+    	posFirstAdjusted := posFirst + len(a)
+    	if posFirstAdjusted >= posLast {
+			return ""
+    	}
+    	//return value[posFirstAdjusted:posLast]
+    	if n > 1 {
+    		value = value[posFirstAdjusted:]
+    	} else {
+    		value = value[posFirstAdjusted:posLast]
+    		//fmt.Println(value, len(value))
+    	}
     }
-    posFirstAdjusted := posFirst + len(a)
-    if posFirstAdjusted >= posLast {
-		return ""
-    }
-    	return value[posFirstAdjusted:posLast]
+    return value
 }
 
 func getStructure() []string {
 	wd,_ := os.Getwd()		//Check!
-	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_schema_pub_var_rfc2.json"
+	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_schema_pub_var_rfc2.json"
 	schemeJSON := readJSON(schemePath)
 	cj := compileJSON(schemeJSON)
 	return []string{
@@ -242,14 +256,17 @@ func compareJSON(schemeContent string, exampleContent string) string {
 	//match := true
 	fmt.Printf("\nValidating...\n")
 	structure := getStructure();
+	times := 1
 	//fmt.Println("Structure Len: "+strconv.Itoa(len(structure)))
 	for i := 0; i < len(structure)-1; i++ {
-		if between(exampleContent, structure[i], structure[i+1]) == "" {
+		/*if i == 18 {
+			times = 2
+			fmt.Println(structure[i], structure[i+1])
+		}*/
+		if between(exampleContent, structure[i], structure[i+1], times) == "" {
 			//match = false
 			return "The JSON did not accomplish the required structure."
 		}
-    	//fmt.Println("seg: "+structure[i])
-    	//fmt.Println("data: "+between(exampleContent, structure[i], structure[i+1]))
 	}
 	return "The JSON accomplished the required structure."
 }
@@ -273,7 +290,7 @@ func printStructure(file JSONObject) {
 	fmt.Println("  Port of Discharge:")
 	fmt.Println("    Type: "+strconv.Itoa(file.Properties.Port_Of_Discharge.Type))
 	fmt.Println("  Notify Address:")
-	fmt.Println("    Type: "+file.Properties.Nofity_Address.Type)
+	fmt.Println("    Type: "+file.Properties.Notify_Address.Type)
 	fmt.Println("  Desc Of Goods:")
 	fmt.Println("    Type: "+file.Properties.Desc_Of_Goods.Type)
 	fmt.Println("  Gross Weight:")
@@ -289,35 +306,41 @@ func printStructure(file JSONObject) {
 	fmt.Println("    Format: "+file.Properties.Date_Shipped.Format)
 	fmt.Println("  Issue Details:")
 	fmt.Println("    Type: "+file.Properties.Issue_Details.Type)
+	fmt.Println("    Properties:")
+	fmt.Println("      Place of Issue:")
+	fmt.Println("        Type: "+file.Properties.Issue_Details.Issue_Details_Properties.Place_Of_Issue.Type)
+	fmt.Println("      Date of Issue:")
+	fmt.Println("        Type: "+strconv.Itoa(file.Properties.Issue_Details.Issue_Details_Properties.Date_Of_Issue.Type))
+	fmt.Println("        Format: "+file.Properties.Issue_Details.Issue_Details_Properties.Date_Of_Issue.Format)
 	fmt.Println("  Num_Bol:")
 	fmt.Println("    Type: "+strconv.Itoa(file.Properties.Num_Bol.Type))
 	fmt.Println("  Master_Info:")
 	fmt.Println("    Type: "+file.Properties.Master_Info.Type)
-	fmt.Println("      Properties:")
-	fmt.Println("        First Name:")
-	fmt.Println("          Type: "+file.Properties.Master_Info.Master_Info_Properties.First_Name.Type)
-	fmt.Println("        Last Name:")
-	fmt.Println("          Type: "+file.Properties.Master_Info.Master_Info_Properties.Last_Name.Type)
-	fmt.Println("        Sig:")
-	fmt.Println("          Type: "+file.Properties.Master_Info.Master_Info_Properties.Sig.Type)
+	fmt.Println("    Properties:")
+	fmt.Println("      First Name:")
+	fmt.Println("        Type: "+file.Properties.Master_Info.Master_Info_Properties.First_Name.Type)
+	fmt.Println("      Last Name:")
+	fmt.Println("        Type: "+file.Properties.Master_Info.Master_Info_Properties.Last_Name.Type)
+	fmt.Println("      Sig:")
+	fmt.Println("        Type: "+file.Properties.Master_Info.Master_Info_Properties.Sig.Type)
 	fmt.Println("  Agent_for_Master:")
 	fmt.Println("    Type: "+file.Properties.Agent_For_Master.Type)
-	fmt.Println("      Properties:")
-	fmt.Println("        First Name:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.First_Name.Type)
-	fmt.Println("        Last Name:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.Last_Name.Type)
-	fmt.Println("        Sig:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.Sig.Type)
+	fmt.Println("    Properties:")
+	fmt.Println("      First Name:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.First_Name.Type)
+	fmt.Println("      Last Name:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.Last_Name.Type)
+	fmt.Println("      Sig:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Master.Agent_For_Master_Properties.Sig.Type)
 	fmt.Println("  Agent_for_Owner:")
 	fmt.Println("    Type: "+file.Properties.Agent_For_Owner.Type)
-	fmt.Println("      Properties:")
-	fmt.Println("        First Name:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.First_Name.Type)
-	fmt.Println("        Last Name:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.Last_Name.Type)
-	fmt.Println("        Sig:")
-	fmt.Println("          Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.Sig.Type)
+	fmt.Println("    Properties:")
+	fmt.Println("      First Name:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.First_Name.Type)
+	fmt.Println("      Last Name:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.Last_Name.Type)
+	fmt.Println("      Sig:")
+	fmt.Println("        Type: "+file.Properties.Agent_For_Owner.Agent_For_Owner_Properties.Sig.Type)
 }
 
 func main() {
@@ -327,11 +350,11 @@ func main() {
 	wd,_ := os.Getwd()
 
 	//Set paths and JSON of scheme and example
-	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_schema_pub_var_rfc2.json"
+	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_schema_pub_var_rfc2.json"
 	schemeJSON := readJSON(schemePath)
 	compactedScheme := compileJSON(schemeJSON)
 	//fmt.Println(compactedScheme)
-	examplePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight_app/files/bf_tx_example.json"
+	examplePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_example.json"
 	exampleJSON := readJSON(examplePath)
 	compactedExample := compileJSON(exampleJSON)
 	//fmt.Println(compactedExample)

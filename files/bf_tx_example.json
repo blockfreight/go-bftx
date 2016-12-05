@@ -1,6 +1,7 @@
 {
   "type": "object",
     "properties": {
+      
       "shipper": { "type": "VLX454323F" },
 
       "BOL_NUM": { "type": 15554 },
@@ -15,7 +16,7 @@
   
       "port_of_discharge":{"type":51651},
   
-      "nofity_address":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
+      "notify_address":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
   
       "desc_of_goods":{"type":"This is the goods description."},
   
