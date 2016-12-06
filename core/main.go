@@ -210,7 +210,7 @@ func between(value string, a string, b string, n int) string {
 
 func getStructure() []string {
 	wd,_ := os.Getwd()		//Check!
-	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_schema_pub_var_rfc2.json"
+	schemePath := wd+"/files/bf_tx_schema_pub_var_rfc2.json"
 	schemeJSON := readJSON(schemePath)
 	cj := compileJSON(schemeJSON)
 	return []string{
@@ -350,11 +350,11 @@ func main() {
 	wd,_ := os.Getwd()
 
 	//Set paths and JSON of scheme and example
-	schemePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_schema_pub_var_rfc2.json"
+	schemePath := wd+"/files/bf_tx_schema_pub_var_rfc2.json"
 	schemeJSON := readJSON(schemePath)
 	compactedScheme := compileJSON(schemeJSON)
 	//fmt.Println(compactedScheme)
-	examplePath := wd+"/go_lang/src/github.com/julian-nunezm/blockfreight/blockfreight-alpha/files/bf_tx_example.json"
+	examplePath := wd+"/files/bf_tx_example.json"
 	exampleJSON := readJSON(examplePath)
 	compactedExample := compileJSON(exampleJSON)
 	//fmt.Println(compactedExample)
