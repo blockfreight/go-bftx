@@ -1,3 +1,4 @@
+** This is a pre-release
 **blockfreight-alpha**
 
 blockfreight-alpha is the Blockrefight App for the Worldwide Shipping Industry. It is a powerful, reliable, efficient, and handy Go app for communication with the Blockrefight Blockchain.
