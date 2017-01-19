@@ -9,6 +9,9 @@ blockfreight-alpha is the Blockrefight App for the Worldwide Shipping Industry. 
 
 Validate you have Go installed and define `$GOPATH/bin` in your `$PATH`
 
+```
+$ go version
+```
 ## Installation
 
 Go version 1.7.1+ is supported. [See Go support](http://golang.org/doc/install.html).
