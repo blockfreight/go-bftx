@@ -2,14 +2,14 @@
 
 blockfreight-alpha is the Blockrefight App for the Worldwide Shipping Industry. It is a powerful, reliable, efficient, and handy Go app for communication with the Blockrefight Blockchain.
 
-- [Prerequisites](#prerequsites)
-    - [Go](#Go)
-    - [ABCI Tendermint](#ABCI-Tendermint)
-- [GitHub Cloning](#GitHub-Cloning)
-    - [Git Clone](#Git-Clone)
-    - [Go Get](#Go-Get)
-- [Installation](#Installation)
-    - [JSON-Validator](#JSON-Validator)
+- [Prerequisites](#prerequisites)
+    - [Go](#go)
+    - [ABCI Tendermint](#abci-tendermint)
+- [GitHub Cloning](#github-cloning)
+    - [Git Clone](#git-clone)
+    - [Go Get](#go-get)
+- [Installation](#installation)
+    - [JSON-Validator](#json-validator)
 
 ## Prerequisites
 
