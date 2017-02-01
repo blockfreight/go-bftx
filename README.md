@@ -2,7 +2,7 @@ Blockfreight™ the blockchain of global freight.
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
 
-Descirption: go-blockfreight is the Blockfreight™ is a full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
+Description: go-blockfreight is the Blockfreight™ is a full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
 
 A network for the free trade of physical goods so powerful it is powering the most project in Worldwide Shipping today. 
 
