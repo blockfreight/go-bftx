@@ -1,26 +1,44 @@
-# Pre-release blockfreight-alpha
+Blockfreight™ the blockchain of global freight. 
 
-blockfreight-alpha is the Blockrefight App for the Worldwide Shipping Industry. It is a powerful, reliable, efficient, and handy Go app for communication with the Blockrefight Blockchain.
+Package: go-blockfreight - Blockfreight™ v0.0.1
 
-- [Prerequisites](#prerequisites)
-    - [Go](#go)
-    - [ABCI Tendermint](#abci-tendermint)
-- [GitHub Cloning](#github-cloning)
-    - [Git Clone](#git-clone)
-    - [Go Get](#go-get)
-- [Installation](#installation)
-    - [JSON-Validator](#json-validator)
+Description: go-blockfreight is the reference Blockfreight™ full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
 
-## Prerequisites
+A network for the free trade of physical goods so powerful it is part of the most advanced project in global shipping today. 
 
-### Go
+go-blockfreight is a powerful, reliable, efficient and handy Go app for communicating with the Blockrefight™ blockchain.
 
-Validate you have [Go installed](https://golang.org/doc/install) and define [`$GOPATH/bin`](https://github.com/tendermint/tendermint/wiki/Setting-GOPATH) in your `$PATH`
+## Dependency: 
+
+### Golang runtime and build environment.
+
+Go version 1.7.1+ or above. 
+
+Quick command line test:
 
 ```
 $ go version
 ```
-Go version 1.7.1+ is supported. [See Go support](http://golang.org/doc/install.html).
+Validate you have [Go installed](https://golang.org/doc/install) and have defined [`$GOPATH/bin`](https://github.com/tendermint/tendermint/wiki/Setting-GOPATH) in your `$PATH`
+
+[For full instructions see golang.org site](http://golang.org/doc/install.html).
+
+// *****************************************
+! // I'm not happy with this 3 step install.
+// *****************************************
+
+- [Prerequisites](#prerequsites)
+    - [Go](#Go)
+    ** ABCI Tendermint](#ABCI-Tendermint) <--- package this 'somehow'
+- [GitHub Cloning](#GitHub-Cloning)
+    - [Git Clone](#Git-Clone)  <--- ?
+    - [Go Get](#Go-Get)        <--- ?
+- [Installation](#Installation)
+    - [JSON-Validator](#JSON-Validator)
+
+// ****************************************
+! // I'm not happy with dependency below
+// ****************************************
 
 ### ABCI Tendermint
 Now, it is necessary to install [`Tendermint/abci`](https://tendermint.com/intro/getting-started/first-abci) (It lets to send ABCI messages to our application), through:
@@ -64,5 +82,9 @@ Then, you can just execute json-validator. That app will validate the input JSON
 ```
 $ json-validator
 ```
+
+// ****************************************************************************************
+! // I'm not happy with process above - we need to package this into a single line install.
+// ****************************************************************************************
 
 If you have any issue about installation, pleas let us know about it sending an email to [support@blockfreight.com](mailto:support@blockfreight.com)
