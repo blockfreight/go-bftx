@@ -26,7 +26,7 @@ func main() {
     	if c.NArg() > 0 {
     	  name = c.Args().Get(0)
     	}
-    	if c.String("lang") == "spanish" {
+    	if c.String("lang") == "ES" {	//ISO 639-1
     	  fmt.Println("Hola", name)
     	} else {
     	  fmt.Println("Hello", name)
