@@ -1,8 +1,8 @@
-Blockfreight™ the blockchain of global freight. 
+# **Blockfreight™ the blockchain of global freight**
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
 
-Description: go-blockfreight is the reference Blockfreight™ full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
+***Description:*** go-blockfreight is the reference Blockfreight™ full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
 
 A network for the free trade of physical goods so powerful it is part of the most advanced project in global shipping today. 
 
@@ -10,8 +10,7 @@ go-blockfreight is a powerful, reliable, efficient and handy Go app for communic
 
 ## Dependency: 
 
-### Golang runtime and build environment.
-
+### Golang runtime and build environment
 Go version 1.7.1+ or above. 
 
 Quick command line test:
@@ -21,20 +20,7 @@ $ go version
 ```
 Validate you have [Go installed](https://golang.org/doc/install) and have defined [`$GOPATH/bin`](https://github.com/tendermint/tendermint/wiki/Setting-GOPATH) in your `$PATH`
 
-[For full instructions see golang.org site](http://golang.org/doc/install.html).
-
-// *****************************************
-! // I'm not happy with this 3 step install.
-// *****************************************
-
-- [Prerequisites](#prerequsites)
-    - [Go](#Go)
-    ** ABCI Tendermint](#ABCI-Tendermint) <--- package this 'somehow'
-- [GitHub Cloning](#GitHub-Cloning)
-    - [Git Clone](#Git-Clone)  <--- ?
-    - [Go Get](#Go-Get)        <--- ?
-- [Installation](#Installation)
-    - [JSON-Validator](#JSON-Validator)
+For full instructions see [golang.org site](http://golang.org/doc/install.html).
 
 // ****************************************
 ! // I'm not happy with dependency below
@@ -71,6 +57,18 @@ Having chose one of the last two options, you should have already cloned your bl
 
 ## Installation
 
+### BFT-Cli
+Install bft-cli through
+```
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/bft/cmd/bft-cli
+$ go install
+```
+
+After that step, you can execute bft-cli. If you need some extra information, just add `help` after.
+```
+$ bft-cli help
+```
+
 ### JSON-Validator
 Install json-validator through
 ```
@@ -78,7 +76,7 @@ $ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/json-validator
 $ go install
 ```
 
-Then, you can just execute json-validator. That app will validate the input JSON file against the Blockfreight JSON structure.
+Then, you can just type json-validator. That app will validate the input JSON file against the Blockfreight JSON structure.
 ```
 $ json-validator
 ```
