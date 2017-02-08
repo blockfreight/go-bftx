@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
-	//"github.com/blockfreight/blockfreight-alpha/bft/client"
+	"github.com/blockfreight/blockfreight-alpha/bft/client"
 )
 
 // client is a global variable, it can be reused by the console
@@ -60,7 +60,7 @@ func main() {
 			Usage: "Print a message",
 			Action: func(c *cli.Context) error {
 				fmt.Println("-> This is the content of echo command.")
-				return cmdEcho(c)
+				return nil
 			},
 		},
 		{
