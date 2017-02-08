@@ -5,10 +5,13 @@ import (
 	"os"
 
 	"github.com/urfave/cli"
+	//"github.com/blockfreight/blockfreight-alpha/bft/client"
 )
 
+// client is a global variable, it can be reused by the console
+var client bftcli.Client
+
 func main() {
-	//cli.NewApp().Run(os.Args)
 	app := cli.NewApp()
 	app.Name = "bft-cli"
 	app.Usage = "bft-cli app [command] [args...]"
@@ -19,20 +22,22 @@ func main() {
       		Value: "english",
       		Usage: "language for the greeting",
     	},
+    	cli.StringFlag{
+			Name:  "address",
+			Value: "tcp://127.0.0.1:46658",
+			Usage: "address of application socket",
+		},
+		cli.StringFlag{
+			Name:  "bft",
+			Value: "socket",
+			Usage: "socket or grpc",
+		},
+		cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "print the command and results as if it were a console session",
+		},
   	}
-	app.Action = func (c *cli.Context) error {
-		//fmt.Println("boom!")
-		name := "Blockfreight Community"
-    	if c.NArg() > 0 {
-    	  name = c.Args().Get(0)
-    	}
-    	if c.String("lang") == "ES" {	//ISO 639-1
-    	  fmt.Println("Hola", name)
-    	} else {
-    	  fmt.Println("Hello", name)
-    	}
-    	return nil
-	}
+	//app.Action = introduction()
 	app.Commands = []cli.Command{
 		{
 			Name:  "batch",
@@ -55,7 +60,7 @@ func main() {
 			Usage: "Print a message",
 			Action: func(c *cli.Context) error {
 				fmt.Println("-> This is the content of echo command.")
-				return nil
+				return cmdEcho(c)
 			},
 		},
 		{
@@ -107,5 +112,39 @@ func main() {
 			},
 		},
 	}
-	app.Run(os.Args)
+	app.Before = InitializeClient
+	//app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+}
+
+func InitializeClient(c *cli.Context) error {
+	fmt.Println("**********************************")
+	introduction(c)
+	if client == nil {
+		var err error
+		fmt.Println("Address "+c.GlobalString("address"))
+		fmt.Println("BFT Implementation:  "+c.GlobalString("bft"))
+		client, err = bftcli.NewClient(c.GlobalString("address"), c.GlobalString("bft"), false)
+		if err != nil {
+			fmt.Println("Error: "+err.Error())
+			//Exit(err.Error())
+		}
+	}
+	fmt.Println("**********************************\n")
+	return nil
+}
+
+func introduction (c *cli.Context) {
+	name := "Blockfreight Community"
+    if c.NArg() > 0 {
+      name = c.Args().Get(0)
+    }
+    if c.String("lang") == "ES" {	//ISO 639-1
+      fmt.Println("Hola", name)
+    } else {
+      fmt.Println("Hello", name)
+    }
 }
