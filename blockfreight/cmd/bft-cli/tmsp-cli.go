@@ -66,6 +66,11 @@ func main() {
 			Name:  "verbose",
 			Usage: "print the command and results as if it were a console session",
 		},
+		/*cli.StringFlag{
+      		Name: "lang",
+      		Value: "english",
+      		Usage: "language for the greeting",
+    	},*/
 	}
 	app.Commands = []cli.Command{
 		{
@@ -141,6 +146,7 @@ func main() {
 }
 
 func before(c *cli.Context) error {
+	introduction(c)
 	if client == nil {
 		var err error
 		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("bft"), false)
@@ -353,4 +359,21 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 	}
 
 	return []byte(s[1 : len(s)-1]), nil
+}
+
+func introduction (c *cli.Context) {
+	fmt.Println("\n...........................................")
+	fmt.Println("Blockfreight™ Go App")
+	fmt.Println("Address "+c.GlobalString("address"))
+	fmt.Println("BFT Implementation:  "+c.GlobalString("bft"))
+	fmt.Println("...........................................\n")
+	/*name := "Blockfreight Community"
+    if c.NArg() > 0 {
+      name = c.Args().Get(0)
+    }
+    if c.String("lang") == "ES" {	//ISO 639-1
+      fmt.Println("Hola", name)
+    } else {
+      fmt.Println("Hello", name)
+    }*/
 }
