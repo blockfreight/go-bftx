@@ -109,15 +109,15 @@ func main() {
 			},
 		},
 		{
-			Name:  "deliver_tx",
-			Usage: "Deliver a new tx to application",
+			Name:  "publish_bftx",		//"deliver_tx",
+			Usage: "Deliver a new bftx to application",
 			Action: func(c *cli.Context) error {
 				return cmdDeliverTx(c)
 			},
 		},
 		{
-			Name:  "check_tx",
-			Usage: "Validate a tx",
+			Name:  "check_bftx",
+			Usage: "Validate a bftx",
 			Action: func(c *cli.Context) error {
 				return cmdCheckTx(c)
 			},
