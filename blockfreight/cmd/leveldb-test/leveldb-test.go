@@ -25,5 +25,5 @@ func main() {
 	var n int
 	n, err = leveldb.Iterate(db)
 	leveldb.HandleError(err, "Iteration")
-	fmt.Println("Total: "+strconv.Itoa(n))
+	fmt.Println("Total: "+strconv.Itoa(n))	
 }
