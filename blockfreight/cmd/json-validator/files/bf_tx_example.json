@@ -32,7 +32,7 @@
   
       "issue_details": {
           "type": "object",
-          "issue_details_properties": {
+          "properties": {
             "place_of_issue": { "type": "Melbourne, Australia" },
             "date_of_issue": { "type": 20161128, "format":"date-time" }
         }
@@ -42,7 +42,7 @@
   
       "master_info": {
         "type": "object",
-        "master_info_properties": {
+        "properties": {
           "first_name": { "type": "Master First Name" },
           "last_name": { "type": "Master Last Name" },
           "sig":{"type":null}
@@ -52,7 +52,7 @@
   
       "agent_for_master": {
         "type": "object",
-        "agent_for_master_properties": {
+        "properties": {
           "first_name": { "type": "Agent First Name" },
           "last_name": { "type": "Agent Last Name" },
           "sig":{"type":null}
@@ -62,7 +62,7 @@
   
       "agent_for_owner": {
         "type": "object",
-        "agent_for_owner_properties": {
+        "properties": {
           "first_name": { "type": "Owner First Name" },
           "last_name": { "type": "Owner Last Name" },
           "sig":{"type":null},

@@ -16,7 +16,7 @@
 
     "port_of_discharge":{"type":"number"},
 
-    "notify_address":{"type":"string"},
+    "nofity_address":{"type":"string"},
 
     "desc_of_goods":{"type":"string"},
 
@@ -32,7 +32,7 @@
 
      "issue_details": {
       "type": "object",
-      "issue_details_properties": {
+      "properties": {
         "place_of_issue": { "type": "string" },
         "date_of_issue": { "type": "number", "format":"date-time" }
       }
@@ -42,7 +42,7 @@
 
     "master_info": {
       "type": "object",
-      "master_info_properties": {
+      "properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"}
@@ -52,7 +52,7 @@
 
     "agent_for_master": {
       "type": "object",
-      "agent_for_master_properties": {
+      "properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"}
@@ -63,7 +63,7 @@
 
   "agent_for_owner": {
       "type": "object",
-      "agent_for_owner_properties": {
+      "properties": {
         "first_name": { "type": "string" },
         "last_name": { "type": "string" },
         "sig":{"type":"null"},
