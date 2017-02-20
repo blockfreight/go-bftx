@@ -143,10 +143,10 @@ func main() {
 			},
 		},
 		{
-			Name:  "validate_bol",
+			Name:  "validate_bftx",
 			Usage: "Verify the structure of the bill of lading",
 			Action: func(c *cli.Context) error {
-				return cmdValidateBol(c)
+				return cmdValidateBfTx(c)
 			},
 		},
 	}
@@ -327,12 +327,12 @@ func cmdQuery(c *cli.Context) error {
 }
 
 //Verify the structure of the bill of lading
-func cmdValidateBol(c *cli.Context) error {
+func cmdValidateBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) > 1 {
-		return errors.New("Command validate_bol takes 1 argument")
+		return errors.New("Command validate_bftx takes 1 argument")
 	}
-	res := client.EchoSync(validator.ValidateBoL(args[0], false))
+	res := client.EchoSync(validator.ValidateBfTx(args[0], false))
 	rsp := newResponse(res, string(res.Data), false)
 	printResponse(c, rsp)
 	return nil
