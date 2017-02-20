@@ -13,6 +13,7 @@ import (
 	"github.com/tendermint/abci/types"
 	. "github.com/tendermint/go-common"
 	"github.com/urfave/cli"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator"
 )
 
 //structure for data passed to print response
@@ -71,6 +72,11 @@ func main() {
       		Value: "english",
       		Usage: "language for the greeting",
     	},*/
+    	cli.StringFlag{
+      		Name: "json_path",
+      		Value: "./files/bf_tx_example.json",
+      		Usage: "define the source path where the json is",
+    	},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -134,6 +140,13 @@ func main() {
 			Usage: "Query application state",
 			Action: func(c *cli.Context) error {
 				return cmdQuery(c)
+			},
+		},
+		{
+			Name:  "validate_bol",
+			Usage: "Verify the structure of the bill of lading",
+			Action: func(c *cli.Context) error {
+				return cmdValidateBol(c)
 			},
 		},
 	}
@@ -261,10 +274,11 @@ func cmdDeliverTx(c *cli.Context) error {
 	if len(args) != 1 {
 		return errors.New("Command deliver_tx takes 1 argument")
 	}
-	txBytes, err := stringOrHexToBytes(c.Args()[0])
+	/*txBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
 		return err
-	}
+	}*/
+	txBytes := validator.ReadJSON(args[0])
 	res := client.DeliverTxSync(txBytes)
 	rsp := newResponse(res, string(res.Data), true)
 	printResponse(c, rsp)
@@ -301,12 +315,25 @@ func cmdQuery(c *cli.Context) error {
 	if len(args) != 1 {
 		return errors.New("Command query takes 1 argument")
 	}
-	queryBytes, err := stringOrHexToBytes(c.Args()[0])
+	/*queryBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
 		return err
-	}
+	}*/
+	queryBytes := validator.ReadJSON(args[0])
 	res := client.QuerySync(queryBytes)
 	rsp := newResponse(res, string(res.Data), true)
+	printResponse(c, rsp)
+	return nil
+}
+
+//Verify the structure of the bill of lading
+func cmdValidateBol(c *cli.Context) error {
+	args := c.Args()
+	if len(args) > 1 {
+		return errors.New("Command validate_bol takes 1 argument")
+	}
+	res := client.EchoSync(validator.ValidateBoL(args[0], false))
+	rsp := newResponse(res, string(res.Data), false)
 	printResponse(c, rsp)
 	return nil
 }
@@ -357,7 +384,6 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 		err := fmt.Errorf("Invalid string arg: \"%s\". Must be quoted or a \"0x\"-prefixed hex string", s)
 		return nil, err
 	}
-
 	return []byte(s[1 : len(s)-1]), nil
 }
 
