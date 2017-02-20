@@ -1,7 +1,8 @@
-package bol
+package bf_tx
 
-//Declaration of BoL structure
-type BoL struct {
+// Define Blockfreight™ Transaction (BF_TX) transaction standard
+
+type BF_TX struct {
     Type string
     Properties Properties
 }
@@ -22,7 +23,7 @@ type Properties struct {
     General_Instructions GeneralInstructions
     Date_Shipped Date
     Issue_Details IssueDetails
-    Num_Bol NumBol								//Is it the same Bol_Num?
+    Num_Bol NumBol								// Is it the same Bol_Num?
     Master_Info MasterInfo
     Agent_for_Master AgentMaster
     Agent_for_Owner AgentOwner
