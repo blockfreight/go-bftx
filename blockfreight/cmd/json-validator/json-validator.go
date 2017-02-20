@@ -6,8 +6,7 @@ import (
     "io/ioutil"
     "encoding/json"
     "reflect"
-
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bol"
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // bf_tx
     "github.com/davecgh/go-spew/spew"
 )
 
