@@ -10,15 +10,16 @@ import (
 	"io"
 	"math/big"
 	"os"
-	"encoding/json"
+	//"reflect"
+	"strconv"
 
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
+	"github.com/davecgh/go-spew/spew"
 )
 
 func Sign_BFTX(bftx bf_tx.BF_TX) bf_tx.BF_TX{
 
-	jsonContent, _ := json.Marshal(bftx)
-    content := string(jsonContent)
+    content := bf_tx.BFTXContent(bftx)
     
 	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
 	
@@ -58,8 +59,13 @@ func Sign_BFTX(bftx bf_tx.BF_TX) bf_tx.BF_TX{
 	signature := r.Bytes()
 	//fmt.Println("signature 1:",signature)
 	signature = append(signature, s.Bytes()...)
-	
-	//fmt.Printf("Signature : %x\n\n", signature)
+	//fmt.Printf("%x\n\n", signature)
+	//fmt.Println(signature)
+	sign := ""
+	for i, _ := range signature {
+		sign += strconv.Itoa(int(signature[i]))
+	}
+	//fmt.Println(sign)
 	
 	// Verify
 	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
@@ -68,6 +74,9 @@ func Sign_BFTX(bftx bf_tx.BF_TX) bf_tx.BF_TX{
 	//Set Private Key and Sign to BFTX
 	bftx.PrivateKey = *privatekey
 	bftx.Signhash = signhash
+	bftx.Signature = sign
 	bftx.Signed = verifystatus
+	printJson := false
+	if printJson { spew.Dump(bftx) }
 	return bftx
 }
