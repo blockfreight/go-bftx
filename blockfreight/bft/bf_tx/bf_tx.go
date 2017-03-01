@@ -2,15 +2,30 @@ package bf_tx
 
 import (
     "crypto/ecdsa"
+    "encoding/json"
+
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"
 )
 
 // Define Blockfreight™ Transaction (BF_TX) transaction standard
+
+func SetBFTX(jsonpath string) BF_TX {
+    var bftx BF_TX
+    json.Unmarshal(common.ReadJSON(jsonpath), &bftx)
+    return bftx
+}
+
+func BFTXContent(bftx BF_TX) string {
+    jsonContent, _ := json.Marshal(bftx)
+    return string(jsonContent)
+}
 
 type BF_TX struct {
     Type string
     Properties Properties
     PrivateKey ecdsa.PrivateKey
     Signhash []uint8
+    Signature string
     Signed bool
 }
 
