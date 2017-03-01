@@ -7,10 +7,11 @@ import (
     "encoding/json"
     "reflect"
     "strconv"
-
+    
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
     "github.com/davecgh/go-spew/spew"
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/ecdsa"
 )
 
 func ValidateBfTx(jsonpath string, printJson bool) string {
@@ -18,8 +19,15 @@ func ValidateBfTx(jsonpath string, printJson bool) string {
     //examplePath := "./files/bf_tx_example.json"
     espErr := ""
     var bftx bf_tx.BF_TX
-    json.Unmarshal(ReadJSON(jsonpath), &bftx)
+    file := ReadJSON(jsonpath)
+    json.Unmarshal(file, &bftx)
+
+    //Sign BFTX
+    bftx = ecdsa.Sign_BFTX(bftx)
+    //fmt.Println(bftx.Signhash)
+
     if printJson { spew.Dump(bftx) }
+    
     valid, err := ValidateFields(bftx)
     if valid {
         return "Success! [OK]"
