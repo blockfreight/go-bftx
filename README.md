@@ -27,9 +27,15 @@ For full instructions see [golang.org site](http://golang.org/doc/install.html).
 // ****************************************
 
 ### ABCI Tendermint
-Now, it is necessary to install [`Tendermint/abci`](https://tendermint.com/intro/getting-started/first-abci) (It lets to send ABCI messages to our application), through:
+Now, it is necessary to install [Tendermint/abci](https://tendermint.com/intro/getting-started/first-abci) (It lets to send ABCI messages to our application), through:
 ```
 $ go get -u github.com/tendermint/abci/cmd/...
+```
+
+### go-spew
+[Go-spew](https://github.com/davecgh/go-spew) is very useful to print the JSON structure clearly, through:
+```
+$ go get -u github.com/davecgh/go-spew/spew
 ```
 
 ## GitHub Cloning
@@ -57,28 +63,28 @@ Having chose one of the last two options, you should have already cloned your bl
 
 ## Installation
 
+### Blockfreight
+Install blockfreight through
+```
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/blockfreight
+$ go install
+```
+
+Then, you can execute `blockfreight`. That app will start a server that is going to wait for requests from the `bft-cli`.
+```
+$ blockfreight
+```
+
 ### BFT-Cli
 Install bft-cli through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/bft/cmd/bft-cli
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bft-cli
 $ go install
 ```
 
-After that step, you can execute bft-cli. If you need some extra information, just add `help` after.
+After that step, you can execute `bft-cli`. If you need some extra information, just add `help` after.
 ```
 $ bft-cli help
-```
-
-### JSON-Validator
-Install json-validator through
-```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/json-validator
-$ go install
-```
-
-Then, you can just type json-validator. That app will validate the input JSON file against the Blockfreight JSON structure.
-```
-$ json-validator
 ```
 
 // ****************************************************************************************
