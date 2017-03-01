@@ -2,31 +2,17 @@ package validator
 
 import (
     "fmt"
-    "os"
-    "io/ioutil"
-    "encoding/json"
     "reflect"
     "strconv"
     
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
-    "github.com/davecgh/go-spew/spew"
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/ecdsa"
 )
 
-func ValidateBfTx(jsonpath string, printJson bool) string {
+func ValidateBfTx(bftx bf_tx.BF_TX) string {
     //printJson := true
     //examplePath := "./files/bf_tx_example.json"
     espErr := ""
-    var bftx bf_tx.BF_TX
-    file := ReadJSON(jsonpath)
-    json.Unmarshal(file, &bftx)
-
-    //Sign BFTX
-    bftx = ecdsa.Sign_BFTX(bftx)
-    //fmt.Println(bftx.Signhash)
-
-    if printJson { spew.Dump(bftx) }
     
     valid, err := ValidateFields(bftx)
     if valid {
@@ -49,27 +35,22 @@ func ValidateBfTx(jsonpath string, printJson bool) string {
     }
 }
 
-func ReadJSON(path string) []byte {
-    fmt.Println("\nReading "+path+"\n")
-    file, e := ioutil.ReadFile(path)
-    if e != nil {
-        fmt.Printf("File error: %v\n", e)
-        os.Exit(1)
-    }
-    return file
-}
-
-func recordOnDB(json string) bool {
+func RecordOnDB(/*id string, */json string) bool {  //TODO: Check the id
     db_path := "bft-db"
     db, err := leveldb.OpenDB(db_path)
     defer leveldb.CloseDB(db)
+    
+    //Get the number of bftx on DB
+    var n int
+    n, err = leveldb.Iterate(db)
+
     leveldb.HandleError(err, "Create or Open Database")
     //fmt.Println("Database created / open on "+db_path)
     
-    err = leveldb.InsertBFTX("1", json, db)
+    err = leveldb.InsertBFTX(strconv.Itoa(n+1), json, db)
+    //err = leveldb.InsertBFTX(id, json, db)    //TODO: Check the id
 
     //Iteration
-    var n int
     n, err = leveldb.Iterate(db)
     leveldb.HandleError(err, "Iteration")
     fmt.Println("Total: "+strconv.Itoa(n))  
