@@ -16,7 +16,7 @@ func HandleError(err error, place string){
 }
 
 func OpenDB(db_path string) (db *leveldb.DB, err error) {
-	fmt.Println("Creating leveldb db...")
+	fmt.Println("Creating / Opening leveldb db...")
 	db, err = leveldb.OpenFile(db_path, nil)
 	return db, err
 
@@ -28,6 +28,7 @@ func CloseDB(db *leveldb.DB) {
 
 func InsertBFTX(key string, value string, db *leveldb.DB) (error){
 	//return err
+	//fmt.Println("key", key)
 	return db.Put([]byte(key), []byte(value), nil)
 }
 
