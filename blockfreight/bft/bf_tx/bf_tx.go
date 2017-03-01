@@ -1,10 +1,17 @@
 package bf_tx
 
+import (
+    "crypto/ecdsa"
+)
+
 // Define Blockfreight™ Transaction (BF_TX) transaction standard
 
 type BF_TX struct {
     Type string
     Properties Properties
+    PrivateKey ecdsa.PrivateKey
+    Signhash []uint8
+    Signed bool
 }
 
 type Properties struct {
