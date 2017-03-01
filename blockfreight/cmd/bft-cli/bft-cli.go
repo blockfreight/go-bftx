@@ -14,6 +14,8 @@ import (
 	. "github.com/tendermint/go-common"
 	"github.com/urfave/cli"
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/ecdsa"
 )
 
 //structure for data passed to print response
@@ -278,7 +280,22 @@ func cmdDeliverTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}*/
-	txBytes := validator.ReadJSON(args[0])
+	
+	//Sign BFTX
+	bftx := bf_tx.SetBFTX(args[0])
+    bftx = ecdsa.Sign_BFTX(bftx)
+    //fmt.Println(bftx.Signhash)
+	content := bf_tx.BFTXContent(bftx)
+
+	//Save on DB
+    //fmt.Println(bftx.Signature)
+	if(validator.RecordOnDB(/*bftx.Signature, */content)){	//TODO: Check the id
+		fmt.Println("Stored on DB!")
+	}
+
+	//TODO: Validate if that JSON was already stored
+	txBytes := []byte(content)
+	//txBytes := []byte(bftx.Signature+"="+content)	//TODO: Check the id
 	res := client.DeliverTxSync(txBytes)
 	rsp := newResponse(res, string(res.Data), true)
 	printResponse(c, rsp)
@@ -319,7 +336,12 @@ func cmdQuery(c *cli.Context) error {
 	if err != nil {
 		return err
 	}*/
-	queryBytes := validator.ReadJSON(args[0])
+	//queryBytes := common.ReadJSON(args[0])
+	
+	//TODO: Check the query because when the bftx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
+	bftx := bf_tx.SetBFTX(args[0])
+	queryBytes := []byte(bf_tx.BFTXContent(bftx))
+	//queryBytes := []byte(args[0])
 	res := client.QuerySync(queryBytes)
 	rsp := newResponse(res, string(res.Data), true)
 	printResponse(c, rsp)
@@ -332,7 +354,8 @@ func cmdValidateBfTx(c *cli.Context) error {
 	if len(args) > 1 {
 		return errors.New("Command validate_bftx takes 1 argument")
 	}
-	res := client.EchoSync(validator.ValidateBfTx(args[0], false))
+	bftx := bf_tx.SetBFTX(args[0])
+	res := client.EchoSync(validator.ValidateBfTx(bftx))
 	rsp := newResponse(res, string(res.Data), false)
 	printResponse(c, rsp)
 	return nil
