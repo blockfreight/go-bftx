@@ -16,7 +16,7 @@ func main() {
 	//fmt.Println("Database created / open on "+db_path)
 	
 	for i := 1; i <= 50000; i++ {
-		err = leveldb.InsertBFTX(strconv.Itoa(i), "Value for "+strconv.Itoa(i), db)
+		err = leveldb.InsertBF_TX(strconv.Itoa(i), "Value for "+strconv.Itoa(i), db)
 		//leveldb.HandleError(err, "Insert data for value "+strconv.Itoa(i))	
 		//fmt.Println("Record saved!")	
 	}

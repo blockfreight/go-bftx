@@ -26,7 +26,7 @@ func CloseDB(db *leveldb.DB) {
 	db.Close()	//Use defer
 }
 
-func InsertBFTX(key string, value string, db *leveldb.DB) (error){
+func InsertBF_TX(key string, value string, db *leveldb.DB) (error){
 	//return err
 	//fmt.Println("key", key)
 	return db.Put([]byte(key), []byte(value), nil)

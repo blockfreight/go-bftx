@@ -9,14 +9,14 @@ import (
 
 // Define Blockfreight™ Transaction (BF_TX) transaction standard
 
-func SetBFTX(jsonpath string) BF_TX {
-    var bftx BF_TX
-    json.Unmarshal(common.ReadJSON(jsonpath), &bftx)
-    return bftx
+func SetBF_TX(jsonpath string) BF_TX {
+    var bf_tx BF_TX
+    json.Unmarshal(common.ReadJSON(jsonpath), &bf_tx)
+    return bf_tx
 }
 
-func BFTXContent(bftx BF_TX) string {
-    jsonContent, _ := json.Marshal(bftx)
+func BF_TXContent(bf_tx BF_TX) string {
+    jsonContent, _ := json.Marshal(bf_tx)
     return string(jsonContent)
 }
 

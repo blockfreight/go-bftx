@@ -117,15 +117,15 @@ func main() {
 			},
 		},
 		{
-			Name:  "publish_bftx",		//"deliver_tx",
-			Usage: "Deliver a new bftx to application",
+			Name:  "publish_bf_tx",		//"deliver_tx",
+			Usage: "Deliver a new bf_tx to application",
 			Action: func(c *cli.Context) error {
 				return cmdDeliverTx(c)
 			},
 		},
 		{
-			Name:  "check_bftx",
-			Usage: "Validate a bftx",
+			Name:  "check_bf_tx",
+			Usage: "Validate a bf_tx",
 			Action: func(c *cli.Context) error {
 				return cmdCheckTx(c)
 			},
@@ -145,10 +145,10 @@ func main() {
 			},
 		},
 		{
-			Name:  "validate_bftx",
+			Name:  "validate_bf_tx",
 			Usage: "Verify the structure of the bill of lading",
 			Action: func(c *cli.Context) error {
-				return cmdValidateBfTx(c)
+				return cmdValidateBf_Tx(c)
 			},
 		},
 	}
@@ -281,21 +281,21 @@ func cmdDeliverTx(c *cli.Context) error {
 		return err
 	}*/
 	
-	//Sign BFTX
-	bftx := bf_tx.SetBFTX(args[0])
-    bftx = ecdsa.Sign_BFTX(bftx)
-    //fmt.Println(bftx.Signhash)
-	content := bf_tx.BFTXContent(bftx)
+	//Sign BF_TX
+	bft_tx := bf_tx.SetBF_TX(args[0])
+    bft_tx = ecdsa.Sign_BF_TX(bft_tx)
+    //fmt.Println(bf_tx.Signhash)
+	content := bf_tx.BF_TXContent(bft_tx)
 
 	//Save on DB
-    //fmt.Println(bftx.Signature)
-	if(validator.RecordOnDB(/*bftx.Signature, */content)){	//TODO: Check the id
+    //fmt.Println(bf_tx.Signature)
+	if(validator.RecordOnDB(/*bf_tx.Signature, */content)){	//TODO: Check the id
 		fmt.Println("Stored on DB!")
 	}
 
 	//TODO: Validate if that JSON was already stored
 	txBytes := []byte(content)
-	//txBytes := []byte(bftx.Signature+"="+content)	//TODO: Check the id
+	//txBytes := []byte(bf_tx.Signature+"="+content)	//TODO: Check the id
 	res := client.DeliverTxSync(txBytes)
 	rsp := newResponse(res, string(res.Data), true)
 	printResponse(c, rsp)
@@ -338,9 +338,9 @@ func cmdQuery(c *cli.Context) error {
 	}*/
 	//queryBytes := common.ReadJSON(args[0])
 	
-	//TODO: Check the query because when the bftx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
-	bftx := bf_tx.SetBFTX(args[0])
-	queryBytes := []byte(bf_tx.BFTXContent(bftx))
+	//TODO: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
+	bft_tx := bf_tx.SetBF_TX(args[0])
+	queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
 	//queryBytes := []byte(args[0])
 	res := client.QuerySync(queryBytes)
 	rsp := newResponse(res, string(res.Data), true)
@@ -349,13 +349,13 @@ func cmdQuery(c *cli.Context) error {
 }
 
 //Verify the structure of the bill of lading
-func cmdValidateBfTx(c *cli.Context) error {
+func cmdValidateBf_Tx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) > 1 {
-		return errors.New("Command validate_bftx takes 1 argument")
+		return errors.New("Command validate_bf_tx takes 1 argument")
 	}
-	bftx := bf_tx.SetBFTX(args[0])
-	res := client.EchoSync(validator.ValidateBfTx(bftx))
+	bf_tx := bf_tx.SetBF_TX(args[0])
+	res := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
 	rsp := newResponse(res, string(res.Data), false)
 	printResponse(c, rsp)
 	return nil
