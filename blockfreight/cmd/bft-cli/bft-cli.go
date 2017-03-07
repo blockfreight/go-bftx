@@ -1,3 +1,47 @@
+// File: ./blockfreight/cmd/bft-cli/bft-cli.go
+// Summary: Application code for Blockfreight™ | The blockchain of global freight.
+// License: MIT License
+// Company: Blockfreight, Inc.
+// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Site: https://blockfreight.com
+// Support: <support@blockfreight.com>
+
+// Copyright 2017 Blockfreight, Inc.
+
+// Permission is hereby granted, free of charge, to any person obtaining
+// a copy of this software and associated documentation files (the "Software"),
+// to deal in the Software without restriction, including without limitation
+// the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the
+// Software is furnished to do so, subject to the following conditions:
+
+// The above copyright notice and this permission notice shall be
+// included in all copies or substantial portions of the Software.
+
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+// CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// =================================================================================================================================================
+// =================================================================================================================================================
+//
+// BBBBBBBBBBBb     lll                                kkk             ffff                         iii                  hhh            ttt
+// BBBB``````BBBB   lll                                kkk            fff                           ```                  hhh            ttt
+// BBBB      BBBB   lll      oooooo        ccccccc     kkk    kkkk  fffffff  rrr  rrr    eeeee      iii     gggggg ggg   hhh  hhhhh   tttttttt
+// BBBBBBBBBBBB     lll    ooo    oooo    ccc    ccc   kkk   kkk    fffffff  rrrrrrrr eee    eeee   iii   gggg   ggggg   hhhh   hhhh  tttttttt
+// BBBBBBBBBBBBBB   lll   ooo      ooo   ccc           kkkkkkk        fff    rrrr    eeeeeeeeeeeee  iii  gggg      ggg   hhh     hhh    ttt
+// BBBB       BBB   lll   ooo      ooo   ccc           kkkk kkkk      fff    rrr     eeeeeeeeeeeee  iii   ggg      ggg   hhh     hhh    ttt
+// BBBB      BBBB   lll   oooo    oooo   cccc    ccc   kkk   kkkk     fff    rrr      eee      eee  iii    ggg    gggg   hhh     hhh    tttt    ....
+// BBBBBBBBBBBBB    lll     oooooooo       ccccccc     kkk     kkkk   fff    rrr       eeeeeeeee    iii     gggggg ggg   hhh     hhh     ttttt  ....
+//                                                                                                        ggg      ggg
+//   Blockfreight™ | The blockchain of global freight.                                                      ggggggggg
+//
+// =================================================================================================================================================
+// =================================================================================================================================================
+
 package main
 
 import (
@@ -9,13 +53,13 @@ import (
 	"os"
 	"strings"
 
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/crypto"
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
 	. "github.com/tendermint/go-common"
 	"github.com/urfave/cli"
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator"
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/ecdsa"
 )
 
 //structure for data passed to print response
@@ -70,15 +114,15 @@ func main() {
 			Usage: "print the command and results as if it were a console session",
 		},
 		/*cli.StringFlag{
-      		Name: "lang",
-      		Value: "english",
-      		Usage: "language for the greeting",
-    	},*/
-    	cli.StringFlag{
-      		Name: "json_path",
-      		Value: "./files/bf_tx_example.json",
-      		Usage: "define the source path where the json is",
-    	},
+		  		Name: "lang",
+		  		Value: "english",
+		  		Usage: "language for the greeting",
+			},*/
+		cli.StringFlag{
+			Name:  "json_path",
+			Value: "./files/bf_tx_example.json",
+			Usage: "define the source path where the json is",
+		},
 	}
 	app.Commands = []cli.Command{
 		{
@@ -117,7 +161,7 @@ func main() {
 			},
 		},
 		{
-			Name:  "publish_bf_tx",		//"deliver_tx",
+			Name:  "publish_bf_tx", //"deliver_tx",
 			Usage: "Deliver a new bf_tx to application",
 			Action: func(c *cli.Context) error {
 				return cmdDeliverTx(c)
@@ -280,16 +324,16 @@ func cmdDeliverTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}*/
-	
+
 	//Sign BF_TX
 	bft_tx := bf_tx.SetBF_TX(args[0])
-    bft_tx = ecdsa.Sign_BF_TX(bft_tx)
-    //fmt.Println(bf_tx.Signhash)
+	bft_tx = ecdsa.Sign_BF_TX(bft_tx)
+	//fmt.Println(bf_tx.Signhash)
 	content := bf_tx.BF_TXContent(bft_tx)
 
 	//Save on DB
-    //fmt.Println(bf_tx.Signature)
-	if(validator.RecordOnDB(/*bf_tx.Signature, */content)){	//TODO: Check the id
+	//fmt.Println(bf_tx.Signature)
+	if validator.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO: Check the id
 		fmt.Println("Stored on DB!")
 	}
 
@@ -337,7 +381,7 @@ func cmdQuery(c *cli.Context) error {
 		return err
 	}*/
 	//queryBytes := common.ReadJSON(args[0])
-	
+
 	//TODO: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
 	bft_tx := bf_tx.SetBF_TX(args[0])
 	queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
@@ -410,19 +454,48 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 	return []byte(s[1 : len(s)-1]), nil
 }
 
-func introduction (c *cli.Context) {
+func introduction(c *cli.Context) {
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Go App")
-	fmt.Println("Address "+c.GlobalString("address"))
-	fmt.Println("BFT Implementation:  "+c.GlobalString("bft"))
+	fmt.Println("Address " + c.GlobalString("address"))
+	fmt.Println("BFT Implementation:  " + c.GlobalString("bft"))
 	fmt.Println("...........................................\n")
 	/*name := "Blockfreight Community"
-    if c.NArg() > 0 {
-      name = c.Args().Get(0)
-    }
-    if c.String("lang") == "ES" {	//ISO 639-1
-      fmt.Println("Hola", name)
-    } else {
-      fmt.Println("Hello", name)
-    }*/
+	  if c.NArg() > 0 {
+	    name = c.Args().Get(0)
+	  }
+	  if c.String("lang") == "ES" {	//ISO 639-1
+	    fmt.Println("Hola", name)
+	  } else {
+	    fmt.Println("Hello", name)
+	  }*/
 }
+
+// =================================================
+// Blockfreight™ | The blockchain of global freight.
+// =================================================
+
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+// BBBBBBB                    BBBBBBBBBBBBBBBBBBB
+// BBBBBBB                       BBBBBBBBBBBBBBBB
+// BBBBBBB                        BBBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBB        BBBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBB        BBBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBB         BBBBBBBBBBBBBBBB
+// BBBBBBB                     BBBBBBBBBBBBBBBBBB
+// BBBBBBB                        BBBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBBB        BBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBBBB       BBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBBB        BBBBBBBBBBBBBB
+// BBBBBBB       BBBBBBBBB        BBB       BBBBB
+// BBBBBBB                       BBBB       BBBBB
+// BBBBBBB                    BBBBBBB       BBBBB
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+// BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+
+// ==================================================
+// Blockfreight™ | The blockchain for global freight.
+// ==================================================

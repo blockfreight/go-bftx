@@ -22,10 +22,6 @@ Validate you have [Go installed](https://golang.org/doc/install) and have define
 
 For full instructions see [golang.org site](http://golang.org/doc/install.html).
 
-// ****************************************
-! // I'm not happy with dependency below
-// ****************************************
-
 ### ABCI Tendermint
 Now, it is necessary to install [Tendermint/abci](https://tendermint.com/intro/getting-started/first-abci) (It lets to send ABCI messages to our application), through:
 ```
@@ -86,9 +82,5 @@ After that step, you can execute `bft-cli`. If you need some extra information, 
 ```
 $ bft-cli help
 ```
-
-// ****************************************************************************************
-! // I'm not happy with process above - we need to package this into a single line install.
-// ****************************************************************************************
 
 If you have any issue about installation, pleas let us know about it sending an email to [support@blockfreight.com](mailto:support@blockfreight.com)
