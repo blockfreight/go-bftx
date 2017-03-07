@@ -42,6 +42,7 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+//Package common provides some useful functions to work with the Blockfreight project.
 package common
 
 import (
@@ -50,6 +51,7 @@ import (
 	"os"
 )
 
+//ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
 func ReadJSON(path string) []byte {
 	fmt.Println("\nReading " + path + "\n")
 	file, e := ioutil.ReadFile(path)

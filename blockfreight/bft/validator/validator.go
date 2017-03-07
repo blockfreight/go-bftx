@@ -42,6 +42,7 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+//Package validator is a package that has a responsability of assure the input JSON is correct.
 package validator
 
 import (
@@ -53,6 +54,7 @@ import (
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"
 )
 
+//ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
 func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
 	//printJson := true
 	//examplePath := "./files/bf_tx_example.json"
@@ -79,6 +81,7 @@ func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
 	}
 }
 
+//RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
 func RecordOnDB( /*id string, */ json string) bool { //TODO: Check the id
 	db_path := "bft-db"
 	db, err := leveldb.OpenDB(db_path)
@@ -102,6 +105,7 @@ func RecordOnDB( /*id string, */ json string) bool { //TODO: Check the id
 	return true
 }
 
+//ValidateFields is a function that receives the BF_TX, validates every field in the BF_TX and return true or false, and a message if some field is wrong.
 func ValidateFields(bf_tx bf_tx.BF_TX) (bool, string) {
 	if reflect.TypeOf(bf_tx.Type) != reflect.TypeOf("s") {
 		return false, "bf_tx.Type is not a string."

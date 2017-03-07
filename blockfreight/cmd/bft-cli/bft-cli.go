@@ -327,7 +327,7 @@ func cmdDeliverTx(c *cli.Context) error {
 
 	//Sign BF_TX
 	bft_tx := bf_tx.SetBF_TX(args[0])
-	bft_tx = ecdsa.Sign_BF_TX(bft_tx)
+	bft_tx = crypto.Sign_BF_TX(bft_tx)
 	//fmt.Println(bf_tx.Signhash)
 	content := bf_tx.BF_TXContent(bft_tx)
 

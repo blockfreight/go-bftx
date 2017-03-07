@@ -42,6 +42,8 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+//Package leveldb provides some useful functions to work with any topic associated with LevelDB.
+//It has common database functions as OpenDB, CloseDB, Insert and Iterate.
 package leveldb
 
 import (
@@ -51,6 +53,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb"
 )
 
+//HandleError is a function that receives an error and a name of the procedure where that error ocurred, and print a clear error message.
 func HandleError(err error, place string) {
 	if err != nil {
 		//log.Fatal(place)
@@ -59,6 +62,7 @@ func HandleError(err error, place string) {
 	}
 }
 
+//OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that ocurred.
 func OpenDB(db_path string) (db *leveldb.DB, err error) {
 	fmt.Println("Creating / Opening leveldb db...")
 	db, err = leveldb.OpenFile(db_path, nil)
@@ -66,16 +70,19 @@ func OpenDB(db_path string) (db *leveldb.DB, err error) {
 
 }
 
+//CloseDB is a function that receives a DB pointer that closes the connection to DB.
 func CloseDB(db *leveldb.DB) {
 	db.Close() //Use defer
 }
 
+//InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool. 
 func InsertBF_TX(key string, value string, db *leveldb.DB) error {
 	//return err
 	//fmt.Println("key", key)
 	return db.Put([]byte(key), []byte(value), nil)
 }
 
+//Iterate is a function that receives a DB pointer and check all single tuples in that DB. It returns, the total of tuples were found and an error if that happened.
 func Iterate(db *leveldb.DB) (n int, err error) {
 	iter := db.NewIterator(nil, nil)
 	n = 0

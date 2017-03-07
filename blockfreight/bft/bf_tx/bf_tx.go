@@ -42,27 +42,30 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+//Package bf_tx is a package that defines the Blockfreight™ Transaction (BF_TX) transaction standard 
+//and provides some useful functions to work with the BF_TX.
 package bf_tx
 
 import (
 
 	// ** COMMENTED OUT - [Tue May 7] - By J.Smith
 	// NOTE: Shouldn't this be impoted with the ..blockfreight/crypto/ - PACKAGE ??
-	// "crypto/ecdsa"
-
+	// JCNM: ecdsa library is needed here because bf_tx structure has an attribute called PrivateKey, which is ecdsa.PribateKey type
+	"crypto/ecdsa"
+	//"github.com/blockfreight/blockfreight-alpha/blockfreight/crypto/"
 	"encoding/json"
 
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"
 )
 
-// Define Blockfreight™ Transaction (BF_TX) transaction standard
-
+// SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes. 
 func SetBF_TX(jsonpath string) BF_TX {
 	var bf_tx BF_TX
 	json.Unmarshal(common.ReadJSON(jsonpath), &bf_tx)
 	return bf_tx
 }
 
+// BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
 func BF_TXContent(bf_tx BF_TX) string {
 	jsonContent, _ := json.Marshal(bf_tx)
 	return string(jsonContent)
