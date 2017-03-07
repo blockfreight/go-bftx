@@ -60,6 +60,8 @@ import (
 	"github.com/davecgh/go-spew/spew"
 )
 
+//  @todo: OP_2 <pubkey1> <pubkey2> <pubkey3> <pubkey4> <pubkey5> OP_3 OP_CHECKMULTISIGVERIFY <pubkey3> OP_CHECKSIG
+
 func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
 
 	content := bf_tx.BF_TXContent(bft_tx)

@@ -1,1 +1,0 @@
-// OP_2 <pubkey1> <pubkey2> <pubkey3> <pubkey4> <pubkey5> OP_3 OP_CHECKMULTISIGVERIFY <pubkey3> OP_CHECKSIG
