@@ -50,6 +50,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"strings"
 
@@ -58,32 +59,25 @@ import (
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/crypto"
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
-	. "github.com/tendermint/go-common"
+	//"github.com/tendermint/abci/version"	//TODO JCNM
 	"github.com/urfave/cli"
 )
 
-//structure for data passed to print response
-// variables must be exposed for JSON to read
+// Structure for data passed to print response.
 type response struct {
-	Res       types.Result
-	Data      string
-	PrintCode bool
-	Code      string
+	// generic abci response
+	Data []byte
+	Code types.CodeType
+	Log  string
+
+	Query *queryResponse
 }
 
-func newResponse(res types.Result, data string, printCode bool) *response {
-	rsp := &response{
-		Res:       res,
-		Data:      data,
-		PrintCode: printCode,
-		Code:      "",
-	}
-
-	if printCode {
-		rsp.Code = res.Code.String()
-	}
-
-	return rsp
+type queryResponse struct {
+	Key    []byte
+	Value  []byte
+	Height uint64
+	Proof  []byte
 }
 
 // client is a global variable so it can be reused by the console
@@ -97,7 +91,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "bft-cli"
 	app.Usage = "bft-cli [command] [args...]"
-	app.Version = "0.0.1"
+	app.Version = "0.0.1"	//version.Version 	//TODO JCNM: Check the way for doing in version library mode.
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
@@ -199,7 +193,7 @@ func main() {
 	app.Before = before
 	err := app.Run(os.Args)
 	if err != nil {
-		Exit(err.Error())
+		log.Fatal(err.Error())
 	}
 
 }
@@ -210,7 +204,7 @@ func before(c *cli.Context) error {
 		var err error
 		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("bft"), false)
 		if err != nil {
-			Exit(err.Error())
+			log.Fatal(err.Error())
 		}
 	}
 	return nil
@@ -285,9 +279,10 @@ func cmdEcho(c *cli.Context) error {
 	if len(args) != 1 {
 		return errors.New("Command echo takes 1 argument")
 	}
-	res := client.EchoSync(args[0])
-	rsp := newResponse(res, string(res.Data), false)
-	printResponse(c, rsp)
+	resEcho := client.EchoSync(args[0])
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})
 	return nil
 }
 
@@ -297,8 +292,9 @@ func cmdInfo(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	rsp := newResponse(types.Result{}, string(resInfo.Data), false)
-	printResponse(c, rsp)
+	printResponse(c, response{
+		Data: []byte(resInfo.Data),
+	})
 	return nil
 }
 
@@ -308,9 +304,10 @@ func cmdSetOption(c *cli.Context) error {
 	if len(args) != 2 {
 		return errors.New("Command set_option takes 2 arguments (key, value)")
 	}
-	res := client.SetOptionSync(args[0], args[1])
-	rsp := newResponse(res, Fmt("%s=%s", args[0], args[1]), false)
-	printResponse(c, rsp)
+	resSetOption := client.SetOptionSync(args[0], args[1])
+	printResponse(c, response{
+		Log: resSetOption.Log,
+	})
 	return nil
 }
 
@@ -323,7 +320,7 @@ func cmdDeliverTx(c *cli.Context) error {
 	/*txBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
 		return err
-	}*/
+	}*/	//JCNM
 
 	//Sign BF_TX
 	bft_tx := bf_tx.SetBF_TX(args[0])
@@ -333,16 +330,20 @@ func cmdDeliverTx(c *cli.Context) error {
 
 	//Save on DB
 	//fmt.Println(bf_tx.Signature)
-	if validator.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO: Check the id
+	if validator.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO JCNM: Check the id
 		fmt.Println("Stored on DB!")
 	}
 
-	//TODO: Validate if that JSON was already stored
+	//TODO JCNM: Validate if that JSON was already stored
 	txBytes := []byte(content)
-	//txBytes := []byte(bf_tx.Signature+"="+content)	//TODO: Check the id
+	//txBytes := []byte(bf_tx.Signature+"="+content)	//TODO JCNM: Check the id
+
 	res := client.DeliverTxSync(txBytes)
-	rsp := newResponse(res, string(res.Data), true)
-	printResponse(c, rsp)
+	printResponse(c, response{
+		Code: res.Code,
+		Data: res.Data,
+		Log:  res.Log,
+	})
 	return nil
 }
 
@@ -357,20 +358,27 @@ func cmdCheckTx(c *cli.Context) error {
 		return err
 	}
 	res := client.CheckTxSync(txBytes)
-	rsp := newResponse(res, string(res.Data), true)
-	printResponse(c, rsp)
+	printResponse(c, response{
+		Code: res.Code,
+		Data: res.Data,
+		Log:  res.Log,
+	})
 	return nil
 }
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
 	res := client.CommitSync()
-	rsp := newResponse(res, Fmt("0x%X", res.Data), false)
-	printResponse(c, rsp)
+	printResponse(c, response{
+		Code: res.Code,
+		Data: res.Data,
+		Log:  res.Log,
+	})
 	return nil
 }
 
 // Query application state
+// TODO: Make request and response support all fields.
 func cmdQuery(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
@@ -379,35 +387,53 @@ func cmdQuery(c *cli.Context) error {
 	/*queryBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
 		return err
-	}*/
-	//queryBytes := common.ReadJSON(args[0])
+	}*/	//JCNM
 
-	//TODO: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
+	//TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
 	bft_tx := bf_tx.SetBF_TX(args[0])
 	queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
 	//queryBytes := []byte(args[0])
-	res := client.QuerySync(queryBytes)
-	rsp := newResponse(res, string(res.Data), true)
-	printResponse(c, rsp)
+
+	resQuery, err := client.QuerySync(types.RequestQuery{
+		Data:   queryBytes,
+		Path:   "/store", // TOOD expose
+		Height: 0,        // TODO expose
+		//Prove:  true,     // TODO expose
+	})
+	if err != nil {
+		return err
+	}
+	printResponse(c, response{
+		Code: resQuery.Code,
+		Log:  resQuery.Log,
+		Query: &queryResponse{
+			Key:    resQuery.Key,
+			Value:  resQuery.Value,
+			Height: resQuery.Height,
+			Proof:  resQuery.Proof,
+		},
+	})
 	return nil
 }
 
-//Verify the structure of the bill of lading
+//Verify the structure of the bill of lading 	JCNM
 func cmdValidateBf_Tx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) > 1 {
 		return errors.New("Command validate_bf_tx takes 1 argument")
 	}
 	bf_tx := bf_tx.SetBF_TX(args[0])
-	res := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
-	rsp := newResponse(res, string(res.Data), false)
-	printResponse(c, rsp)
+	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})
+
 	return nil
 }
 
 //--------------------------------------------------------------------------------
 
-func printResponse(c *cli.Context, rsp *response) {
+func printResponse(c *cli.Context, rsp response) {
 
 	verbose := c.GlobalBool("verbose")
 
@@ -415,19 +441,30 @@ func printResponse(c *cli.Context, rsp *response) {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
 
-	if rsp.PrintCode {
-		fmt.Printf("-> code: %s\n", rsp.Code)
+	if !rsp.Code.IsOK() {
+		fmt.Printf("-> code: %s\n", rsp.Code.String())
 	}
-
-	//if pr.res.Error != "" {
-	//	fmt.Printf("-> error: %s\n", pr.res.Error)
-	//}
-
-	if rsp.Data != "" {
+	if len(rsp.Data) != 0 {
 		fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
+		fmt.Printf("-> data.hex: %X\n", rsp.Data)
 	}
-	if rsp.Res.Log != "" {
-		fmt.Printf("-> log: %s\n", rsp.Res.Log)
+	if rsp.Log != "" {
+		fmt.Printf("-> log: %s\n", rsp.Log)
+	}
+
+	if rsp.Query != nil {
+		fmt.Printf("-> height: %d\n", rsp.Query.Height)
+		if rsp.Query.Key != nil {
+			fmt.Printf("-> key: %s\n", rsp.Query.Key)
+			fmt.Printf("-> key.hex: %X\n", rsp.Query.Key)
+		}
+		if rsp.Query.Value != nil {
+			fmt.Printf("-> value: %s\n", rsp.Query.Value)
+			fmt.Printf("-> value.hex: %X\n", rsp.Query.Value)
+		}
+		if rsp.Query.Proof != nil {
+			fmt.Printf("-> proof: %X\n", rsp.Query.Proof)
+		}
 	}
 
 	if verbose {
@@ -451,6 +488,7 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 		err := fmt.Errorf("Invalid string arg: \"%s\". Must be quoted or a \"0x\"-prefixed hex string", s)
 		return nil, err
 	}
+
 	return []byte(s[1 : len(s)-1]), nil
 }
 

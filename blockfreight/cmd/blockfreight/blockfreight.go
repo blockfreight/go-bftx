@@ -46,12 +46,13 @@ package main
 
 import (
 	"flag"
+	"log"
 	"fmt"
 
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft"
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
-	. "github.com/tendermint/go-common"
+	cmn "github.com/tendermint/go-common"
 )
 
 func main() {
@@ -71,12 +72,12 @@ func main() {
 	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
 	fmt.Println(srv)
 	if err != nil {
-		Exit(err.Error())
+		log.Fatal(err.Error())
 	}
 	fmt.Println("Service created by " + *abciPtr + " server")
 
 	// Wait forever
-	TrapSignal(func() {
+	cmn.TrapSignal(func() {
 		// Cleanup
 		fmt.Println("Stopping service")
 		srv.Stop()
