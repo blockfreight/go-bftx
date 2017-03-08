@@ -11,7 +11,7 @@ go-blockfreight is a powerful, reliable, efficient and handy Go app for communic
 ## Dependency: 
 
 ### Golang runtime and build environment
-Go version 1.7.1+ or above. 
+Go version 1.8+ or above. 
 
 Quick command line test:
 
