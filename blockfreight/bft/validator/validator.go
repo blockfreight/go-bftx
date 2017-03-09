@@ -46,18 +46,13 @@
 package validator
 
 import (
-	"fmt"
 	"reflect"
-	"strconv"
-
+	
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"
 )
 
 //ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
 func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
-	//printJson := true
-	//examplePath := "./files/bf_tx_example.json"
 	espErr := ""
 
 	valid, err := ValidateFields(bf_tx)
@@ -79,30 +74,6 @@ func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
 
     support: support@blockfreight.com` + espErr
 	}
-}
-
-//RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
-func RecordOnDB( /*id string, */ json string) bool { //TODO: Check the id
-	db_path := "bft-db"
-	db, err := leveldb.OpenDB(db_path)
-	defer leveldb.CloseDB(db)
-
-	//Get the number of bf_tx on DB
-	var n int
-	n, err = leveldb.Iterate(db)
-
-	leveldb.HandleError(err, "Create or Open Database")
-	//fmt.Println("Database created / open on "+db_path)
-
-	err = leveldb.InsertBF_TX(strconv.Itoa(n+1), json, db)
-	//err = leveldb.InsertBF_TX(id, json, db)    //TODO: Check the id
-
-	//Iteration
-	n, err = leveldb.Iterate(db)
-	leveldb.HandleError(err, "Iteration")
-	fmt.Println("Total: " + strconv.Itoa(n))
-
-	return true
 }
 
 //ValidateFields is a function that receives the BF_TX, validates every field in the BF_TX and return true or false, and a message if some field is wrong.

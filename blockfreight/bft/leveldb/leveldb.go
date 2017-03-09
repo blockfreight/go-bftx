@@ -48,10 +48,15 @@ package leveldb
 
 import (
 	"fmt"
-	//"log"
+	"encoding/json"
+	"strconv"
 
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/syndtr/goleveldb/leveldb"
 )
+
+var db_path string = "bft-db"
 
 //HandleError is a function that receives an error and a name of the procedure where that error ocurred, and print a clear error message.
 func HandleError(err error, place string) {
@@ -94,6 +99,43 @@ func Iterate(db *leveldb.DB) (n int, err error) {
 	}
 	iter.Release()
 	return n, iter.Error()
+}
+
+//RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
+func RecordOnDB( /*id string, */ json string) bool { //TODO: Check the id
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+
+	//Get the number of bf_tx on DB
+	var n int
+	n, err = Iterate(db)
+
+	HandleError(err, "Create or Open Database")
+	//fmt.Println("Database created / open on "+db_path)
+
+	err = InsertBF_TX(strconv.Itoa(n+1), json, db)
+	//err = InsertBF_TX(id, json, db)    //TODO: Check the id
+
+	//Iteration
+	n, err = Iterate(db)
+	HandleError(err, "Iteration")
+	fmt.Println("Total: " + strconv.Itoa(n))
+
+	return true
+}
+
+//GetBfTx is a function that receives a bf_tx id, searches that bf_tx and returns its content.
+func GetBfTx(id string) string{
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+
+	data, err := db.Get([]byte(id), nil)
+	HandleError(err, "GetBfTx")
+	var bf_tx bf_tx.BF_TX
+	json.Unmarshal(data, &bf_tx)
+	spew.Dump(bf_tx)
+	
+	return "Ok!"
 }
 
 // =================================================
