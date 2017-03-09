@@ -27,6 +27,12 @@ Now, it is necessary to install [Tendermint/abci](https://tendermint.com/intro/g
 ```
 $ go get -u github.com/tendermint/abci/cmd/...
 ```
+### Tendermint
+[Tendermint](https://tendermint.com/docs/guides/install-from-source) is as well important to install. It is needed the version 0.9.0+ or above. You can install it through:
+```
+$ go get -u github.com/tendermint/tendermint/cmd/tendermint
+$ tendermint init
+```
 
 ### go-spew
 [Go-spew](https://github.com/davecgh/go-spew) is very useful to print the JSON structure clearly, through:
