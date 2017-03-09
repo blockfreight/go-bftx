@@ -55,11 +55,11 @@ import (
 	"strings"
 
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator"
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/crypto"
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
-	//"github.com/tendermint/abci/version"	//TODO JCNM
 	"github.com/urfave/cli"
 )
 
@@ -155,17 +155,17 @@ func main() {
 			},
 		},
 		{
-			Name:  "publish_bf_tx", //"deliver_tx",
+			Name:  "publish_bf_tx",
 			Usage: "Deliver a new bf_tx to application",
 			Action: func(c *cli.Context) error {
-				return cmdDeliverTx(c)
+				return cmdDeliverBfTx(c)
 			},
 		},
 		{
 			Name:  "check_bf_tx",
 			Usage: "Validate a bf_tx",
 			Action: func(c *cli.Context) error {
-				return cmdCheckTx(c)
+				return cmdCheckBfTx(c)
 			},
 		},
 		{
@@ -187,6 +187,13 @@ func main() {
 			Usage: "Verify the structure of the bill of lading",
 			Action: func(c *cli.Context) error {
 				return cmdValidateBf_Tx(c)
+			},
+		},
+		{
+			Name:  "get_bf_tx",
+			Usage: "Retrieve a bf_tx by its id",
+			Action: func(c *cli.Context) error {
+				return cmdReturnBf_Tx(c)
 			},
 		},
 	}
@@ -311,11 +318,11 @@ func cmdSetOption(c *cli.Context) error {
 	return nil
 }
 
-// Append a new tx to application
-func cmdDeliverTx(c *cli.Context) error {
+// Append a new bf_tx to application
+func cmdDeliverBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command deliver_tx takes 1 argument")
+		return errors.New("Command deliver_bf_tx takes 1 argument")
 	}
 	/*txBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
@@ -330,7 +337,7 @@ func cmdDeliverTx(c *cli.Context) error {
 
 	//Save on DB
 	//fmt.Println(bf_tx.Signature)
-	if validator.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO JCNM: Check the id
+	if leveldb.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO JCNM: Check the id
 		fmt.Println("Stored on DB!")
 	}
 
@@ -347,11 +354,11 @@ func cmdDeliverTx(c *cli.Context) error {
 	return nil
 }
 
-// Validate a tx
-func cmdCheckTx(c *cli.Context) error {
+// Validate a bf_tx
+func cmdCheckBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command check_tx takes 1 argument")
+		return errors.New("Command check_bf_tx takes 1 argument")
 	}
 	txBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
@@ -419,11 +426,25 @@ func cmdQuery(c *cli.Context) error {
 //Verify the structure of the bill of lading 	JCNM
 func cmdValidateBf_Tx(c *cli.Context) error {
 	args := c.Args()
-	if len(args) > 1 {
+	if len(args) != 1 {
 		return errors.New("Command validate_bf_tx takes 1 argument")
 	}
 	bf_tx := bf_tx.SetBF_TX(args[0])
 	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})
+
+	return nil
+}
+
+//Show the output JSON
+func cmdReturnBf_Tx(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command get_bf_tx takes 1 argument")
+	}
+	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
 	printResponse(c, response{
 		Data: resEcho.Data,
 	})
