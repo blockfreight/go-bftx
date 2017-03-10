@@ -42,7 +42,7 @@ $ go get -u github.com/davecgh/go-spew/spew
 ```
 
 ## GitHub Cloning
-To install **blockfreight-alpha**, there are two ways to install Blockfreight Go App.
+To install **blockfreight-alpha**, there are two ways to install Blockfreight™ Node.
 
 ### Git Clone
 
