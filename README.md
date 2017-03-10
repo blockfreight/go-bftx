@@ -1,7 +1,7 @@
-<a href="https://blockfreight.com"><img src="https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png" align="left" width="400" ></a>
+<a href="https://blockfreight.com"><img src="https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png" align="left" width="400" ></a><br>
 # **Blockfreight™ the blockchain of global freight**
 
-Package: go-blockfreight - Blockfreight™ v0.0.1
+Package: go-blockfreight - Blockfreight™ v0.1.0
 
 ***Description:*** go-blockfreight is the reference Blockfreight™ full node implementation and cli-tool for the Blockfreight™ blockchain of global freight.
 
