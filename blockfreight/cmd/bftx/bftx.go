@@ -224,7 +224,7 @@ func before(c *cli.Context) error {
 	introduction(c)
 	if client == nil {
 		var err error
-		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("bft"), false)
+		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), false)
 		if err != nil {
 			log.Fatal(err.Error())
 		}
