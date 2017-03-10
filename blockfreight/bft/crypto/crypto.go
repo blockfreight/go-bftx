@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/common/common.go
+// File: ./blockfreight/bft/crypto/crypto.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -42,27 +42,81 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
-// Package common provides some useful functions to work with the Blockfreight project.
-package common
+// Package crypto provides useful functions to sign BF_TX.
+package crypto
 
 import (
     // =======================
     // Golang Standard library
     // =======================
-    "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
-    "io/ioutil" // Implements some I/O utility functions.
-    "os"        // Provides a platform-independent interface to operating system functionality.
+    "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+    "crypto/elliptic"   // Implements several standard elliptic curves over prime fields.
+    "crypto/md5"        // Implements the MD5 hash algorithm as defined in RFC 1321.
+    "crypto/rand"       // Implements a cryptographically secure pseudorandom number generator.
+    "fmt"               // Implements formatted I/O with functions analogous to C's printf and scanf.
+    "hash"              // Provides interfaces for hash functions.
+    "io"                // Provides basic interfaces to I/O primitives.
+    "math/big"          // Implements arbitrary-precision arithmetic (big numbers).
+    "os"                // Provides a platform-independent interface to operating system functionality.
+    "strconv"           // Implements conversions to and from string representations of basic data types.
+
+    // ======================
+    // Blockfreight™ packages
+    // ======================
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-// ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
-func ReadJSON(path string) []byte {
-    fmt.Println("\nReading " + path + "\n")
-    file, e := ioutil.ReadFile(path)
-    if e != nil {
-        fmt.Printf("File error: %v\n", e)
+//  @todo: OP_2 <pubkey1> <pubkey2> <pubkey3> <pubkey4> <pubkey5> OP_3 OP_CHECKMULTISIGVERIFY <pubkey3> OP_CHECKSIG
+
+// Function Sign_BF_TX has the whole process of signing each BF_TX.
+func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
+
+    content := bf_tx.BF_TXContent(bft_tx)
+
+    pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+
+    privatekey := new(ecdsa.PrivateKey)
+    privatekey, err := ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
+
+    if err != nil {
+        fmt.Println(err)
         os.Exit(1)
     }
-    return file
+    pubkey := privatekey.PublicKey
+
+    // Sign ecdsa style
+    var h hash.Hash
+    h = md5.New()
+    r := big.NewInt(0)
+    s := big.NewInt(0)
+
+    io.WriteString(h, content)
+    signhash := h.Sum(nil)
+
+    r, s, serr := ecdsa.Sign(rand.Reader, privatekey, signhash)
+    if serr != nil {
+        fmt.Println(err)
+        os.Exit(1)
+    }
+
+    signature := r.Bytes()
+    signature = append(signature, s.Bytes()...)
+    
+    sign := ""
+    for i, _ := range signature {
+        sign += strconv.Itoa(int(signature[i]))
+    }
+    
+    // Verification
+    verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
+    
+    //Set Private Key and Sign to BF_TX
+    bft_tx.PrivateKey = *privatekey
+    bft_tx.Signhash = signhash
+    bft_tx.Signature = sign
+    bft_tx.Signed = verifystatus
+    
+    return bft_tx
 }
 
 // =================================================

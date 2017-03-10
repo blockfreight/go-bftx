@@ -1,4 +1,4 @@
-// File: ./blockfreight/bf_tx/bf_tx.go
+// File: ./blockfreight/bft/bf_tx/bf_tx.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -42,189 +42,198 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
-//Package bf_tx is a package that defines the Blockfreight™ Transaction (BF_TX) transaction standard 
-//and provides some useful functions to work with the BF_TX.
+// Package bf_tx is a package that defines the Blockfreight™ Transaction (BF_TX) transaction standard 
+// and provides some useful functions to work with the BF_TX.
 package bf_tx
 
 import (
+    // =======================
+    // Golang Standard library
+    // =======================
+    "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+    "encoding/json"     // Implements encoding and decoding of JSON as defined in RFC 4627.
 
-	// ** COMMENTED OUT - [Tue May 7] - By J.Smith
-	// NOTE: Shouldn't this be impoted with the ..blockfreight/crypto/ - PACKAGE ??
-	// JCNM: ecdsa library is needed here because bf_tx structure has an attribute called PrivateKey, which is ecdsa.PribateKey type
-	"crypto/ecdsa"
-	//"github.com/blockfreight/blockfreight-alpha/blockfreight/crypto/"
-	"encoding/json"
-
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"
+    // ======================
+    // Blockfreight™ packages
+    // ======================
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"    // Implements common functions for Blockfreight™
 )
 
 // SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes. 
 func SetBF_TX(jsonpath string) BF_TX {
-	var bf_tx BF_TX
-	json.Unmarshal(common.ReadJSON(jsonpath), &bf_tx)
-	return bf_tx
+    var bf_tx BF_TX
+    json.Unmarshal(common.ReadJSON(jsonpath), &bf_tx)
+    return bf_tx
 }
 
 // BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
 func BF_TXContent(bf_tx BF_TX) string {
-	jsonContent, _ := json.Marshal(bf_tx)
-	return string(jsonContent)
+    jsonContent, _ := json.Marshal(bf_tx)
+    return string(jsonContent)
 }
 
+// BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
 type BF_TX struct {
-	Type       string
-	Properties Properties
-	PrivateKey ecdsa.PrivateKey
-	Signhash   []uint8
-	Signature  string
-	Signed     bool
+    // =========================
+    // Bill of Lading attributes
+    // =========================
+    Type       string
+    Properties Properties
+
+    // ===================================
+    // Blockfreight Transaction attributes
+    // ===================================
+    PrivateKey ecdsa.PrivateKey
+    Signhash   []uint8
+    Signature  string
+    Signed     bool
 }
 
 type Properties struct {
-	Shipper              Shipper
-	Bol_Num              BolNum
-	Ref_Num              RefNum
-	Consignee            Consignee
-	Vessel               Vessel
-	Port_of_Loading      PortLoading
-	Port_of_Discharge    PortDischarge
-	Notify_Address       NotifyAddress
-	Desc_of_Goods        DescGoods
-	Gross_Weight         GrossWeight
-	Freight_Payable_Amt  FreightPayableAmt
-	Freight_Adv_Amt      FreightAdvAmt
-	General_Instructions GeneralInstructions
-	Date_Shipped         Date
-	Issue_Details        IssueDetails
-	Num_Bol              NumBol // Is it the same Bol_Num?
-	Master_Info          MasterInfo
-	Agent_for_Master     AgentMaster
-	Agent_for_Owner      AgentOwner
+    Shipper              Shipper
+    Bol_Num              BolNum
+    Ref_Num              RefNum
+    Consignee            Consignee
+    Vessel               Vessel
+    Port_of_Loading      PortLoading
+    Port_of_Discharge    PortDischarge
+    Notify_Address       NotifyAddress
+    Desc_of_Goods        DescGoods
+    Gross_Weight         GrossWeight
+    Freight_Payable_Amt  FreightPayableAmt
+    Freight_Adv_Amt      FreightAdvAmt
+    General_Instructions GeneralInstructions
+    Date_Shipped         Date
+    Issue_Details        IssueDetails
+    Num_Bol              NumBol
+    Master_Info          MasterInfo
+    Agent_for_Master     AgentMaster
+    Agent_for_Owner      AgentOwner
 }
 
 type Shipper struct {
-	Type string
+    Type string
 }
 
 type BolNum struct {
-	Type int
+    Type int
 }
 
 type RefNum struct {
-	Type int
+    Type int
 }
 
 type Consignee struct {
-	Type string //Null
+    Type string //Null
 }
 
 type Vessel struct {
-	Type int
+    Type int
 }
 
 type PortLoading struct {
-	Type int
+    Type int
 }
 
 type PortDischarge struct {
-	Type int
+    Type int
 }
 
 type NotifyAddress struct {
-	Type string
+    Type string
 }
 
 type DescGoods struct {
-	Type string
+    Type string
 }
 
 type GrossWeight struct {
-	Type int //Should it be float?
+    Type int
 }
 
 type FreightPayableAmt struct {
-	Type int
+    Type int
 }
 
 type FreightAdvAmt struct {
-	Type int
+    Type int
 }
 
 type GeneralInstructions struct {
-	Type string
+    Type string
 }
 
 type Date struct {
-	Type   int
-	Format string
+    Type   int
+    Format string
 }
 
 type IssueDetails struct {
-	Type       string
-	Properties IssueDetailsProperties
+    Type       string
+    Properties IssueDetailsProperties
 }
 
 type IssueDetailsProperties struct {
-	Place_of_Issue PlaceIssue
-	Date_of_Issue  Date
+    Place_of_Issue PlaceIssue
+    Date_of_Issue  Date
 }
 
 type PlaceIssue struct {
-	Type string
+    Type string
 }
 
 type NumBol struct {
-	Type int
+    Type int
 }
 
 type MasterInfo struct {
-	Type       string
-	Properties MasterInfoProperties
+    Type       string
+    Properties MasterInfoProperties
 }
 
 type MasterInfoProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+    First_Name FirstName
+    Last_Name  LastName
+    Sig        Sig
 }
 
 type AgentMaster struct {
-	Type       string
-	Properties AgentMasterProperties
+    Type       string
+    Properties AgentMasterProperties
 }
 
 type AgentMasterProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+    First_Name FirstName
+    Last_Name  LastName
+    Sig        Sig
 }
 
 type AgentOwner struct {
-	Type       string
-	Properties AgentOwnerProperties
+    Type       string
+    Properties AgentOwnerProperties
 }
 
 type AgentOwnerProperties struct {
-	First_Name              FirstName
-	Last_Name               LastName
-	Sig                     Sig
-	Conditions_for_Carriage ConditionsCarriage
+    First_Name              FirstName
+    Last_Name               LastName
+    Sig                     Sig
+    Conditions_for_Carriage ConditionsCarriage
 }
 
 type FirstName struct {
-	Type string
+    Type string
 }
 
 type LastName struct {
-	Type string
+    Type string
 }
 
 type Sig struct {
-	Type string
+    Type string
 }
 
 type ConditionsCarriage struct {
-	Type string
+    Type string
 }
 
 // =================================================

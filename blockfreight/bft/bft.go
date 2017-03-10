@@ -42,75 +42,82 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+// Package bft implements the main functions to work with the Blockfreight™ Network.
 package bft
 
 import (
-	"strings"
+    // =======================
+    // Golang Standard library
+    // =======================
+    "strings"   // Implements simple functions to manipulate UTF-8 encoded strings.
 
-	"github.com/tendermint/abci/types"
-	cmn "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
+    // ===============
+    // Tendermint Core
+    // ===============
+    "github.com/tendermint/abci/types"
+    tendermint "github.com/tendermint/go-common"
+    "github.com/tendermint/go-merkle"
 )
 
 type BftApplication struct {
-	types.BaseApplication
+    types.BaseApplication
 
-	state merkle.Tree
+    state merkle.Tree
 }
 
 func NewBftApplication() *BftApplication {
-	state := merkle.NewIAVLTree(0, nil)
-	return &BftApplication{state: state}
+    state := merkle.NewIAVLTree(0, nil)
+    return &BftApplication{state: state}
 }
 
 func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-	return types.ResponseInfo{Data: cmn.Fmt("{\"size\":%v}", app.state.Size())}
+    return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size())}
 }
 
 // tx is either "key=value" or just arbitrary bytes
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	parts := strings.Split(string(tx), "=")
-	if len(parts) == 2 {
-		app.state.Set([]byte(parts[0]), []byte(parts[1]))
-	} else {
-		app.state.Set(tx, tx)
-	}
-	return types.OK
+    parts := strings.Split(string(tx), "=")
+    if len(parts) == 2 {
+        app.state.Set([]byte(parts[0]), []byte(parts[1]))
+    } else {
+        app.state.Set(tx, tx)
+    }
+    return types.OK
 }
 
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return types.OK
+    return types.OK
 }
 
 func (app *BftApplication) Commit() types.Result {
-	hash := app.state.Hash()
-	return types.NewResultOK(hash, "")
+    hash := app.state.Hash()
+    return types.NewResultOK(hash, "")
 }
 
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
-	if reqQuery.Prove {
-		value, proof, exists := app.state.Proof(reqQuery.Data)
-		resQuery.Index = -1 // TODO make Proof return index
-		resQuery.Key = reqQuery.Data
-		resQuery.Value = value
-		resQuery.Proof = proof
-		if exists {
-			resQuery.Log = "exists"
-		} else {
-			resQuery.Log = "does not exist"
-		}
-		return
-	} else {
-		index, value, exists := app.state.Get(reqQuery.Data)
-		resQuery.Index = int64(index)
-		resQuery.Value = value
-		if exists {
-			resQuery.Log = "exists"
-		} else {
-			resQuery.Log = "does not exist"
-		}
-		return
-	}
+    if reqQuery.Prove {
+        value, proof, exists := app.state.Proof(reqQuery.Data)
+        resQuery.Index = -1 // TODO make Proof return index
+        resQuery.Key = reqQuery.Data
+        resQuery.Value = value
+        resQuery.Proof = proof
+        if exists {
+            resQuery.Log = "exists"
+        } else {
+            resQuery.Log = "does not exist"
+        }
+        return
+    } else {
+        index, value, exists := app.state.Get(reqQuery.Data)
+        resQuery.Index = int64(index)
+        resQuery.Value = value
+        if exists {
+            resQuery.Log = "exists"
+        } else {
+            resQuery.Log = "does not exist"
+        }
+        return
+    }
 }
 
 // =================================================
