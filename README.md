@@ -1,4 +1,4 @@
-![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png =400x)
+![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png width="400")
 # **Blockfreight™ the blockchain of global freight**
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
