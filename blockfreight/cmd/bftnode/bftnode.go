@@ -1,4 +1,4 @@
-// File: ./blockfreight/blockfreight/blockfreight.go
+// File: ./blockfreight/cmd/bftnode/bftnode.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -42,57 +42,57 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
+// Starts the Blockfreight™ Node to listen to all requests in the Blockfreight Network.
 package main
 
 import (
+    // =======================
+    // Golang Standard library
+    // =======================
+    "flag"  // Implements command-line flag parsing.
+    "fmt"   // Implements formatted I/O with functions analogous to C's printf and scanf. 
+    "log"   // Implements a simple logging package.
 
-	// =======================
-	// Golang Standard library
-	// =======================
-	"flag" // implements command-line flag parsing
-	"fmt"  // implements formatted I/O with functions analogous to C's printf and scanf.
-	"log"  // implements a simple logging
+    // ===============
+    // Tendermint Core
+    // ===============
+    "github.com/tendermint/abci/types"
+    "github.com/tendermint/abci/server"
+    tendermint "github.com/tendermint/go-common"
 
-	// ===============
-	// Tendermint Core
-	// ===============
-	"github.com/tendermint/abci/server"
-	"github.com/tendermint/abci/types"
-	tendermint "github.com/tendermint/go-common"
-
-	// ======================
-	// Blockfreight™ packages
-	// ======================
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft"
+    // ======================
+    // Blockfreight™ packages
+    // ======================
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft"   // Implements the main functions to work with the Blockfreight™ Network.
 )
 
 func main() {
 
-	fmt.Println("Blockfreight Go App")
-	// Parameters
-	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
-	abciPtr := flag.String("bft", "socket", "socket | grpc")
-	// persistencePtr := flag.String("persist", "", "directory to use for a database")
-	flag.Parse()
+    fmt.Println("Blockfreight Go App")
+    // Parameters
+    addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
+    abciPtr := flag.String("bft", "socket", "socket | grpc")
+    // persistencePtr := flag.String("persist", "", "directory to use for a database")
+    flag.Parse()
 
-	// Create the application - in memory or persisted to disk
-	var app types.Application
-	app = bft.NewBftApplication() //if *persistencePtr != "" => NewPersistentBftApplication(*persistencePtr)
+    // Create the application - in memory or persisted to disk
+    var app types.Application
+    app = bft.NewBftApplication() //if *persistencePtr != "" => NewPersistentBftApplication(*persistencePtr)
 
-	// Start the listener
-	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
-	fmt.Println(srv)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	fmt.Println("Service created by " + *abciPtr + " server")
+    // Start the listener
+    srv, err := server.NewServer(*addrPtr, *abciPtr, app)
+    fmt.Println(srv)
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+    fmt.Println("Service created by " + *abciPtr + " server")
 
-	// Wait forever
-	tendermint.TrapSignal(func() {
-		// Cleanup
-		fmt.Println("Stopping service")
-		srv.Stop()
-	})
+    // Wait forever
+    tendermint.TrapSignal(func() {
+        // Cleanup
+        fmt.Println("Stopping service")
+        srv.Stop()
+    })
 
 }
 
