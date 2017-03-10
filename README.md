@@ -7,7 +7,7 @@ Package: go-blockfreight - Blockfreight™ v0.1.0
 
 A network for the free trade of physical goods so powerful it is part of the most advanced project in global shipping today. 
 
-go-blockfreight is a powerful, reliable, efficient and handy Go app for communicating with the Blockrefight™ blockchain.
+go-blockfreight is a powerful, reliable, efficient and handy Go app for communicating with the Blockfreight™ blockchain.
 
 ## Requirements: 
 
