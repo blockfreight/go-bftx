@@ -1,4 +1,4 @@
-![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo.svg)
+![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo.png)
 # **Blockfreight™ the blockchain of global freight**
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
