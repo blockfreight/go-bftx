@@ -45,23 +45,34 @@
 package main
 
 import (
-	"flag"
-	"log"
-	"fmt"
 
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft"
+	// =======================
+	// Golang Standard library
+	// =======================
+	"flag" // implements command-line flag parsing
+	"fmt"  // implements formatted I/O with functions analogous to C's printf and scanf.
+	"log"  // implements a simple logging
+
+	// ===============
+	// Tendermint Core
+	// ===============
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
-	cmn "github.com/tendermint/go-common"
+	tendermint "github.com/tendermint/go-common"
+
+	// ======================
+	// Blockfreight™ packages
+	// ======================
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft"
 )
 
 func main() {
 
 	fmt.Println("Blockfreight Go App")
-	//Parameters
+	// Parameters
 	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
 	abciPtr := flag.String("bft", "socket", "socket | grpc")
-	//persistencePtr := flag.String("persist", "", "directory to use for a database")
+	// persistencePtr := flag.String("persist", "", "directory to use for a database")
 	flag.Parse()
 
 	// Create the application - in memory or persisted to disk
@@ -77,7 +88,7 @@ func main() {
 	fmt.Println("Service created by " + *abciPtr + " server")
 
 	// Wait forever
-	cmn.TrapSignal(func() {
+	tendermint.TrapSignal(func() {
 		// Cleanup
 		fmt.Println("Stopping service")
 		srv.Stop()
