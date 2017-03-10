@@ -1,3 +1,4 @@
+![Blockfreight](http://bitcoinist.com/wp-content/uploads/2016/09/AAEAAQAAAAAAAAl5AAAAJDdlMzBmOTU4LThmYjQtNDkyNC1hZjBhLTBhMGY2YTc1ZThlNw.png)
 # **Blockfreight™ the blockchain of global freight**
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
@@ -65,28 +66,28 @@ Having chose one of the last two options, you should have already cloned your bl
 
 ## Installation
 
-### Blockfreight
-Install blockfreight through
+### BFT-Node
+Install BFT-Node through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/blockfreight
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bftnode
 $ go install
 ```
 
-Then, you can execute `blockfreight`. That app will start a server that is going to wait for requests from the `bft-cli`.
+Then, you can execute `bftnode`. That app will start a server that is going to wait for requests from the `bftx`.
 ```
-$ blockfreight
+$ bftnode
 ```
 
-### BFT-Cli
-Install bft-cli through
+### BFTX
+Install BFTX through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bft-cli
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bftx
 $ go install
 ```
 
-After that step, you can execute `bft-cli`. If you need some extra information, just add `help` after.
+After that step, you can execute `bftx`. If you need some extra information, just add `help` after.
 ```
-$ bft-cli help
+$ bftx help
 ```
 
-If you have any issue about installation, pleas let us know about it sending an email to [support@blockfreight.com](mailto:support@blockfreight.com)
+If you have any issue about installation, please let us know about that sending us an email to [support@blockfreight.com](mailto:support@blockfreight.com)
