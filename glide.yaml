@@ -1,0 +1,16 @@
+package: github.com/blockfreight/blockfreight-alpha
+import:
+- package: github.com/davecgh/go-spew
+  subpackages:
+  - spew
+- package: github.com/syndtr/goleveldb
+  subpackages:
+  - leveldb
+- package: github.com/tendermint/abci
+  subpackages:
+  - client
+  - server
+  - types
+- package: github.com/tendermint/go-common
+- package: github.com/tendermint/go-merkle
+- package: github.com/urfave/cli
