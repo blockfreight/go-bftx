@@ -1,4 +1,4 @@
-![Blockfreight](http://bitcoinist.com/wp-content/uploads/2016/09/AAEAAQAAAAAAAAl5AAAAJDdlMzBmOTU4LThmYjQtNDkyNC1hZjBhLTBhMGY2YTc1ZThlNw.png)
+![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo.svg)
 # **Blockfreight™ the blockchain of global freight**
 
 Package: go-blockfreight - Blockfreight™ v0.0.1
