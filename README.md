@@ -23,6 +23,7 @@ Validate you have [Go installed](https://golang.org/doc/install) and have define
 
 ### Glide
 Glide version 0.12.3+ or above.
+
 To manage all dependencies for **blockfreight-alpha**, it is necessary to have [Glide installed](https://github.com/Masterminds/glide).
 ```
 $ glide -v
@@ -55,7 +56,7 @@ $ bftnode
 ```
 
 ### BFTX
-Install BFTX through
+In other terminal, install BFTX through
 ```
 $ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bftx
 $ go install
