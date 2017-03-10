@@ -22,6 +22,7 @@ $ go version
 Validate you have [Go installed](https://golang.org/doc/install) and have defined [`$GOPATH/bin`](https://github.com/tendermint/tendermint/wiki/Setting-GOPATH) in your `$PATH`. For full instructions see [golang.org site](http://golang.org/doc/install.html).
 
 ### Glide
+Glide version 0.12.3+ or above.
 To manage all dependencies for **blockfreight-alpha**, it is necessary to have [Glide installed](https://github.com/Masterminds/glide).
 ```
 $ glide -v
@@ -36,7 +37,6 @@ $ go get github.com/blockfreight/blockfreight-alpha
 
 Then, you need to update all dependencies by Glide. First go to **blockfreight-alpha** and update them:
 ```
-$ glide ins
 $ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha
 $ glide install
 $ glide update
