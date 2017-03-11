@@ -5,7 +5,7 @@ Package: go-blockfreight - Blockfreight™ v0.1.0
 
 ***Description:*** go-blockfreight is the reference full node implementation and cli-tool for Blockfreight™ the blockchain of global freight.
 
-A network for the free trade of physical goods so powerful it is part of the most advanced project in global shipping today. 
+A network for the free trade of physical goods so transformative it is part of the most advanced project in global shipping today. 
 
 go-blockfreight is a powerful, reliable, efficient and handy Go app for communicating with the Blockfreight™ blockchain.
 
@@ -67,4 +67,4 @@ After that step, you can execute `bftx`. If you need some extra information, jus
 $ bftx help
 ```
 
-If you have any issue about installation, please let us know about that sending us an email to [support@blockfreight.com](mailto:support@blockfreight.com)
+If you’d like to leave feedback, please [open an issue on GitHub](https://github.com/blockfreight/blockfreight/issues).
