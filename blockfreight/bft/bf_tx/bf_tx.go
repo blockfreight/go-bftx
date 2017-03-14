@@ -86,7 +86,7 @@ type BF_TX struct {
     PrivateKey ecdsa.PrivateKey
     Signhash   []uint8
     Signature  string
-    Signed     bool
+    Verified     bool
 }
 
 type Properties struct {
