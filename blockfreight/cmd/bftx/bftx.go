@@ -76,6 +76,7 @@ import (
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/crypto"    // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"   // Provides some useful functions to work with LevelDB.
 	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator" // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/version" 		// Defines the current version of the project.
 )
 
 // Structure for data passed to print response.
@@ -106,7 +107,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "bftx"
 	app.Usage = "bftx [command] [args...]"
-	app.Version = "0.1.0" //version.Version   //TODO JCNM: Check the way for doing in version library mode.
+	app.Version = version.Version
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
@@ -129,7 +130,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-			Value: "./files/bf_tx_example.json",
+			Value: "../.././files/",
 			Usage: "define the source path where the json is",
 		},
 	}
@@ -173,14 +174,14 @@ func main() {
 			Name:  "broadcast",
 			Usage: "Deliver a new BF_TX to application",
 			Action: func(c *cli.Context) error {
-				return cmdDeliverBfTx(c)
+				return cmdBroadcastBfTx(c)
 			},
 		},
 		{
 			Name:  "validate",
 			Usage: "Validate a bf_tx",
 			Action: func(c *cli.Context) error {
-				return cmdCheckBfTx(c)
+				return cmdValidateBfTx(c)	//cmdCheckBfTx
 			},
 		},
 		{
@@ -201,14 +202,21 @@ func main() {
 			Name:  "verify",
 			Usage: "Verify the structure of the Blockfreight™ Transaction [BF_TX]",
 			Action: func(c *cli.Context) error {
-				return cmdValidateBf_Tx(c)
+				return cmdVerifyBfTx(c)
 			},
 		},
 		{
 			Name:  "get",
 			Usage: "Retrieve a [BF_TX] by its ID",
 			Action: func(c *cli.Context) error {
-				return cmdReturnBf_Tx(c)
+				return cmdGetBfTx(c)
+			},
+		},
+		{
+			Name:  "exit",
+			Usage: "Leaves the program.",
+			Action: func(c *cli.Context) {
+				os.Exit(0)
 			},
 		},
 	}
@@ -334,14 +342,14 @@ func cmdSetOption(c *cli.Context) error {
 }
 
 // Append a new bf_tx to application
-func cmdDeliverBfTx(c *cli.Context) error {
+func cmdBroadcastBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command deliver_bf_tx takes 1 argument")
+		return errors.New("Command broadcast takes 1 argument")
 	}
 
 	// Sign BF_TX
-	bft_tx := bf_tx.SetBF_TX(args[0])
+	bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
 	bft_tx = crypto.Sign_BF_TX(bft_tx)
 
 	// Get the BF_TX content in string format
@@ -366,10 +374,10 @@ func cmdDeliverBfTx(c *cli.Context) error {
 }
 
 // Validate a bf_tx
-func cmdCheckBfTx(c *cli.Context) error {
+func cmdValidateBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command check_bf_tx takes 1 argument")
+		return errors.New("Command validate takes 1 argument")
 	}
 	txBytes, err := stringOrHexToBytes(c.Args()[0])
 	if err != nil {
@@ -405,7 +413,7 @@ func cmdQuery(c *cli.Context) error {
 
 	// TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
 	// TODO JCNM: Query from blockchain
-	bft_tx := bf_tx.SetBF_TX(args[0])
+	bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
 	queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
 
 	resQuery, err := client.QuerySync(types.RequestQuery{
@@ -431,31 +439,29 @@ func cmdQuery(c *cli.Context) error {
 }
 
 // Verify the structure of the input Bill of Lading
-func cmdValidateBf_Tx(c *cli.Context) error {
+func cmdVerifyBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command validate_bf_tx takes 1 argument")
+		return errors.New("Command verify takes 1 argument")
 	}
-	bf_tx := bf_tx.SetBF_TX(args[0])
+	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
 	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
 	printResponse(c, response{
 		Data: resEcho.Data,
 	})
-
 	return nil
 }
 
-// how the output JSON
-func cmdReturnBf_Tx(c *cli.Context) error {
+// Return the output JSON
+func cmdGetBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command get_bf_tx takes 1 argument")
+		return errors.New("Command get takes 1 argument")
 	}
 	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
 	printResponse(c, response{
 		Data: resEcho.Data,
 	})
-
 	return nil
 }
 
