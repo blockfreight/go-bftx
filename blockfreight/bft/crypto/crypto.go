@@ -114,7 +114,7 @@ func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
     bft_tx.PrivateKey = *privatekey
     bft_tx.Signhash = signhash
     bft_tx.Signature = sign
-    bft_tx.Signed = verifystatus
+    bft_tx.Verified = verifystatus
     
     return bft_tx
 }
