@@ -1,7 +1,7 @@
 ![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png)
 # **Blockfreight™ the blockchain of global freight**
 
-Package: go-blockfreight - Blockfreight™ v0.1.0
+Package: go-blockfreight - Blockfreight™ v0.2.0
 
 ***Description:*** go-blockfreight is the reference full node implementation and cli-tool for Blockfreight™ the blockchain of global freight.
 
@@ -66,5 +66,10 @@ After that step, you can execute `bftx`. If you need some extra information, jus
 ```
 $ bftx help
 ```
+
+## Use
+To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/blockfreight-alpha/blob/v0.2.0-dev/blockfreight/files/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
+
+After that step, you can read the menu of bftx.
 
 If you’d like to leave feedback, please [open an issue on GitHub](https://github.com/blockfreight/blockfreight/issues).
