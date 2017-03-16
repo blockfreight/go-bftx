@@ -53,6 +53,11 @@ import (
     "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
     "encoding/json"     // Implements encoding and decoding of JSON as defined in RFC 4627.
 
+    // ====================
+    // Third-party packages
+    // ====================
+    "github.com/davecgh/go-spew/spew"   // Implements a deep pretty printer for Go data structures to aid in debugging.
+
     // ======================
     // Blockfreight™ packages
     // ======================
@@ -72,6 +77,11 @@ func BF_TXContent(bf_tx BF_TX) string {
     return string(jsonContent)
 }
 
+// PrintBF_TX receives a BF_TX and prints it clearly.
+func PrintBF_TX(bf_tx BF_TX){
+    spew.Dump(bf_tx)
+}
+
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
 type BF_TX struct {
     // =========================
@@ -88,7 +98,8 @@ type BF_TX struct {
     Signhash    []uint8
     Signature   string
     Verified    bool
-    
+    Transmitted bool
+    Amendment   int
 }
 
 type Properties struct {
