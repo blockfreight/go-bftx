@@ -50,15 +50,13 @@ import (
     // =======================
     // Golang Standard library
     // =======================
-    "fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
     "encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
     "strconv"       // Implements conversions to and from string representations of basic data types.
 
     // ====================
     // Third-party packages
     // ====================
-    "github.com/davecgh/go-spew/spew"           // Implements a deep pretty printer for Go data structures to aid in debugging.
-    "github.com/syndtr/goleveldb/leveldb"       // Implementation of the LevelDB key/value database in the Go programming language.
+    "github.com/syndtr/goleveldb/leveldb"   // Implementation of the LevelDB key/value database in the Go programming language.
     
     // ======================
     // Blockfreight™ packages
@@ -71,7 +69,6 @@ var db_path string = "bft-db"   //Folder name where is going to be the LevelDB
 
 // OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that ocurred.
 func OpenDB(db_path string) (db *leveldb.DB, err error) {
-    fmt.Println("Creating / Opening leveldb db...")
     db, err = leveldb.OpenFile(db_path, nil)
     return db, err
 
@@ -85,21 +82,6 @@ func CloseDB(db *leveldb.DB) {
 // InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool. 
 func InsertBF_TX(key string, value string, db *leveldb.DB) error {
     return db.Put([]byte(key), []byte(value), nil)
-}
-
-// Iterate is a function that receives a DB pointer and check all single tuples in that DB. It returns, the total of tuples were found and an error if that happened.
-func Iterate(db *leveldb.DB) (n int, err error) {
-    iter := db.NewIterator(nil, nil)
-    n = 0
-    for iter.Next() {
-        // Show the content of each tuple
-        /*key := iter.Key()
-            value := iter.Value()
-            fmt.Println("\nKey: "+string(key)+"\nValue: "+string(value)+"\n")*/
-        n += 1
-    }
-    iter.Release()
-    return n, iter.Error()
 }
 
 // Total is a function that returns the total of BF_TX stored in the DB.
@@ -117,21 +99,14 @@ func Total() (n int) {
 }
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
-func RecordOnDB( id int, json string) bool { //TODO: Check the id
+func RecordOnDB( id int, json string) { //TODO: Check the id
     db, err := OpenDB(db_path)
     defer CloseDB(db)
 
-    HandleError(err, "Create or Open Database")
+    HandleError(err)    //, "Create or Open Database")
     
     err = InsertBF_TX(strconv.Itoa(id), json, db)
     //err = InsertBF_TX(id, json, db)    //TODO: Check the id
-
-    //Iteration
-    n, err := Iterate(db)
-    HandleError(err, "Iteration")
-    fmt.Println("Total: " + strconv.Itoa(n))
-
-    return true
 }
 
 // GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
@@ -140,10 +115,9 @@ func GetBfTx(id string) bf_tx.BF_TX {
     defer CloseDB(db)
 
     data, err := db.Get([]byte(id), nil)
-    HandleError(err, "GetBfTx")
+    HandleError(err)    //, "GetBfTx")
     var bf_tx bf_tx.BF_TX
     json.Unmarshal(data, &bf_tx)
-    spew.Dump(bf_tx)
     
     return bf_tx
 }
