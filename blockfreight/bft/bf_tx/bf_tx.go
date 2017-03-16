@@ -83,10 +83,11 @@ type BF_TX struct {
     // ===================================
     // Blockfreight Transaction attributes
     // ===================================
-    PrivateKey ecdsa.PrivateKey
-    Signhash   []uint8
-    Signature  string
-    Verified     bool
+    Id          int
+    PrivateKey  ecdsa.PrivateKey
+    Signhash    []uint8
+    Signature   string
+    Verified    bool
 }
 
 type Properties struct {
