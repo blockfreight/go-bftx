@@ -170,18 +170,39 @@ func main() {
 				return cmdSetOption(c)
 			},
 		},
+		/*{
+			Name:  "validate",
+			Usage: "Validate a bf_tx",
+			Action: func(c *cli.Context) error {
+				return cmdValidateBfTx(c)	//cmdCheckBfTx
+			},
+		},*/
+		{
+			Name:  "verify",
+			Usage: "Verify the structure of the Blockfreight™ Transaction [BF_TX]",
+			Action: func(c *cli.Context) error {
+				return cmdVerifyBfTx(c)
+			},
+		},
+		{
+			Name:  "construct",
+			Usage: "Construct a new BF_TX",
+			Action: func(c *cli.Context) error {
+				return cmdConstructBfTx(c)
+			},
+		},
+		{
+			Name:  "sign",
+			Usage: "Sign a new BF_TX",
+			Action: func(c *cli.Context) error {
+				return cmdSignBfTx(c)
+			},
+		},
 		{
 			Name:  "broadcast",
 			Usage: "Deliver a new BF_TX to application",
 			Action: func(c *cli.Context) error {
 				return cmdBroadcastBfTx(c)
-			},
-		},
-		{
-			Name:  "validate",
-			Usage: "Validate a bf_tx",
-			Action: func(c *cli.Context) error {
-				return cmdValidateBfTx(c)	//cmdCheckBfTx
 			},
 		},
 		{
@@ -191,25 +212,32 @@ func main() {
 				return cmdCommit(c)
 			},
 		},
-		{
+		/*{
 			Name:  "query",
 			Usage: "Query application state",
 			Action: func(c *cli.Context) error {
 				return cmdQuery(c)
 			},
-		},
-		{
-			Name:  "verify",
-			Usage: "Verify the structure of the Blockfreight™ Transaction [BF_TX]",
-			Action: func(c *cli.Context) error {
-				return cmdVerifyBfTx(c)
-			},
-		},
+		},*/
 		{
 			Name:  "get",
 			Usage: "Retrieve a [BF_TX] by its ID",
 			Action: func(c *cli.Context) error {
 				return cmdGetBfTx(c)
+			},
+		},
+		{
+			Name:  "append",
+			Usage: "Append a new BF_TX to an existing BF_TX",
+			Action: func(c *cli.Context) error {
+				return cmdAppendBfTx(c)
+			},
+		},
+		{
+			Name:  "state",
+			Usage: "Get the current state of a determined BF_TX",
+			Action: func(c *cli.Context) error {
+				return cmdStateBfTx(c)
 			},
 		},
 		{
@@ -341,6 +369,67 @@ func cmdSetOption(c *cli.Context) error {
 	return nil
 }
 
+// Validate a bf_tx
+/*func cmdValidateBfTx(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command validate takes 1 argument")
+	}
+	txBytes, err := stringOrHexToBytes(c.Args()[0])
+	if err != nil {
+		return err
+	}
+	res := client.CheckTxSync(txBytes)
+	printResponse(c, response{
+		Code: res.Code,
+		Data: res.Data,
+		Log:  res.Log,
+	})
+	return nil
+}*/
+
+// Verify the structure of the Blockfreight™ Transaction [BF_TX]
+func cmdVerifyBfTx(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command verify takes 1 argument")
+	}
+	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})
+	return nil
+}
+
+// Construct the Blockfreight™ Transaction [BF_TX]
+func cmdConstructBfTx(c *cli.Context) error {
+	/*args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command verify takes 1 argument")
+	}
+	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})*/
+	return nil
+}
+
+// Sign the Blockfreight™ Transaction [BF_TX]
+func cmdSignBfTx(c *cli.Context) error {
+	/*args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command verify takes 1 argument")
+	}
+	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})*/
+	return nil
+}
+
 // Append a new bf_tx to application
 func cmdBroadcastBfTx(c *cli.Context) error {
 	args := c.Args()
@@ -373,24 +462,6 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	return nil
 }
 
-// Validate a bf_tx
-func cmdValidateBfTx(c *cli.Context) error {
-	args := c.Args()
-	if len(args) != 1 {
-		return errors.New("Command validate takes 1 argument")
-	}
-	txBytes, err := stringOrHexToBytes(c.Args()[0])
-	if err != nil {
-		return err
-	}
-	res := client.CheckTxSync(txBytes)
-	printResponse(c, response{
-		Code: res.Code,
-		Data: res.Data,
-		Log:  res.Log,
-	})
-	return nil
-}
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
@@ -405,7 +476,7 @@ func cmdCommit(c *cli.Context) error {
 
 // Query application state
 // TODO: Make request and response support all fields.
-func cmdQuery(c *cli.Context) error {
+/*func cmdQuery(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command query takes 1 argument")
@@ -436,21 +507,8 @@ func cmdQuery(c *cli.Context) error {
 		},
 	})
 	return nil
-}
+}*/
 
-// Verify the structure of the input Bill of Lading
-func cmdVerifyBfTx(c *cli.Context) error {
-	args := c.Args()
-	if len(args) != 1 {
-		return errors.New("Command verify takes 1 argument")
-	}
-	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
-	printResponse(c, response{
-		Data: resEcho.Data,
-	})
-	return nil
-}
 
 // Return the output JSON
 func cmdGetBfTx(c *cli.Context) error {
@@ -462,6 +520,32 @@ func cmdGetBfTx(c *cli.Context) error {
 	printResponse(c, response{
 		Data: resEcho.Data,
 	})
+	return nil
+}
+
+// Append a new BF_TX to an existing BF_TX
+func cmdAppendBfTx(c *cli.Context) error {
+	/*args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command get takes 1 argument")
+	}
+	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})*/
+	return nil
+}
+
+// Get the current state of a determined BF_TX
+func cmdStateBfTx(c *cli.Context) error {
+	/*args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command get takes 1 argument")
+	}
+	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
+	printResponse(c, response{
+		Data: resEcho.Data,
+	})*/
 	return nil
 }
 
@@ -530,7 +614,7 @@ func introduction(c *cli.Context) {
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Go App")
 	fmt.Println("Address " + c.GlobalString("address"))
-	fmt.Println("BFT Implementation:  " + c.GlobalString("bft"))
+	fmt.Println("BFT Implementation:  " + c.GlobalString("call"))
 	fmt.Println("...........................................\n")
 	/*name := "Blockfreight Community"
 	  if c.NArg() > 0 {
