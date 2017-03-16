@@ -56,6 +56,7 @@ import (
 	"io"           // Provides basic interfaces to I/O primitives.
 	"log"          // Implements a simple logging package.
 	"os"           // Provides a platform-independent interface to operating system functionality.
+	"strconv"      // Implements conversions to and from string representations of basic data types.
 	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
 
 	// ====================
@@ -171,17 +172,17 @@ func main() {
 			},
 		},
 		/*{
-			Name:  "validate",
-			Usage: "Validate a bf_tx",
-			Action: func(c *cli.Context) error {
-				return cmdValidateBfTx(c)	//cmdCheckBfTx
-			},
-		},*/
-		{
 			Name:  "verify",
 			Usage: "Verify the structure of the Blockfreight™ Transaction [BF_TX]",
 			Action: func(c *cli.Context) error {
-				return cmdVerifyBfTx(c)
+				return cmdVerifyBfTx(c)	//cmdCheckBfTx
+			},
+		},*/
+		{
+			Name:  "validate",
+			Usage: "Validate a BF_TX",
+			Action: func(c *cli.Context) error {
+				return cmdValidateBfTx(c)
 			},
 		},
 		{
@@ -238,6 +239,13 @@ func main() {
 			Usage: "Get the current state of a determined BF_TX",
 			Action: func(c *cli.Context) error {
 				return cmdStateBfTx(c)
+			},
+		},
+		{
+			Name:  "total",
+			Usage: "<Temp>",
+			Action: func(c *cli.Context) error {
+				return cmdTotalBfTx(c)
 			},
 		},
 		{
@@ -369,8 +377,8 @@ func cmdSetOption(c *cli.Context) error {
 	return nil
 }
 
-// Validate a bf_tx
-/*func cmdValidateBfTx(c *cli.Context) error {
+// Verify the structure of the Blockfreight™ Transaction [BF_TX]
+/*func cmdVerifyBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command validate takes 1 argument")
@@ -388,8 +396,8 @@ func cmdSetOption(c *cli.Context) error {
 	return nil
 }*/
 
-// Verify the structure of the Blockfreight™ Transaction [BF_TX]
-func cmdVerifyBfTx(c *cli.Context) error {
+// Validate a BF_TX
+func cmdValidateBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command verify takes 1 argument")
@@ -404,29 +412,54 @@ func cmdVerifyBfTx(c *cli.Context) error {
 
 // Construct the Blockfreight™ Transaction [BF_TX]
 func cmdConstructBfTx(c *cli.Context) error {
-	/*args := c.Args()
+	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command verify takes 1 argument")
+		return errors.New("Command construct takes 1 argument")
 	}
-	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+
+	n := leveldb.Total()
+	//fmt.Println("Total:",n)
+
+	bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+	bft_tx.Id = n+1		//TODO JCNM: Solve concurrency problem
+
+	// Get the BF_TX content in string format
+	content := bf_tx.BF_TXContent(bft_tx)
+
+	// Save on DB
+	if leveldb.RecordOnDB( bft_tx.Id, content) { //TODO JCNM: Check the id
+		fmt.Println("Stored on DB!")
+	}
+
+	resEcho := client.EchoSync("BF_TX Id: "+strconv.Itoa(bft_tx.Id))
 	printResponse(c, response{
 		Data: resEcho.Data,
-	})*/
+	})
+
 	return nil
 }
 
 // Sign the Blockfreight™ Transaction [BF_TX]
 func cmdSignBfTx(c *cli.Context) error {
-	/*args := c.Args()
+	args := c.Args()
 	if len(args) != 1 {
-		return errors.New("Command verify takes 1 argument")
+		return errors.New("Command sign takes 1 argument")
 	}
-	bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-	resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+
+	bftx := leveldb.GetBfTx(args[0])
+
+	// Sign BF_TX
+	bftx = crypto.Sign_BF_TX(bftx)
+	content := bf_tx.BF_TXContent(bftx)
+	// Save on DB
+	if leveldb.RecordOnDB( bftx.Id, content) { //TODO JCNM: Check the id
+		fmt.Println("Stored on DB!")
+	}
+
+	resEcho := client.EchoSync("BF_TX signed")
 	printResponse(c, response{
 		Data: resEcho.Data,
-	})*/
+	})
 	return nil
 }
 
@@ -437,20 +470,10 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	// Sign BF_TX
-	bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-	bft_tx = crypto.Sign_BF_TX(bft_tx)
-
-	// Get the BF_TX content in string format
-	content := bf_tx.BF_TXContent(bft_tx)
-
-	// Save on DB
-	if leveldb.RecordOnDB( /*bf_tx.Signature, */ content) { //TODO JCNM: Check the id
-		fmt.Println("Stored on DB!")
-	}
+	bftx := leveldb.GetBfTx(args[0])
 
 	// TODO JCNM: Validate if that JSON was already stored
-	txBytes := []byte(content)
+	txBytes := []byte(bf_tx.BF_TXContent(bftx))
 	// txBytes := []byte(bf_tx.Signature+"="+content)    //TODO JCNM: Check the id
 
 	res := client.DeliverTxSync(txBytes)
@@ -516,7 +539,8 @@ func cmdGetBfTx(c *cli.Context) error {
 	if len(args) != 1 {
 		return errors.New("Command get takes 1 argument")
 	}
-	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
+	bftx := leveldb.GetBfTx(args[0])
+	resEcho := client.EchoSync(bf_tx.BF_TXContent(bftx))
 	printResponse(c, response{
 		Data: resEcho.Data,
 	})
@@ -528,11 +552,11 @@ func cmdAppendBfTx(c *cli.Context) error {
 	/*args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command get takes 1 argument")
-	}
-	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
+	}*/
+	resEcho := client.EchoSync("BF_TX appended!")
 	printResponse(c, response{
 		Data: resEcho.Data,
-	})*/
+	})
 	return nil
 }
 
@@ -541,11 +565,17 @@ func cmdStateBfTx(c *cli.Context) error {
 	/*args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command get takes 1 argument")
-	}
-	resEcho := client.EchoSync(leveldb.GetBfTx(args[0]))
+	}*/
+	resEcho := client.EchoSync("BF_TX state: ToDo")
 	printResponse(c, response{
 		Data: resEcho.Data,
-	})*/
+	})
+	return nil
+}
+
+func cmdTotalBfTx(c *cli.Context) error {
+	n := leveldb.Total()
+	fmt.Println("Total:",n)
 	return nil
 }
 
