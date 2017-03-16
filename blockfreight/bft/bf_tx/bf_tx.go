@@ -88,6 +88,7 @@ type BF_TX struct {
     Signhash    []uint8
     Signature   string
     Verified    bool
+    
 }
 
 type Properties struct {
