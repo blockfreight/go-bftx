@@ -49,8 +49,9 @@ import (
     // =======================
     // Golang Standard library
     // =======================
-    "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
     "io/ioutil" // Implements some I/O utility functions.
+    "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
+    "log"       // Implements a simple logging package.
     "os"        // Provides a platform-independent interface to operating system functionality.
 )
 
@@ -66,11 +67,9 @@ func ReadJSON(path string) []byte {
 }
 
 // HandleError is a function that receives an error and a name of the procedure where that error ocurred, and print a clear error message.
-func HandleError(err error, place string) {
+func HandleError(err error) {   //, place string) {
     if err != nil {
-        //log.Fatal(place)
-        //log.Fatal(err)
-        fmt.Println(place, err)
+        log.Fatal(err)
     }
 }
 
