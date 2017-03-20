@@ -564,7 +564,7 @@ func cmdAppendBfTx(c *cli.Context) error {
     args := c.Args()
     fmt.Println("Args:",c.Args(),len(c.Args()))
     if len(args) != 2 {
-        return errors.New("Command get takes 2 arguments")
+        return errors.New("Command append takes 2 arguments")
     }
 
     n := leveldb.Total()
@@ -594,11 +594,11 @@ func cmdAppendBfTx(c *cli.Context) error {
 
 // Get the current state of a determined BF_TX
 func cmdStateBfTx(c *cli.Context) error {
-    /*args := c.Args()
+    args := c.Args()
     if len(args) != 1 {
-        return errors.New("Command get takes 1 argument")
-    }*/
-    resEcho := client.EchoSync("TODO: BF_TX state:")
+        return errors.New("Command state takes 1 argument")
+    }
+    resEcho := client.EchoSync("BF_TX state: "+bf_tx.State(leveldb.GetBfTx(args[0])))
     printResponse(c, response{
         Data: resEcho.Data,
     })

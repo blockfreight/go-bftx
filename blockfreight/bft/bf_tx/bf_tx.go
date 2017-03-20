@@ -82,6 +82,17 @@ func PrintBF_TX(bf_tx BF_TX){
     spew.Dump(bf_tx)
 }
 
+// State reports the current state of a BF_TX
+func State(bf_tx BF_TX) string {
+    if(bf_tx.Verified){
+        return "Signed!"
+    } else if(bf_tx.Transmitted){
+        return "Transmitted!"
+    } else {
+        return "Constructed!"
+    }
+}
+
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
 type BF_TX struct {
     // =========================
