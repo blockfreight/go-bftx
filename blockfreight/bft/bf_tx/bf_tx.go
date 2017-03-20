@@ -84,10 +84,10 @@ func PrintBF_TX(bf_tx BF_TX){
 
 // State reports the current state of a BF_TX
 func State(bf_tx BF_TX) string {
-    if(bf_tx.Verified){
-        return "Signed!"
-    } else if(bf_tx.Transmitted){
+    if(bf_tx.Transmitted){
         return "Transmitted!"
+    } else if(bf_tx.Verified){
+        return "Signed!"
     } else {
         return "Constructed!"
     }
