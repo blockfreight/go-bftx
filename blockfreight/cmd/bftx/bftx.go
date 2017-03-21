@@ -74,7 +74,6 @@ import (
     // Blockfreight™ packages
     // ======================
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"     // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-    . "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"  // Pprovides some useful functions to work with the Blockfreight project.
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/crypto"    // Provides useful functions to sign BF_TX.
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"   // Provides some useful functions to work with LevelDB.
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator" // Provides functions to assure the input JSON is correct.
@@ -84,11 +83,12 @@ import (
 // Structure for data passed to print response.
 type response struct {
     // generic abci response
-    Data []byte
-    Code types.CodeType
-    Log  string
+    Data    []byte
+    Code    types.CodeType
+    Log     string
+    Result  string      //Blockfreight Purposes
 
-    Query *queryResponse
+    Query   *queryResponse
 }
 
 type queryResponse struct {
@@ -244,7 +244,7 @@ func main() {
         },
         {
             Name:  "total",
-            Usage: "<Temp>",
+            Usage: "Query the total of BF_TX in DB",
             Action: func(c *cli.Context) error {
                 return cmdTotalBfTx(c)
             },
@@ -355,7 +355,8 @@ func cmdEcho(c *cli.Context) error {
     }
     resEcho := client.EchoSync(args[0])
     printResponse(c, response{
-        Data: resEcho.Data,
+        //Data: resEcho.Data,
+        Result: string(resEcho.Data),
     })
     return nil
 }
@@ -367,7 +368,8 @@ func cmdInfo(c *cli.Context) error {
         return err
     }
     printResponse(c, response{
-        Data: []byte(resInfo.Data),
+        //Data: []byte(resInfo.Data),
+        Result: resInfo.Data,
     })
     return nil
 }
@@ -410,10 +412,23 @@ func cmdValidateBfTx(c *cli.Context) error {
     if len(args) != 1 {
         return errors.New("Command validate takes 1 argument")
     }
-    bf_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-    resEcho := client.EchoSync(validator.ValidateBf_Tx(bf_tx))
+
+    // Read JSON and instance the BF_TX structure
+    bf_tx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+    if err != nil {
+        return err
+    }
+
+    // Validate the BF_TX
+    result, err := validator.ValidateBf_Tx(bf_tx)
+    if err != nil {
+        fmt.Println(result)
+        return err
+    }
+
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: result,
     })
     return nil
 }
@@ -425,20 +440,43 @@ func cmdConstructBfTx(c *cli.Context) error {
         return errors.New("Command construct takes 1 argument")
     }
 
-    n := leveldb.Total()
+    // Query the total of BF_TX in DB
+    n, err := leveldb.Total()
+    if err != nil {
+        return err
+    }
     
-    bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-    bft_tx.Id = n+1     //TODO JCNM: Solve concurrency problem
+    // Read JSON and instance the BF_TX structure
+    bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+    if err != nil {
+        return err
+    }
+
+    // Re-validate a BF_TX before create a BF_TX
+    result, err := validator.ValidateBf_Tx(bftx)
+    if err != nil {
+        fmt.Println(result)
+        return err
+    }
+
+    // Set the BF_TX id
+    bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
 
     // Get the BF_TX content in string format
-    content := bf_tx.BF_TXContent(bft_tx)
+    content, err := bf_tx.BF_TXContent(bftx)
+    if err != nil {
+        return err
+    }
 
     // Save on DB
-    leveldb.RecordOnDB( bft_tx.Id, content)
+    err = leveldb.RecordOnDB( bftx.Id, content)
+    if err != nil {
+        return err
+    }
 
-    resEcho := client.EchoSync("BF_TX Id: "+strconv.Itoa(bft_tx.Id))
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: "BF_TX Id: "+strconv.Itoa(bftx.Id),
     })
 
     return nil
@@ -451,21 +489,36 @@ func cmdSignBfTx(c *cli.Context) error {
         return errors.New("Command sign takes 1 argument")
     }
 
-    bftx := leveldb.GetBfTx(args[0])
+    // Get a BF_TX by id
+    bftx, err := leveldb.GetBfTx(args[0])
+    if err != nil {
+        return err
+    }
     if bftx.Verified {
-        HandleError(errors.New("BF_TX already signed."))
+        return errors.New("BF_TX already signed.")
     }
 
     // Sign BF_TX
-    bftx = crypto.Sign_BF_TX(bftx)
-    content := bf_tx.BF_TXContent(bftx)
-    
-    // Save on DB
-    leveldb.RecordOnDB( bftx.Id, content)
+    bftx, err = crypto.Sign_BF_TX(bftx)
+    if err != nil {
+        return err
+    }
 
-    resEcho := client.EchoSync("BF_TX signed")
+    // Get the BF_TX content in string format
+    content, err := bf_tx.BF_TXContent(bftx)
+    if err != nil {
+        return err
+    }
+    
+    // Update on DB
+    err = leveldb.RecordOnDB(bftx.Id, content)
+    if err != nil {
+        return err
+    }
+
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: "BF_TX signed",
     })
     return nil
 }
@@ -477,22 +530,42 @@ func cmdBroadcastBfTx(c *cli.Context) error {
         return errors.New("Command broadcast takes 1 argument")
     }
 
-    bftx := leveldb.GetBfTx(args[0])
+    // Get a BF_TX by id
+    bftx, err := leveldb.GetBfTx(args[0])
+    if err != nil {
+        return err
+    }
     if bftx.Transmitted {
-        HandleError(errors.New("BF_TX already transmitted."))
+        return errors.New("BF_TX already transmitted.")
     }
 
+    // Change the boolean valud for Transmitted attribute
     bftx.Transmitted = true
-    content := bf_tx.BF_TXContent(bftx)
-    
-    // Save on DB
-    leveldb.RecordOnDB(bftx.Id, content)
 
+    // Get the BF_TX content in string format
+    content, err := bf_tx.BF_TXContent(bftx)
+    if err != nil {
+        return err
+    }
+    
+    // Update on DB
+    err = leveldb.RecordOnDB(bftx.Id, content)
+    if err != nil {
+        return err
+    }
+
+    // Deliver / Publish a BF_TX
     res := client.DeliverTxSync([]byte(content))
+    
+    // Check the BF_TX hash
+    res = client.CommitSync()
+
+    //Result
     printResponse(c, response{
-        Code: res.Code,
-        Data: []byte("BF_TX transmitted"),    //res.Data,
-        Log:  res.Log,
+        Code:   res.Code,
+        //Result: "BF_TX transmitted"
+        Data:   res.Data,
+        Log:    res.Log,
     })
     return nil
 }
@@ -551,10 +624,22 @@ func cmdGetBfTx(c *cli.Context) error {
     if len(args) != 1 {
         return errors.New("Command get takes 1 argument")
     }
-    bftx := leveldb.GetBfTx(args[0])
-    resEcho := client.EchoSync(bf_tx.BF_TXContent(bftx))
+    
+    // Get a BF_TX by id
+    bftx, err := leveldb.GetBfTx(args[0])
+    if err != nil {
+        return err
+    }
+
+    // Get the BF_TX content in string format
+    content, err := bf_tx.BF_TXContent(bftx)
+    if err != nil {
+        return err
+    }
+
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: content,
     })
     return nil
 }
@@ -562,31 +647,59 @@ func cmdGetBfTx(c *cli.Context) error {
 // Append a new BF_TX to an existing BF_TX
 func cmdAppendBfTx(c *cli.Context) error {
     args := c.Args()
-    fmt.Println("Args:",c.Args(),len(c.Args()))
     if len(args) != 2 {
         return errors.New("Command append takes 2 arguments")
     }
 
-    n := leveldb.Total()
+    // Query the total of BF_TX in DB
+    n, err := leveldb.Total()
+    if err != nil {
+        return err
+    }
     
-    bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-    bft_tx.Id = n+1     //TODO JCNM: Solve concurrency problem
+    // Read JSON and instance the BF_TX structure
+    new_bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+    if err != nil {
+        return err
+    }
+    
+    // Set the BF_TX id
+    new_bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
 
-    bftx := leveldb.GetBfTx(args[1])
+    // Get a BF_TX by id
+    old_bftx, err := leveldb.GetBfTx(args[1])
+    if err != nil {
+        return err
+    }
 
-    bftx.Amendment = bft_tx.Id
+    // Update the BF_TX appended attribute of the old BF_TX
+    old_bftx.Amendment = new_bftx.Id
 
-    // Get the BF_TX content in string format
-    content_new := bf_tx.BF_TXContent(bft_tx)
-    content_old := bf_tx.BF_TXContent(bftx)
+    // Get the BF_TX (old and new) content in string format
+    new_content, err := bf_tx.BF_TXContent(new_bftx)
+    if err != nil {
+        return err
+    }
+    old_content, err := bf_tx.BF_TXContent(old_bftx)
+    if err != nil {
+        return err
+    }
 
     // Save on DB
-    leveldb.RecordOnDB( bft_tx.Id, content_new)
-    leveldb.RecordOnDB( bftx.Id, content_old)
+    err = leveldb.RecordOnDB(new_bftx.Id, new_content)
+    if err != nil {
+        return err
+    }
 
-    resEcho := client.EchoSync("BF_TX Id: "+strconv.Itoa(bft_tx.Id))
+    // Update on DB
+    err = leveldb.RecordOnDB(old_bftx.Id, old_content)
+    if err != nil {
+        return err
+    }
+
+    //Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: "BF_TX Id: "+strconv.Itoa(new_bftx.Id),
     })
 
     return nil
@@ -598,9 +711,16 @@ func cmdStateBfTx(c *cli.Context) error {
     if len(args) != 1 {
         return errors.New("Command state takes 1 argument")
     }
-    resEcho := client.EchoSync("BF_TX state: "+bf_tx.State(leveldb.GetBfTx(args[0])))
+
+    // Get a BF_TX by id
+    bftx, err := leveldb.GetBfTx(args[0])
+    if err != nil {
+        return err
+    }
+    
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: "BF_TX state: "+bf_tx.State(bftx),
     })
     return nil
 }
@@ -610,15 +730,28 @@ func cmdPrintBfTx(c *cli.Context) error {
     if len(args) != 1 {
         return errors.New("Command print takes 1 argument")
     }
-    bftx := leveldb.GetBfTx(args[0])
+    
+    // Get a BF_TX by id
+    bftx, err := leveldb.GetBfTx(args[0])
+    if err != nil {
+        return err
+    }
+
+    // Print the BF_TX clearly
     bf_tx.PrintBF_TX(bftx)
     return nil
 }
 
 func cmdTotalBfTx(c *cli.Context) error {
-    resEcho := client.EchoSync("Total BF_TX on BD: "+strconv.Itoa(leveldb.Total()))
+    // Query the total of BF_TX in DB
+    total, err := leveldb.Total()
+    if err != nil {
+        return err
+    }
+
+    // Result
     printResponse(c, response{
-        Data: resEcho.Data,
+        Result: "Total BF_TX on BD: "+strconv.Itoa(total),
     })
     return nil
 }
@@ -636,8 +769,11 @@ func printResponse(c *cli.Context, rsp response) {
     if !rsp.Code.IsOK() {
         fmt.Printf("-> code: %s\n", rsp.Code.String())
     }
+    if rsp.Result != "" {
+        fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
+    }
     if len(rsp.Data) != 0 {
-        fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
+        //fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
         fmt.Printf("-> data.hex: %X\n", rsp.Data)
     }
     if rsp.Log != "" {

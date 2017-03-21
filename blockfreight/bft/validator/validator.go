@@ -49,6 +49,7 @@ import (
     // =======================
     // Golang Standard library
     // =======================
+    "errors"    // Implements functions to manipulate errors.
     "reflect"   // Implements run-time reflection, allowing a program to manipulate objects with arbitrary types. 
     
     // ======================
@@ -58,17 +59,17 @@ import (
 )
 
 // ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
-func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
-    espErr := ""
+func ValidateBf_Tx(bf_tx bf_tx.BF_TX) (string, error) {
+    var espErr error
 
     valid, err := ValidateFields(bf_tx)
     if valid {
-        return "Success! [OK]"
+        return "Success! [OK]", nil
     } else {
         if err != "" {
-            espErr = `
+            espErr = errors.New(`
     Specific Error [01]:
-    ` + err
+    ` + err)
         }
         return `
     Blockfreight, Inc. © 2017. Open Source (MIT) License.
@@ -76,9 +77,10 @@ func ValidateBf_Tx(bf_tx bf_tx.BF_TX) string {
     Error [01]:
 
     Invalid structure in JSON provided. JSON 结构无效.
-    Struttura JSON non valido. هيكل JSON صالح. 無効なJSON構造
+    Struttura JSON non valido. هيكل JSON صالح. 無効なJSON構造.
+    Estructura inválida en el JSON dado.
 
-    support: support@blockfreight.com` + espErr
+    support: support@blockfreight.com`, espErr
     }
 }
 

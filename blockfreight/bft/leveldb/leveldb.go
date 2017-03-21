@@ -62,7 +62,6 @@ import (
     // Blockfreight™ packages
     // ======================
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-    . "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common" // Pprovides some useful functions to work with the Blockfreight project.
 )
 
 var db_path string = "bft-db"   //Folder name where is going to be the LevelDB
@@ -85,41 +84,56 @@ func InsertBF_TX(key string, value string, db *leveldb.DB) error {
 }
 
 // Total is a function that returns the total of BF_TX stored in the DB.
-func Total() (n int) {
-    db, _ := OpenDB(db_path)
+func Total() (int, error) {
+    db, err := OpenDB(db_path)
     defer CloseDB(db)
-    
+    if err != nil {
+        return 0, err
+    }
+
     iter := db.NewIterator(nil, nil)
-    n = 0
+    n := 0
     for iter.Next() {
         n += 1
     }
     iter.Release()
-    return n
+    return n, nil
 }
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
-func RecordOnDB( id int, json string) { //TODO: Check the id
+func RecordOnDB( id int, json string) error { //TODO: Check the id
     db, err := OpenDB(db_path)
     defer CloseDB(db)
-
-    HandleError(err)    //, "Create or Open Database")
-    
-    err = InsertBF_TX(strconv.Itoa(id), json, db)
-    //err = InsertBF_TX(id, json, db)    //TODO: Check the id
+    if err != nil {
+        return err
+    }
+    err = InsertBF_TX(strconv.Itoa(id), json, db)   //TODO: Check the id
+    if err != nil {
+        return err
+    }
+    return nil
 }
 
 // GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
-func GetBfTx(id string) bf_tx.BF_TX {
+func GetBfTx(id string) (bf_tx.BF_TX, error) {
+    var bftx bf_tx.BF_TX
     db, err := OpenDB(db_path)
     defer CloseDB(db)
+    if err != nil {
+        return bftx, err
+    }
 
     data, err := db.Get([]byte(id), nil)
-    HandleError(err)    //, "GetBfTx")
-    var bf_tx bf_tx.BF_TX
-    json.Unmarshal(data, &bf_tx)
+    if err != nil {
+        return bftx, err
+    }
     
-    return bf_tx
+    err = json.Unmarshal(data, &bftx)
+    if err != nil {
+        return bftx, err
+    }
+    
+    return bftx, nil
 }
 
 // =================================================

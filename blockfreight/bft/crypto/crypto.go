@@ -53,11 +53,9 @@ import (
     "crypto/elliptic"   // Implements several standard elliptic curves over prime fields.
     "crypto/md5"        // Implements the MD5 hash algorithm as defined in RFC 1321.
     "crypto/rand"       // Implements a cryptographically secure pseudorandom number generator.
-    "fmt"               // Implements formatted I/O with functions analogous to C's printf and scanf.
     "hash"              // Provides interfaces for hash functions.
     "io"                // Provides basic interfaces to I/O primitives.
     "math/big"          // Implements arbitrary-precision arithmetic (big numbers).
-    "os"                // Provides a platform-independent interface to operating system functionality.
     "strconv"           // Implements conversions to and from string representations of basic data types.
 
     // ======================
@@ -69,18 +67,19 @@ import (
 //  @todo: OP_2 <pubkey1> <pubkey2> <pubkey3> <pubkey4> <pubkey5> OP_3 OP_CHECKMULTISIGVERIFY <pubkey3> OP_CHECKSIG
 
 // Function Sign_BF_TX has the whole process of signing each BF_TX.
-func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
+func Sign_BF_TX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
-    content := bf_tx.BF_TXContent(bft_tx)
+    content, err := bf_tx.BF_TXContent(bftx)
+    if err != nil {
+        return bftx, err
+    }
 
     pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
 
     privatekey := new(ecdsa.PrivateKey)
-    privatekey, err := ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
-
+    privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
     if err != nil {
-        fmt.Println(err)
-        os.Exit(1)
+        return bftx, err
     }
     pubkey := privatekey.PublicKey
 
@@ -93,10 +92,9 @@ func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
     io.WriteString(h, content)
     signhash := h.Sum(nil)
 
-    r, s, serr := ecdsa.Sign(rand.Reader, privatekey, signhash)
-    if serr != nil {
-        fmt.Println(err)
-        os.Exit(1)
+    r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
+    if err != nil {
+        return bftx, err
     }
 
     signature := r.Bytes()
@@ -111,12 +109,12 @@ func Sign_BF_TX(bft_tx bf_tx.BF_TX) bf_tx.BF_TX {
     verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
     
     //Set Private Key and Sign to BF_TX
-    bft_tx.PrivateKey = *privatekey
-    bft_tx.Signhash = signhash
-    bft_tx.Signature = sign
-    bft_tx.Verified = verifystatus
+    bftx.PrivateKey = *privatekey
+    bftx.Signhash = signhash
+    bftx.Signature = sign
+    bftx.Verified = verifystatus
     
-    return bft_tx
+    return bftx, nil
 }
 
 // =================================================
