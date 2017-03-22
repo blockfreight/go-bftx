@@ -535,6 +535,9 @@ func cmdBroadcastBfTx(c *cli.Context) error {
     if err != nil {
         return err
     }
+    if !bftx.Verified {
+        return errors.New("BF_TX is not signed yet.")
+    }
     if bftx.Transmitted {
         return errors.New("BF_TX already transmitted.")
     }
@@ -650,13 +653,19 @@ func cmdAppendBfTx(c *cli.Context) error {
     if len(args) != 2 {
         return errors.New("Command append takes 2 arguments")
     }
+    
+    // Get a BF_TX by id
+    old_bftx, err := leveldb.GetBfTx(args[1])
+    if err != nil {
+        return err
+    }
 
     // Query the total of BF_TX in DB
     n, err := leveldb.Total()
     if err != nil {
         return err
     }
-    
+
     // Read JSON and instance the BF_TX structure
     new_bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
     if err != nil {
@@ -665,12 +674,6 @@ func cmdAppendBfTx(c *cli.Context) error {
     
     // Set the BF_TX id
     new_bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
-
-    // Get a BF_TX by id
-    old_bftx, err := leveldb.GetBfTx(args[1])
-    if err != nil {
-        return err
-    }
 
     // Update the BF_TX appended attribute of the old BF_TX
     old_bftx.Amendment = new_bftx.Id

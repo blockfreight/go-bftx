@@ -49,21 +49,20 @@ import (
     // =======================
     // Golang Standard library
     // =======================
-    "io/ioutil" // Implements some I/O utility functions.
+    "errors"    // Implements functions to manipulate errors.
     "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
+    "io/ioutil" // Implements some I/O utility functions.
     "log"       // Implements a simple logging package.
-    "os"        // Provides a platform-independent interface to operating system functionality.
 )
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
-func ReadJSON(path string) []byte {
+func ReadJSON(path string) ([]byte, error) {
     fmt.Println("\nReading " + path + "\n")
     file, e := ioutil.ReadFile(path)
     if e != nil {
-        fmt.Printf("File error: %v\n", e)
-        os.Exit(1)
+        return file, errors.New("File error: "+e.Error())
     }
-    return file
+    return file, nil
 }
 
 // HandleError is a function that receives an error and a name of the procedure where that error ocurred, and print a clear error message.
