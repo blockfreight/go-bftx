@@ -172,13 +172,13 @@ func main() {
                 return cmdSetOption(c)
             },
         },
-        /*{
+        {
             Name:  "verify",
-            Usage: "Verify the structure of the Blockfreight™ Transaction [BF_TX]",
+            Usage: "Verify the JSON imput against a BF_TX",
             Action: func(c *cli.Context) error {
                 return cmdVerifyBfTx(c) //cmdCheckBfTx
             },
-        },*/
+        },
         {
             Name:  "validate",
             Usage: "Validate a BF_TX",
@@ -387,24 +387,47 @@ func cmdSetOption(c *cli.Context) error {
     return nil
 }
 
-// Verify the structure of the Blockfreight™ Transaction [BF_TX]
-/*func cmdVerifyBfTx(c *cli.Context) error {
+// Verify the JSON imput against a BF_TX
+func cmdVerifyBfTx(c *cli.Context) error {
     args := c.Args()
     if len(args) != 1 {
         return errors.New("Command verify takes 1 argument")
     }
-    txBytes, err := stringOrHexToBytes(c.Args()[0])
+    
+    // Read JSON file
+    //file, err := common.ReadJSON(c.GlobalString("json_path")+args[0])
+    // Read JSON and instance the BF_TX structure
+    jbftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
     if err != nil {
         return err
     }
-    res := client.CheckTxSync(txBytes)
+
+    // Get the BF_TX old_content in string format
+    jcontent, err := bf_tx.BF_TXContent(jbftx)
+    if err != nil {
+        return err
+    }
+
+    result, err := leveldb.Verify(jcontent)
+    if err != nil {
+        return err
+    }
+    if result == nil {
+        return errors.New("JSON content does not have a BF_TX associated.")
+    }
+
+    // Result
     printResponse(c, response{
+        Result: "The BF_TX associated to JSON content is "+string(result),
+    })
+
+    /*printResponse(c, response{
         Code: res.Code,
         Data: res.Data,
         Log:  res.Log,
-    })
+    })*/
     return nil
-}*/
+}
 
 // Validate a BF_TX
 func cmdValidateBfTx(c *cli.Context) error {
