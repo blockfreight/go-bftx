@@ -97,6 +97,21 @@ func State(bf_tx BF_TX) string {
     }
 }
 
+// Reinitialize set the default values to the Blockfreight attributes of BF_TX
+func Reinitialize(bf_tx BF_TX) BF_TX {
+    bf_tx.Id = 0
+    bf_tx.PrivateKey.Curve = nil
+    bf_tx.PrivateKey.X = nil
+    bf_tx.PrivateKey.Y = nil
+    bf_tx.PrivateKey.D = nil
+    bf_tx.Signhash = nil
+    bf_tx.Signature = ""
+    bf_tx.Verified = false
+    bf_tx.Transmitted = false
+    bf_tx.Amendment = 0
+    return bf_tx
+}
+
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
 type BF_TX struct {
     // =========================
