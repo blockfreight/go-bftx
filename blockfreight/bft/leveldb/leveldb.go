@@ -51,6 +51,7 @@ import (
     // Golang Standard library
     // =======================
     "encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+    "errors"        // Implements functions to manipulate errors.
     "strconv"       // Implements conversions to and from string representations of basic data types.
 
     // ====================
@@ -125,14 +126,13 @@ func GetBfTx(id string) (bf_tx.BF_TX, error) {
 
     data, err := db.Get([]byte(id), nil)
     if err != nil {
-        return bftx, err
+        if(err.Error() == "leveldb: not found"){
+            return bftx, errors.New("LevelDB Get function: BF_TX not found.")
+        }
+        return bftx, errors.New("LevelDB Get function: "+err.Error())
     }
     
-    err = json.Unmarshal(data, &bftx)
-    if err != nil {
-        return bftx, err
-    }
-    
+    json.Unmarshal(data, &bftx)
     return bftx, nil
 }
 

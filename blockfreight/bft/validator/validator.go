@@ -93,7 +93,7 @@ func ValidateFields(bf_tx bf_tx.BF_TX) (bool, string) {
         return false, "bf_tx.Properties.Shipper.Type is not a string."
     }
     if (reflect.TypeOf(bf_tx.Properties.Bol_Num.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Bol_Num.Type == 0 {
-        return false, "bf_tx.Properties.Bol_Num.Type is not a nunber."
+        return false, "bf_tx.Properties.Bol_Num.Type is not a number."
     }
     if (reflect.TypeOf(bf_tx.Properties.Ref_Num.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Ref_Num.Type == 0 {
         return false, "bf_tx.Properties.Ref_Num.Type is not a number."
