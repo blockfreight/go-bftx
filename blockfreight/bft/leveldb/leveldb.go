@@ -98,7 +98,7 @@ func Total() (int, error) {
         n += 1
     }
     iter.Release()
-    return n, nil
+    return n, iter.Error()
 }
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
@@ -134,6 +134,43 @@ func GetBfTx(id string) (bf_tx.BF_TX, error) {
     
     json.Unmarshal(data, &bftx)
     return bftx, nil
+}
+
+// Verify is a function that receives a content and look for a BF_TX that has the same content.
+func Verify(jcontent string) ([]byte, error){
+    var bftx bf_tx.BF_TX
+    db, err := OpenDB(db_path)
+    defer CloseDB(db)
+    if err != nil {
+        return nil, err
+    }
+
+    iter := db.NewIterator(nil, nil)
+    for iter.Next() {
+        key := iter.Key()
+        value := iter.Value()
+
+        // Get a BF_TX by id
+        json.Unmarshal(value, &bftx)
+        
+        // Reinitialize the BF_TX
+        bftx = bf_tx.Reinitialize(bftx)
+    
+        // Get the BF_TX old_content in string format
+        content, err := bf_tx.BF_TXContent(bftx)
+        if err != nil {
+            return nil, err
+        }
+    
+        if jcontent == content {
+            iter.Release()
+            //strconv.Atoi(string(buf))
+            return key, nil
+        }
+    }
+    iter.Release()
+
+    return nil, iter.Error()
 }
 
 // =================================================
