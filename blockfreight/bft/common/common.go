@@ -52,7 +52,6 @@ import (
     "errors"    // Implements functions to manipulate errors.
     "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
     "io/ioutil" // Implements some I/O utility functions.
-    "log"       // Implements a simple logging package.
 )
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
@@ -63,13 +62,6 @@ func ReadJSON(path string) ([]byte, error) {
         return file, errors.New("File error: "+e.Error())
     }
     return file, nil
-}
-
-// HandleError is a function that receives an error and a name of the procedure where that error ocurred, and print a clear error message.
-func HandleError(err error) {   //, place string) {
-    if err != nil {
-        log.Fatal(err)
-    }
 }
 
 // =================================================
