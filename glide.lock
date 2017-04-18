@@ -1,5 +1,5 @@
 hash: 8349e54ba2227c06fbb615c85c45e9a48f2b7c5e1c304d8b660e57d48846a790
-updated: 2017-03-11T02:51:32.993688821+11:00
+updated: 2017-04-18T17:58:54.677034801+10:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
@@ -41,7 +41,7 @@ imports:
   - server
   - types
 - name: github.com/tendermint/go-common
-  version: dcb015dff6c7af21e65c8e2f3b450df19d38c777
+  version: 6af2364fa91ef2f3afc8ba0db33b66d9d3ae006c
 - name: github.com/tendermint/go-db
   version: eac3f2bc147023957c8bf69432a4e6c4dc5c3f72
 - name: github.com/tendermint/go-logger
