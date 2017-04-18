@@ -153,63 +153,63 @@ func main() {
         },
         {
             Name:  "echo",
-            Usage: "Have the application echo a message",
+            Usage: "Have the application echo a message (Parameters: value_to_print)",
             Action: func(c *cli.Context) error {
                 return cmdEcho(c)
             },
         },
         {
             Name:  "info",
-            Usage: "Get some info about the application",
+            Usage: "Get some info about the application (Parameters: none)",
             Action: func(c *cli.Context) error {
                 return cmdInfo(c)
             },
         },
         {
             Name:  "set_option",
-            Usage: "Set an option on the application",
+            Usage: "Set an option on the application (Parameters: --Global Options, value)",
             Action: func(c *cli.Context) error {
                 return cmdSetOption(c)
             },
         },
         {
             Name:  "verify",
-            Usage: "Verify the JSON imput against a BF_TX",
+            Usage: "Verify the JSON imput against a BF_TX (Parameters: JSON Filepath)",
             Action: func(c *cli.Context) error {
                 return cmdVerifyBfTx(c) //cmdCheckBfTx
             },
         },
         {
             Name:  "validate",
-            Usage: "Validate a BF_TX",
+            Usage: "Validate a BF_TX (Parameters: JSON Filepath)",
             Action: func(c *cli.Context) error {
                 return cmdValidateBfTx(c)
             },
         },
         {
             Name:  "construct",
-            Usage: "Construct a new BF_TX",
+            Usage: "Construct a new BF_TX (Parameters: JSON Filepath)",
             Action: func(c *cli.Context) error {
                 return cmdConstructBfTx(c)
             },
         },
         {
             Name:  "sign",
-            Usage: "Sign a new BF_TX",
+            Usage: "Sign a new BF_TX (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdSignBfTx(c)
             },
         },
         {
             Name:  "broadcast",
-            Usage: "Deliver a new BF_TX to application",
+            Usage: "Deliver a new BF_TX to application (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdBroadcastBfTx(c)
             },
         },
         {
             Name:  "commit",
-            Usage: "Commit the application state and return the Merkle root hash",
+            Usage: "Commit the application state and return the Merkle root hash (Parameters: none)",
             Action: func(c *cli.Context) error {
                 return cmdCommit(c)
             },
@@ -223,42 +223,42 @@ func main() {
         },*/
         {
             Name:  "get",
-            Usage: "Retrieve a [BF_TX] by its ID",
+            Usage: "Retrieve a [BF_TX] by its ID (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdGetBfTx(c)
             },
         },
         {
             Name:  "append",
-            Usage: "Append a new BF_TX to an existing BF_TX",
+            Usage: "Append a new BF_TX to an existing BF_TX (Parameters: JSON Filepath, BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdAppendBfTx(c)
             },
         },
         {
             Name:  "state",
-            Usage: "Get the current state of a determined BF_TX",
+            Usage: "Get the current state of a determined BF_TX (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdStateBfTx(c)
             },
         },
         {
             Name:  "total",
-            Usage: "Query the total of BF_TX in DB",
+            Usage: "Query the total of BF_TX in DB (Parameters: none)",
             Action: func(c *cli.Context) error {
                 return cmdTotalBfTx(c)
             },
         },
         {
             Name:  "print",
-            Usage: "Print clearly a BF_TX",
+            Usage: "Print clearly a BF_TX (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdPrintBfTx(c)
             },
         },
         {
             Name:  "exit",
-            Usage: "Leaves the program.",
+            Usage: "Leaves the program. (Parameters: none)",
             Action: func(c *cli.Context) {
                 os.Exit(0)
             },
@@ -394,8 +394,6 @@ func cmdVerifyBfTx(c *cli.Context) error {
         return errors.New("Command verify takes 1 argument")
     }
     
-    // Read JSON file
-    //file, err := common.ReadJSON(c.GlobalString("json_path")+args[0])
     // Read JSON and instance the BF_TX structure
     jbftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
     if err != nil {
@@ -609,7 +607,7 @@ func cmdCommit(c *cli.Context) error {
 }
 
 // Query application state
-// TODO: Make request and response support all fields.
+// TODO JCNM: Make request and response support all fields.
 /*func cmdQuery(c *cli.Context) error {
     args := c.Args()
     if len(args) != 1 {
