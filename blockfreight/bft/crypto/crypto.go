@@ -64,8 +64,6 @@ import (
     "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-//  @todo: OP_2 <pubkey1> <pubkey2> <pubkey3> <pubkey4> <pubkey5> OP_3 OP_CHECKMULTISIGVERIFY <pubkey3> OP_CHECKSIG
-
 // Function Sign_BF_TX has the whole process of signing each BF_TX.
 func Sign_BF_TX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
