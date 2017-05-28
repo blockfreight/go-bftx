@@ -3,31 +3,18 @@
     "properties": {
       
       "shipper": { "type": "VLX454323F" },
-
       "BOL_NUM": { "type": 15554 },
-  
       "REF_NUM": { "type": 154532165},
-
       "consignee":{"type":null},
-
       "vessel":{"type":132153456},
-  
       "port_of_loading":{"type":21514},
-  
       "port_of_discharge":{"type":51651},
-  
       "notify_address":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
-  
       "desc_of_goods":{"type":"This is the goods description."},
-  
       "gross_weight":{"type":15523},
-  
       "freight_payable_amt":{"type":354534},
-  
       "freight_adv_amt":{"type":35448552},
-  
       "general_instructions":{"type":"There are many general instructions."},
-  
       "date_shipped":{"type":20161128, "format":"date-time"},
   
       "issue_details": {
