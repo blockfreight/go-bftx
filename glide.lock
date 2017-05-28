@@ -1,8 +1,8 @@
-hash: 8349e54ba2227c06fbb615c85c45e9a48f2b7c5e1c304d8b660e57d48846a790
-updated: 2017-05-27T16:49:01.562776956+08:00
+hash: 3d60c71c8abd193565f645ccff528055f54788bdfb149118655a254cfa04adf4
+updated: 2017-05-28T12:06:28.997328943+08:00
 imports:
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
   subpackages:
   - spew
 - name: github.com/go-kit/kit
@@ -70,7 +70,7 @@ imports:
   - common
   - log
 - name: github.com/urfave/cli
-  version: b4f4786f378c0c1d3336b5bb798094b166edf5a9
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: golang.org/x/crypto
   version: aa2481cbfe81d911eb62b642b7a6b5ec58bbea71
   subpackages:
