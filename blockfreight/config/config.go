@@ -44,6 +44,8 @@
 
 // Blockfreight™ App Configuration
 
+package config
+
 // @todo: Specify application variables here.
 
 // =================================================
