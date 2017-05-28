@@ -1,4 +1,10 @@
 package: github.com/blockfreight/blockfreight-alpha
+homepage: https://blockfreight.com
+license: MIT
+owners:
+  - name: Blockfreight, Inc.
+  email: support@blockfreight.com
+  homepage: https://blockfreight.com
 import:
 - package: github.com/davecgh/go-spew
   version: v1.1.0
