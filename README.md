@@ -1,6 +1,8 @@
 ![Blockfreight](https://raw.githubusercontent.com/blockfreight/brandmarks/master/blockfreight_logo_m.png)
 # **Blockfreight™ the blockchain of global freight**
 
+[![Build Status](https://travis-ci.org/blockfreight/blockfreight-alpha.svg?branch=0.2.0-dev)](https://travis-ci.org/blockfreight/blockfreight-alpha)
+
 Package: go-blockfreight - Blockfreight™ v0.2.0
 
 ***Description:*** go-blockfreight is the reference full node implementation and cli-tool for Blockfreight™ the blockchain of global freight.
