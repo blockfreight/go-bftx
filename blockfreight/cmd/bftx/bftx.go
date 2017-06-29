@@ -151,13 +151,13 @@ func main() {
                 return cmdConsole(app, c)
             },
         },
-        {
+        /*{
             Name:  "echo",
             Usage: "Have the application echo a message (Parameters: value_to_print)",
             Action: func(c *cli.Context) error {
                 return cmdEcho(c)
             },
-        },
+        },*/
         {
             Name:  "info",
             Usage: "Get some info about the application (Parameters: none)",
@@ -250,7 +250,7 @@ func main() {
             },
         },
         {
-            Name:  "print",
+            Name:  "echo",
             Usage: "Print clearly a BF_TX (Parameters: BF_TX id)",
             Action: func(c *cli.Context) error {
                 return cmdPrintBfTx(c)
@@ -348,7 +348,7 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 }
 
 // Have the application echo a message
-func cmdEcho(c *cli.Context) error {
+/*func cmdEcho(c *cli.Context) error {
     args := c.Args()
     if len(args) != 1 {
         return errors.New("Command echo takes 1 argument")
@@ -359,7 +359,7 @@ func cmdEcho(c *cli.Context) error {
         Result: string(resEcho.Data),
     })
     return nil
-}
+}*/
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
