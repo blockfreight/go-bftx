@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/bft.go
+// File: ./blockfreight/lib/leveldb/leveldb.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -42,82 +42,135 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
-// Package bft implements the main functions to work with the Blockfreight™ Network.
-package bft
+// Package leveldb provides some useful functions to work with LevelDB.
+// It has common database functions as OpenDB, CloseDB, Insert and Iterate.
+package leveldb
 
 import (
     // =======================
     // Golang Standard library
     // =======================
-    "strings"   // Implements simple functions to manipulate UTF-8 encoded strings.
+    "encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+    "errors"        // Implements functions to manipulate errors.
+    "strconv"       // Implements conversions to and from string representations of basic data types.
 
-    // ===============
-    // Tendermint Core
-    // ===============
-    "github.com/tendermint/abci/types"
-    tendermint "github.com/tendermint/go-common"
-    "github.com/tendermint/go-merkle"
+    // ====================
+    // Third-party packages
+    // ====================
+    "github.com/syndtr/goleveldb/leveldb"   // Implementation of the LevelDB key/value database in the Go programming language.
+    
+    // ======================
+    // Blockfreight™ packages
+    // ======================
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-type BftApplication struct {
-    types.BaseApplication
+var db_path string = "bft-db"   //Folder name where is going to be the LevelDB
 
-    state merkle.Tree
+// OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that ocurred.
+func OpenDB(db_path string) (db *leveldb.DB, err error) {
+    db, err = leveldb.OpenFile(db_path, nil)
+    return db, err
+
 }
 
-func NewBftApplication() *BftApplication {
-    state := merkle.NewIAVLTree(0, nil)
-    return &BftApplication{state: state}
+// CloseDB is a function that receives a DB pointer that closes the connection to DB.
+func CloseDB(db *leveldb.DB) {
+    db.Close()
 }
 
-func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-    return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size())}
+// InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool. 
+func InsertBF_TX(key string, value string, db *leveldb.DB) error {
+    return db.Put([]byte(key), []byte(value), nil)
 }
 
-// tx is either "key=value" or just arbitrary bytes
-func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-    parts := strings.Split(string(tx), "=")
-    if len(parts) == 2 {
-        app.state.Set([]byte(parts[0]), []byte(parts[1]))
-    } else {
-        app.state.Set(tx, tx)
+// Total is a function that returns the total of BF_TX stored in the DB.
+func Total() (int, error) {
+    db, err := OpenDB(db_path)
+    defer CloseDB(db)
+    if err != nil {
+        return 0, err
     }
-    return types.OK
-}
 
-func (app *BftApplication) CheckTx(tx []byte) types.Result {
-    return types.OK
-}
-
-func (app *BftApplication) Commit() types.Result {
-    hash := app.state.Hash()
-    return types.NewResultOK(hash, "")
-}
-
-func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
-    if reqQuery.Prove {
-        value, proof, exists := app.state.Proof(reqQuery.Data)
-        resQuery.Index = -1 // TODO make Proof return index
-        resQuery.Key = reqQuery.Data
-        resQuery.Value = value
-        resQuery.Proof = proof
-        if exists {
-            resQuery.Log = "exists"
-        } else {
-            resQuery.Log = "does not exist"
-        }
-        return
-    } else {
-        index, value, exists := app.state.Get(reqQuery.Data)
-        resQuery.Index = int64(index)
-        resQuery.Value = value
-        if exists {
-            resQuery.Log = "exists"
-        } else {
-            resQuery.Log = "does not exist"
-        }
-        return
+    iter := db.NewIterator(nil, nil)
+    n := 0
+    for iter.Next() {
+        n += 1
     }
+    iter.Release()
+    return n, iter.Error()
+}
+
+// RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
+func RecordOnDB( id int, json string) error {
+    db, err := OpenDB(db_path)
+    defer CloseDB(db)
+    if err != nil {
+        return err
+    }
+    err = InsertBF_TX(strconv.Itoa(id), json, db)
+    if err != nil {
+        return err
+    }
+    return nil
+}
+
+// GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
+func GetBfTx(id string) (bf_tx.BF_TX, error) {
+    var bftx bf_tx.BF_TX
+    db, err := OpenDB(db_path)
+    defer CloseDB(db)
+    if err != nil {
+        return bftx, err
+    }
+
+    data, err := db.Get([]byte(id), nil)
+    if err != nil {
+        if(err.Error() == "leveldb: not found"){
+            return bftx, errors.New("LevelDB Get function: BF_TX not found.")
+        }
+        return bftx, errors.New("LevelDB Get function: "+err.Error())
+    }
+    
+    json.Unmarshal(data, &bftx)
+    return bftx, nil
+}
+
+// Verify is a function that receives a content and look for a BF_TX that has the same content.
+func Verify(jcontent string) ([]byte, error){
+    var bftx bf_tx.BF_TX
+    db, err := OpenDB(db_path)
+    defer CloseDB(db)
+    if err != nil {
+        return nil, err
+    }
+
+    iter := db.NewIterator(nil, nil)
+    for iter.Next() {
+        key := iter.Key()
+        value := iter.Value()
+
+        // Get a BF_TX by id
+        json.Unmarshal(value, &bftx)
+        
+        // Reinitialize the BF_TX
+        bftx = bf_tx.Reinitialize(bftx)
+    
+        // Get the BF_TX old_content in string format
+        content, err := bf_tx.BF_TXContent(bftx)
+        if err != nil {
+            return nil, err
+        }
+    
+        if jcontent == content {
+            iter.Release()
+            //strconv.Atoi(string(buf))
+            return key, nil
+        }
+    }
+    iter.Release()
+
+    return nil, iter.Error()
 }
 
 // =================================================

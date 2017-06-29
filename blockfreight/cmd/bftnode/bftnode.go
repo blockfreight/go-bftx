@@ -63,7 +63,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/bft" // Implements the main functions to work with the Blockfreight™ Network.
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib" // Implements the main functions to work with the Blockfreight™ Network.
 )
 
 func main() {
