@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/bft.go
+// File: ./blockfreight/config/config.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
