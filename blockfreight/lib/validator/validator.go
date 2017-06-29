@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/validator/validator.go
+// File: ./blockfreight/lib/validator/validator.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -55,7 +55,7 @@ import (
     // ======================
     // Blockfreight™ packages
     // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
 // ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.

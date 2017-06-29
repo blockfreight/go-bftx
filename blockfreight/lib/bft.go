@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/crypto/crypto.go
+// File: ./blockfreight/lib/bft.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -42,77 +42,82 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
-// Package crypto provides useful functions to sign BF_TX.
-package crypto
+// Package bft implements the main functions to work with the Blockfreight™ Network.
+package bft
 
 import (
     // =======================
     // Golang Standard library
     // =======================
-    "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-    "crypto/elliptic"   // Implements several standard elliptic curves over prime fields.
-    "crypto/md5"        // Implements the MD5 hash algorithm as defined in RFC 1321.
-    "crypto/rand"       // Implements a cryptographically secure pseudorandom number generator.
-    "hash"              // Provides interfaces for hash functions.
-    "io"                // Provides basic interfaces to I/O primitives.
-    "math/big"          // Implements arbitrary-precision arithmetic (big numbers).
-    "strconv"           // Implements conversions to and from string representations of basic data types.
+    "strings"   // Implements simple functions to manipulate UTF-8 encoded strings.
 
-    // ======================
-    // Blockfreight™ packages
-    // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+    // ===============
+    // Tendermint Core
+    // ===============
+    "github.com/tendermint/abci/types"
+    tendermint "github.com/tendermint/go-common"
+    "github.com/tendermint/go-merkle"
 )
 
-// Function Sign_BF_TX has the whole process of signing each BF_TX.
-func Sign_BF_TX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
+type BftApplication struct {
+    types.BaseApplication
 
-    content, err := bf_tx.BF_TXContent(bftx)
-    if err != nil {
-        return bftx, err
+    state merkle.Tree
+}
+
+func NewBftApplication() *BftApplication {
+    state := merkle.NewIAVLTree(0, nil)
+    return &BftApplication{state: state}
+}
+
+func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
+    return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size())}
+}
+
+// tx is either "key=value" or just arbitrary bytes
+func (app *BftApplication) DeliverTx(tx []byte) types.Result {
+    parts := strings.Split(string(tx), "=")
+    if len(parts) == 2 {
+        app.state.Set([]byte(parts[0]), []byte(parts[1]))
+    } else {
+        app.state.Set(tx, tx)
     }
+    return types.OK
+}
 
-    pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+func (app *BftApplication) CheckTx(tx []byte) types.Result {
+    return types.OK
+}
 
-    privatekey := new(ecdsa.PrivateKey)
-    privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
-    if err != nil {
-        return bftx, err
+func (app *BftApplication) Commit() types.Result {
+    hash := app.state.Hash()
+    return types.NewResultOK(hash, "")
+}
+
+func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
+    if reqQuery.Prove {
+        value, proof, exists := app.state.Proof(reqQuery.Data)
+        resQuery.Index = -1 // TODO make Proof return index
+        resQuery.Key = reqQuery.Data
+        resQuery.Value = value
+        resQuery.Proof = proof
+        if exists {
+            resQuery.Log = "exists"
+        } else {
+            resQuery.Log = "does not exist"
+        }
+        return
+    } else {
+        index, value, exists := app.state.Get(reqQuery.Data)
+        resQuery.Index = int64(index)
+        resQuery.Value = value
+        if exists {
+            resQuery.Log = "exists"
+        } else {
+            resQuery.Log = "does not exist"
+        }
+        return
     }
-    pubkey := privatekey.PublicKey
-
-    // Sign ecdsa style
-    var h hash.Hash
-    h = md5.New()
-    r := big.NewInt(0)
-    s := big.NewInt(0)
-
-    io.WriteString(h, content)
-    signhash := h.Sum(nil)
-
-    r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
-    if err != nil {
-        return bftx, err
-    }
-
-    signature := r.Bytes()
-    signature = append(signature, s.Bytes()...)
-    
-    sign := ""
-    for i, _ := range signature {
-        sign += strconv.Itoa(int(signature[i]))
-    }
-    
-    // Verification
-    verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
-    
-    //Set Private Key and Sign to BF_TX
-    bftx.PrivateKey = *privatekey
-    bftx.Signhash = signhash
-    bftx.Signature = sign
-    bftx.Verified = verifystatus
-    
-    return bftx, nil
 }
 
 // =================================================

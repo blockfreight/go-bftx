@@ -1,4 +1,4 @@
-// File: ./blockfreight/bft/bf_tx/bf_tx.go
+// File: ./blockfreight/lib/bf_tx/bf_tx.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -61,7 +61,7 @@ import (
     // ======================
     // Blockfreight™ packages
     // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/common"    // Implements common functions for Blockfreight™
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/common"    // Implements common functions for Blockfreight™
 )
 
 // SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes. 

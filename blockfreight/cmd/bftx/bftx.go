@@ -73,10 +73,10 @@ import (
     // ======================
     // Blockfreight™ packages
     // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/bf_tx"     // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/crypto"    // Provides useful functions to sign BF_TX.
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/leveldb"   // Provides some useful functions to work with LevelDB.
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/bft/validator" // Provides functions to assure the input JSON is correct.
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx"     // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/crypto"    // Provides useful functions to sign BF_TX.
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/leveldb"   // Provides some useful functions to work with LevelDB.
+    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/validator" // Provides functions to assure the input JSON is correct.
     "github.com/blockfreight/blockfreight-alpha/blockfreight/version"       // Defines the current version of the project.
 )
 
