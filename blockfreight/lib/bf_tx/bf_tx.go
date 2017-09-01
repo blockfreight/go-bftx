@@ -52,11 +52,14 @@ import (
     // =======================
     "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
     "encoding/json"     // Implements encoding and decoding of JSON as defined in RFC 4627.
+    "crypto/sha256"     // Implements the SHA256 Algorithm for Hash.
+    "fmt"               // Implements formatted I/O with functions analogous to C's printf and scanf.
 
     // ====================
     // Third-party packages
     // ====================
     "github.com/davecgh/go-spew/spew"   // Implements a deep pretty printer for Go data structures to aid in debugging.
+    "github.com/satori/go.uuid"
 
     // ======================
     // Blockfreight™ packages
@@ -72,7 +75,24 @@ func SetBF_TX(jsonpath string) (BF_TX, error) {
         return bf_tx, err
     }
     json.Unmarshal(file, &bf_tx)
+    bf_tx.Id = uuid.NewV4()
     return bf_tx, nil
+}
+
+//HashBF_TX hashes the BF_TX object
+func HashBF_TX(bf_tx BF_TX) ([]byte, error){
+  bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
+
+  hash := sha256.New()
+  hash.Write(bf_tx_bytes)
+
+  return hash.Sum(nil), nil
+}
+
+func HashBF_TX_salt(hash []byte, salt []byte) []byte{
+  sha := sha256.New()
+  sha.Write(append(hash[:], salt[:]...))
+  return sha.Sum(nil) 
 }
 
 // BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
@@ -99,7 +119,6 @@ func State(bf_tx BF_TX) string {
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
 func Reinitialize(bf_tx BF_TX) BF_TX {
-    bf_tx.Id = 0
     bf_tx.PrivateKey.Curve = nil
     bf_tx.PrivateKey.X = nil
     bf_tx.PrivateKey.Y = nil
@@ -108,7 +127,6 @@ func Reinitialize(bf_tx BF_TX) BF_TX {
     bf_tx.Signature = ""
     bf_tx.Verified = false
     bf_tx.Transmitted = false
-    bf_tx.Amendment = 0
     return bf_tx
 }
 
@@ -123,13 +141,13 @@ type BF_TX struct {
     // ===================================
     // Blockfreight Transaction attributes
     // ===================================
-    Id          int
+    Id          uuid.UUID
     PrivateKey  ecdsa.PrivateKey
     Signhash    []uint8
     Signature   string
     Verified    bool
     Transmitted bool
-    Amendment   int
+    Amendment   uuid.UUID
 }
 
 type Properties struct {
