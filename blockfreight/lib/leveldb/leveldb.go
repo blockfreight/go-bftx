@@ -52,7 +52,6 @@ import (
     // =======================
     "encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
     "errors"        // Implements functions to manipulate errors.
-    "strconv"       // Implements conversions to and from string representations of basic data types.
 
     // ====================
     // Third-party packages
@@ -102,13 +101,13 @@ func Total() (int, error) {
 }
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
-func RecordOnDB( id int, json string) error {
+func RecordOnDB( id string, json string) error {
     db, err := OpenDB(db_path)
     defer CloseDB(db)
     if err != nil {
         return err
     }
-    err = InsertBF_TX(strconv.Itoa(id), json, db)
+    err = InsertBF_TX(id, json, db)
     if err != nil {
         return err
     }

@@ -51,6 +51,7 @@ import (
     // =======================
     "bufio"        // Implements buffered I/O.
     "encoding/hex" // Implements hexadecimal encoding and decoding.
+   // "encoding/json"
     "errors"       // Implements functions to manipulate errors.
     "fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
     "io"           // Provides basic interfaces to I/O primitives.
@@ -58,6 +59,7 @@ import (
     "os"           // Provides a platform-independent interface to operating system functionality.
     "strconv"      // Implements conversions to and from string representations of basic data types.
     "strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
+   // "net/http"     // Provides HTTP client and server implementations
 
     // ====================
     // Third-party packages
@@ -96,6 +98,20 @@ type queryResponse struct {
     Value  []byte
     Height uint64
     Proof  []byte
+}
+
+type getResponse struct {
+  result struct {
+    block_meta struct {
+      block_id struct {
+        hash string
+        parts struct {
+          total uint16
+          hash string
+        }
+      }
+    }
+  }
 }
 
 // client is a global variable so it can be reused by the console
@@ -263,6 +279,13 @@ func main() {
                 os.Exit(0)
             },
         },
+        {
+          Name: "UUID",
+          Usage: "Generate a new UUID",
+          Action: func (c *cli.Context) error {
+            return cmdGenerate_bftx_id(c)
+          },
+        },
     }
     app.Before = before
     err := app.Run(os.Args)
@@ -307,6 +330,54 @@ func persistentArgs(line []byte) []string {
 }
 
 //--------------------------------------------------------------------------------
+
+func cmdGenerate_bftx_id(c *cli.Context) error {
+  args := c.Args()
+  if len(args) != 1 {
+    return errors.New("Command for generating UUID takes 1 argument")
+  }
+
+  // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
+  salt, err := getBlockIDHash()
+  if err != nil {
+    return err
+  }
+
+  // Read JSON and instance the BF_TX structure
+  bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+  if err != nil {
+    return err
+  }
+
+  // Hash BF_TX Object
+  hash, err := bf_tx.HashBF_TX(bftx)
+  if err != nil {
+    return err
+  }
+
+  // Generate BF_TX id
+  bf_tx_id := bf_tx.HashBF_TX_salt(hash, salt)
+
+  fmt.Printf("%x", bf_tx_id)
+
+  //printResponse (blah blah)
+
+  return nil
+}
+
+func getBlockIDHash() ([]byte, error) {
+ /* response := getResponse{}
+  resp, err := http.Get("http://localhost:46657/block?height=1")
+  if err != nil {
+    return nil, err
+  }
+
+  defer resp.Body.Close()
+  test := json.NewDecoder(resp.Body).Decode(response)
+
+  fmt.Printf("%x", test)*/
+  return []byte("Ud2342HUDI764ud3sI4DUI"), nil
+}
 
 func cmdBatch(app *cli.App, c *cli.Context) error {
     bufReader := bufio.NewReader(os.Stdin)
@@ -460,12 +531,6 @@ func cmdConstructBfTx(c *cli.Context) error {
     if len(args) != 1 {
         return errors.New("Command construct takes 1 argument")
     }
-
-    // Query the total of BF_TX in DB
-    n, err := leveldb.Total()
-    if err != nil {
-        return err
-    }
     
     // Read JSON and instance the BF_TX structure
     bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
@@ -480,9 +545,6 @@ func cmdConstructBfTx(c *cli.Context) error {
         return err
     }
 
-    // Set the BF_TX id
-    bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
-
     // Get the BF_TX content in string format
     content, err := bf_tx.BF_TXContent(bftx)
     if err != nil {
@@ -490,14 +552,14 @@ func cmdConstructBfTx(c *cli.Context) error {
     }
 
     // Save on DB
-    err = leveldb.RecordOnDB( bftx.Id, content)
+    err = leveldb.RecordOnDB( bftx.Id.String(), content)
     if err != nil {
         return err
     }
 
     // Result
     printResponse(c, response{
-        Result: "BF_TX Id: "+strconv.Itoa(bftx.Id),
+        Result: "BF_TX Id: "+ bftx.Id.String(),
     })
 
     return nil
@@ -532,7 +594,7 @@ func cmdSignBfTx(c *cli.Context) error {
     }
     
     // Update on DB
-    err = leveldb.RecordOnDB(bftx.Id, content)
+    err = leveldb.RecordOnDB(bftx.Id.String(), content)
     if err != nil {
         return err
     }
@@ -573,7 +635,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
     }
     
     // Update on DB
-    err = leveldb.RecordOnDB(bftx.Id, content)
+    err = leveldb.RecordOnDB(bftx.Id.String(), content)
     if err != nil {
         return err
     }
@@ -682,7 +744,7 @@ func cmdAppendBfTx(c *cli.Context) error {
     }
 
     // Query the total of BF_TX in DB
-    n, err := leveldb.Total()
+   // n, err := leveldb.Total()
     if err != nil {
         return err
     }
@@ -694,7 +756,7 @@ func cmdAppendBfTx(c *cli.Context) error {
     }
     
     // Set the BF_TX id
-    new_bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
+    //new_bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
 
     // Update the BF_TX appended attribute of the old BF_TX
     old_bftx.Amendment = new_bftx.Id
@@ -710,20 +772,20 @@ func cmdAppendBfTx(c *cli.Context) error {
     }
 
     // Save on DB
-    err = leveldb.RecordOnDB(new_bftx.Id, new_content)
+    err = leveldb.RecordOnDB(new_bftx.Id.String(), new_content)
     if err != nil {
         return err
     }
 
     // Update on DB
-    err = leveldb.RecordOnDB(old_bftx.Id, old_content)
+    err = leveldb.RecordOnDB(old_bftx.Id.String(), old_content)
     if err != nil {
         return err
     }
 
     //Result
     printResponse(c, response{
-        Result: "BF_TX Id: "+strconv.Itoa(new_bftx.Id),
+      Result: "BF_TX Id: "+new_bftx.Id.String(),
     })
 
     return nil
