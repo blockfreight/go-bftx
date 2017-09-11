@@ -51,7 +51,6 @@ import (
     // =======================
     "bufio"        // Implements buffered I/O.
     "encoding/hex" // Implements hexadecimal encoding and decoding.
-   // "encoding/json"
     "errors"       // Implements functions to manipulate errors.
     "fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
     "io"           // Provides basic interfaces to I/O primitives.
@@ -59,7 +58,6 @@ import (
     "os"           // Provides a platform-independent interface to operating system functionality.
     "strconv"      // Implements conversions to and from string representations of basic data types.
     "strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
-   // "net/http"     // Provides HTTP client and server implementations
 
     // ====================
     // Third-party packages
@@ -98,20 +96,6 @@ type queryResponse struct {
     Value  []byte
     Height uint64
     Proof  []byte
-}
-
-type getResponse struct {
-  result struct {
-    block_meta struct {
-      block_id struct {
-        hash string
-        parts struct {
-          total uint16
-          hash string
-        }
-      }
-    }
-  }
 }
 
 // client is a global variable so it can be reused by the console
@@ -230,7 +214,7 @@ func main() {
                 return cmdCommit(c)
             },
         },
-        /*{
+       /* {
             Name:  "query",
             Usage: "Query application state",
             Action: func(c *cli.Context) error {
@@ -279,13 +263,13 @@ func main() {
                 os.Exit(0)
             },
         },
-        {
+        /*{
           Name: "UUID",
           Usage: "Generate a new UUID",
           Action: func (c *cli.Context) error {
             return cmdGenerate_bftx_id(c)
           },
-        },
+        },*/
     }
     app.Before = before
     err := app.Run(os.Args)
@@ -331,52 +315,36 @@ func persistentArgs(line []byte) []string {
 
 //--------------------------------------------------------------------------------
 
-func cmdGenerate_bftx_id(c *cli.Context) error {
-  args := c.Args()
-  if len(args) != 1 {
-    return errors.New("Command for generating UUID takes 1 argument")
-  }
-
+func cmdGenerate_bftx_id(bftx bf_tx.BF_TX) ([]byte, error) {
   // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
-  salt, err := getBlockIDHash()
+  salt, err := getBlockAppHash()
   if err != nil {
-    return err
-  }
-
-  // Read JSON and instance the BF_TX structure
-  bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
-  if err != nil {
-    return err
+    return nil, err
   }
 
   // Hash BF_TX Object
   hash, err := bf_tx.HashBF_TX(bftx)
   if err != nil {
-    return err
+    return nil, err
   }
 
   // Generate BF_TX id
   bf_tx_id := bf_tx.HashBF_TX_salt(hash, salt)
 
-  fmt.Printf("%x", bf_tx_id)
-
   //printResponse (blah blah)
 
-  return nil
+  return bf_tx_id, nil
 }
 
-func getBlockIDHash() ([]byte, error) {
- /* response := getResponse{}
-  resp, err := http.Get("http://localhost:46657/block?height=1")
-  if err != nil {
-    return nil, err
-  }
+func getBlockAppHash() ([]byte, error) {
+	resInfo, err := client.InfoSync()
+	if err != nil {
+		return nil, err
+	}
 
-  defer resp.Body.Close()
-  test := json.NewDecoder(resp.Body).Decode(response)
+  fmt.Printf("%+v\n", resInfo)
 
-  fmt.Printf("%x", test)*/
-  return []byte("Ud2342HUDI764ud3sI4DUI"), nil
+	return resInfo.LastBlockAppHash, nil
 }
 
 func cmdBatch(app *cli.App, c *cli.Context) error {
@@ -538,6 +506,14 @@ func cmdConstructBfTx(c *cli.Context) error {
         return err
     }
 
+    newId, err := cmdGenerate_bftx_id(bftx)
+    if err != nil {
+        return err
+    }
+
+    bftx.Id = fmt.Sprintf("%x", newId)
+
+
     // Re-validate a BF_TX before create a BF_TX
     result, err := validator.ValidateBf_Tx(bftx)
     if err != nil {
@@ -552,14 +528,14 @@ func cmdConstructBfTx(c *cli.Context) error {
     }
 
     // Save on DB
-    err = leveldb.RecordOnDB( bftx.Id.String(), content)
+    err = leveldb.RecordOnDB(bftx.Id, content)
     if err != nil {
         return err
     }
 
     // Result
     printResponse(c, response{
-        Result: "BF_TX Id: "+ bftx.Id.String(),
+        Result: "BF_TX Id: "+ bftx.Id,
     })
 
     return nil
@@ -594,7 +570,7 @@ func cmdSignBfTx(c *cli.Context) error {
     }
     
     // Update on DB
-    err = leveldb.RecordOnDB(bftx.Id.String(), content)
+    err = leveldb.RecordOnDB(string(bftx.Id), content)
     if err != nil {
         return err
     }
@@ -635,16 +611,16 @@ func cmdBroadcastBfTx(c *cli.Context) error {
     }
     
     // Update on DB
-    err = leveldb.RecordOnDB(bftx.Id.String(), content)
+    err = leveldb.RecordOnDB(string(bftx.Id), content)
     if err != nil {
         return err
     }
-
-    // Deliver / Publish a BF_TX
-    res := client.DeliverTxSync([]byte(content))
     
     // Check the BF_TX hash
-    res = client.CommitSync()
+	res := client.CheckTxSync([]byte(content))
+
+    // Deliver / Publish a BF_TX
+    res = client.DeliverTxSync([]byte(content))
 
     //Result
     printResponse(c, response{
@@ -659,11 +635,18 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
-    res := client.CommitSync()
+    res, err := client.EndBlockSync(0)
+    if err != nil {
+      return err
+    }
+
+  fmt.Printf("%+v\n", res)
+
+    result := client.CommitSync()
     printResponse(c, response{
-        Code: res.Code,
-        Data: res.Data,
-        Log:  res.Log,
+        Code: result.Code,
+        Data: result.Data,
+        Log:  result.Log,
     })
     return nil
 }
@@ -678,12 +661,12 @@ func cmdCommit(c *cli.Context) error {
 
     // TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
     // TODO JCNM: Query from blockchain
-    bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+args[0])
+    bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+string(args[0]))
     queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
 
     resQuery, err := client.QuerySync(types.RequestQuery{
         Data:   queryBytes,
-        Path:   "/store", // TOOD expose
+        Path:   "/block", // TOOD expose
         Height: 0,        // TODO expose
         //Prove:  true,     // TODO expose
     })
@@ -772,20 +755,20 @@ func cmdAppendBfTx(c *cli.Context) error {
     }
 
     // Save on DB
-    err = leveldb.RecordOnDB(new_bftx.Id.String(), new_content)
+    err = leveldb.RecordOnDB(string(new_bftx.Id), new_content)
     if err != nil {
         return err
     }
 
     // Update on DB
-    err = leveldb.RecordOnDB(old_bftx.Id.String(), old_content)
+    err = leveldb.RecordOnDB(string(old_bftx.Id), old_content)
     if err != nil {
         return err
     }
 
     //Result
     printResponse(c, response{
-      Result: "BF_TX Id: "+new_bftx.Id.String(),
+      Result: "BF_TX Id: "+string(new_bftx.Id),
     })
 
     return nil
