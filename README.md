@@ -87,6 +87,7 @@ If you’d like to leave feedback, please [open an issue on GitHub](https://gith
 
 Blockfreight™ application code follows this convention:
 
+```
   ├──.gitignore
   ├──.travis.yml
   ├──glide.lock
@@ -134,6 +135,7 @@ Blockfreight™ application code follows this convention:
      ├──app
      ├──static
      └──template
+```
 
 ## Blockfreight™ Application Code
 
