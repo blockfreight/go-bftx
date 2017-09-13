@@ -2,11 +2,11 @@
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
-// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Author: Julian Nunez, Neil Tran, Julian Smith, Gian Felipe & contributors
 // Site: https://blockfreight.com
 // Support: <support@blockfreight.com>
 
-// Copyright 2017 Blockfreight, Inc.
+// Copyright © 2017 Blockfreight, Inc. All Rights Reserved.
 
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -46,73 +46,73 @@
 package crypto
 
 import (
-    // =======================
-    // Golang Standard library
-    // =======================
-    "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-    "crypto/elliptic"   // Implements several standard elliptic curves over prime fields.
-    "crypto/md5"        // Implements the MD5 hash algorithm as defined in RFC 1321.
-    "crypto/rand"       // Implements a cryptographically secure pseudorandom number generator.
-    "hash"              // Provides interfaces for hash functions.
-    "io"                // Provides basic interfaces to I/O primitives.
-    "math/big"          // Implements arbitrary-precision arithmetic (big numbers).
-    "strconv"           // Implements conversions to and from string representations of basic data types.
+	// =======================
+	// Golang Standard library
+	// =======================
+	"crypto/ecdsa"    // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/elliptic" // Implements several standard elliptic curves over prime fields.
+	"crypto/md5"      // Implements the MD5 hash algorithm as defined in RFC 1321.
+	"crypto/rand"     // Implements a cryptographically secure pseudorandom number generator.
+	"hash"            // Provides interfaces for hash functions.
+	"io"              // Provides basic interfaces to I/O primitives.
+	"math/big"        // Implements arbitrary-precision arithmetic (big numbers).
+	"strconv"         // Implements conversions to and from string representations of basic data types.
 
-    // ======================
-    // Blockfreight™ packages
-    // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	// ======================
+	// Blockfreight™ packages
+	// ======================
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
 // Function Sign_BF_TX has the whole process of signing each BF_TX.
 func Sign_BF_TX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
-    content, err := bf_tx.BF_TXContent(bftx)
-    if err != nil {
-        return bftx, err
-    }
+	content, err := bf_tx.BF_TXContent(bftx)
+	if err != nil {
+		return bftx, err
+	}
 
-    pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
 
-    privatekey := new(ecdsa.PrivateKey)
-    privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
-    if err != nil {
-        return bftx, err
-    }
-    pubkey := privatekey.PublicKey
+	privatekey := new(ecdsa.PrivateKey)
+	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
+	if err != nil {
+		return bftx, err
+	}
+	pubkey := privatekey.PublicKey
 
-    // Sign ecdsa style
-    var h hash.Hash
-    h = md5.New()
-    r := big.NewInt(0)
-    s := big.NewInt(0)
+	// Sign ecdsa style
+	var h hash.Hash
+	h = md5.New()
+	r := big.NewInt(0)
+	s := big.NewInt(0)
 
-    io.WriteString(h, content)
-    signhash := h.Sum(nil)
+	io.WriteString(h, content)
+	signhash := h.Sum(nil)
 
-    r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
-    if err != nil {
-        return bftx, err
-    }
+	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
+	if err != nil {
+		return bftx, err
+	}
 
-    signature := r.Bytes()
-    signature = append(signature, s.Bytes()...)
-    
-    sign := ""
-    for i, _ := range signature {
-        sign += strconv.Itoa(int(signature[i]))
-    }
-    
-    // Verification
-    verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
-    
-    //Set Private Key and Sign to BF_TX
-    bftx.PrivateKey = *privatekey
-    bftx.Signhash = signhash
-    bftx.Signature = sign
-    bftx.Verified = verifystatus
-    
-    return bftx, nil
+	signature := r.Bytes()
+	signature = append(signature, s.Bytes()...)
+
+	sign := ""
+	for i, _ := range signature {
+		sign += strconv.Itoa(int(signature[i]))
+	}
+
+	// Verification
+	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
+
+	//Set Private Key and Sign to BF_TX
+	bftx.PrivateKey = *privatekey
+	bftx.Signhash = signhash
+	bftx.Signature = sign
+	bftx.Verified = verifystatus
+
+	return bftx, nil
 }
 
 // =================================================

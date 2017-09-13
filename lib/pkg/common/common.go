@@ -2,11 +2,11 @@
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
-// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Author: Julian Nunez, Neil Tran, Julian Smith, Gian Felipe & contributors
 // Site: https://blockfreight.com
 // Support: <support@blockfreight.com>
 
-// Copyright 2017 Blockfreight, Inc.
+// Copyright © 2017 Blockfreight, Inc. All Rights Reserved.
 
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -46,24 +46,23 @@
 package common
 
 import (
-    // =======================
-    // Golang Standard library
-    // =======================
-    "errors"    // Implements functions to manipulate errors.
-    "fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
-    "io/ioutil" // Implements some I/O utility functions.
+	// =======================
+	// Golang Standard library
+	// =======================
+	"errors"    // Implements functions to manipulate errors.
+	"fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io/ioutil" // Implements some I/O utility functions.
 )
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
 func ReadJSON(path string) ([]byte, error) {
-    fmt.Println("\nReading " + path + "\n")
-    file, e := ioutil.ReadFile(path)
-    if e != nil {
-        return file, errors.New("File error: "+e.Error())
-    }
-    return file, nil
+	fmt.Println("\nReading " + path + "\n")
+	file, e := ioutil.ReadFile(path)
+	if e != nil {
+		return file, errors.New("File error: " + e.Error())
+	}
+	return file, nil
 }
-
 
 // =================================================
 // Blockfreight™ | The blockchain of global freight.

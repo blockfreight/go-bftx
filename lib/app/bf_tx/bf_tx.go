@@ -2,11 +2,11 @@
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
-// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Author: Julian Nunez, Neil Tran, Julian Smith, Gian Felipe & contributors
 // Site: https://blockfreight.com
 // Support: <support@blockfreight.com>
 
-// Copyright 2017 Blockfreight, Inc.
+// Copyright © 2017 Blockfreight, Inc. All Rights Reserved.
 
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -42,259 +42,259 @@
 // =================================================================================================================================================
 // =================================================================================================================================================
 
-// Package bf_tx is a package that defines the Blockfreight™ Transaction (BF_TX) transaction standard 
+// Package bf_tx is a package that defines the Blockfreight™ Transaction (BF_TX) transaction standard
 // and provides some useful functions to work with the BF_TX.
 package bf_tx
 
 import (
-    // =======================
-    // Golang Standard library
-    // =======================
-    "crypto/ecdsa"      // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-    "encoding/json"     // Implements encoding and decoding of JSON as defined in RFC 4627.
-    "crypto/sha256"     // Implements the SHA256 Algorithm for Hash.
-    "fmt"               // Implements formatted I/O with functions analogous to C's printf and scanf.
+	// =======================
+	// Golang Standard library
+	// =======================
+	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
+	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
 
-    // ====================
-    // Third-party packages
-    // ====================
-    "github.com/davecgh/go-spew/spew"   // Implements a deep pretty printer for Go data structures to aid in debugging.
-    "github.com/satori/go.uuid"
+	// ====================
+	// Third-party packages
+	// ====================
+	"github.com/davecgh/go-spew/spew" // Implements a deep pretty printer for Go data structures to aid in debugging.
+	"github.com/satori/go.uuid"
 
-    // ======================
-    // Blockfreight™ packages
-    // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/common"    // Implements common functions for Blockfreight™
+	// ======================
+	// Blockfreight™ packages
+	// ======================
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/common" // Implements common functions for Blockfreight™
 )
 
-// SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes. 
+// SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBF_TX(jsonpath string) (BF_TX, error) {
-    var bf_tx BF_TX
-    file, err := common.ReadJSON(jsonpath)
-    if err != nil {
-        return bf_tx, err
-    }
-    json.Unmarshal(file, &bf_tx)
-    bf_tx.Id = uuid.NewV4()
-    return bf_tx, nil
+	var bf_tx BF_TX
+	file, err := common.ReadJSON(jsonpath)
+	if err != nil {
+		return bf_tx, err
+	}
+	json.Unmarshal(file, &bf_tx)
+	bf_tx.Id = uuid.NewV4()
+	return bf_tx, nil
 }
 
 //HashBF_TX hashes the BF_TX object
-func HashBF_TX(bf_tx BF_TX) ([]byte, error){
-  bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
+func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
+	bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
 
-  hash := sha256.New()
-  hash.Write(bf_tx_bytes)
+	hash := sha256.New()
+	hash.Write(bf_tx_bytes)
 
-  return hash.Sum(nil), nil
+	return hash.Sum(nil), nil
 }
 
-func HashBF_TX_salt(hash []byte, salt []byte) []byte{
-  sha := sha256.New()
-  sha.Write(append(hash[:], salt[:]...))
-  return sha.Sum(nil) 
+func HashBF_TX_salt(hash []byte, salt []byte) []byte {
+	sha := sha256.New()
+	sha.Write(append(hash[:], salt[:]...))
+	return sha.Sum(nil)
 }
 
 // BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
 func BF_TXContent(bf_tx BF_TX) (string, error) {
-    jsonContent, err := json.Marshal(bf_tx)
-    return string(jsonContent), err
+	jsonContent, err := json.Marshal(bf_tx)
+	return string(jsonContent), err
 }
 
 // PrintBF_TX receives a BF_TX and prints it clearly.
-func PrintBF_TX(bf_tx BF_TX){
-    spew.Dump(bf_tx)
+func PrintBF_TX(bf_tx BF_TX) {
+	spew.Dump(bf_tx)
 }
 
 // State reports the current state of a BF_TX
 func State(bf_tx BF_TX) string {
-    if(bf_tx.Transmitted){
-        return "Transmitted!"
-    } else if(bf_tx.Verified){
-        return "Signed!"
-    } else {
-        return "Constructed!"
-    }
+	if bf_tx.Transmitted {
+		return "Transmitted!"
+	} else if bf_tx.Verified {
+		return "Signed!"
+	} else {
+		return "Constructed!"
+	}
 }
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
 func Reinitialize(bf_tx BF_TX) BF_TX {
-    bf_tx.PrivateKey.Curve = nil
-    bf_tx.PrivateKey.X = nil
-    bf_tx.PrivateKey.Y = nil
-    bf_tx.PrivateKey.D = nil
-    bf_tx.Signhash = nil
-    bf_tx.Signature = ""
-    bf_tx.Verified = false
-    bf_tx.Transmitted = false
-    return bf_tx
+	bf_tx.PrivateKey.Curve = nil
+	bf_tx.PrivateKey.X = nil
+	bf_tx.PrivateKey.Y = nil
+	bf_tx.PrivateKey.D = nil
+	bf_tx.Signhash = nil
+	bf_tx.Signature = ""
+	bf_tx.Verified = false
+	bf_tx.Transmitted = false
+	return bf_tx
 }
 
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
 type BF_TX struct {
-    // =========================
-    // Bill of Lading attributes
-    // =========================
-    Type       string
-    Properties Properties
+	// =========================
+	// Bill of Lading attributes
+	// =========================
+	Type       string
+	Properties Properties
 
-    // ===================================
-    // Blockfreight Transaction attributes
-    // ===================================
-    Id          uuid.UUID
-    PrivateKey  ecdsa.PrivateKey
-    Signhash    []uint8
-    Signature   string
-    Verified    bool
-    Transmitted bool
-    Amendment   uuid.UUID
+	// ===================================
+	// Blockfreight Transaction attributes
+	// ===================================
+	Id          uuid.UUID
+	PrivateKey  ecdsa.PrivateKey
+	Signhash    []uint8
+	Signature   string
+	Verified    bool
+	Transmitted bool
+	Amendment   uuid.UUID
 }
 
 type Properties struct {
-    Shipper              Shipper
-    Bol_Num              BolNum
-    Ref_Num              RefNum
-    Consignee            Consignee
-    Vessel               Vessel
-    Port_of_Loading      PortLoading
-    Port_of_Discharge    PortDischarge
-    Notify_Address       NotifyAddress
-    Desc_of_Goods        DescGoods
-    Gross_Weight         GrossWeight
-    Freight_Payable_Amt  FreightPayableAmt
-    Freight_Adv_Amt      FreightAdvAmt
-    General_Instructions GeneralInstructions
-    Date_Shipped         Date
-    Issue_Details        IssueDetails
-    Num_Bol              NumBol
-    Master_Info          MasterInfo
-    Agent_for_Master     AgentMaster
-    Agent_for_Owner      AgentOwner
+	Shipper              Shipper
+	Bol_Num              BolNum
+	Ref_Num              RefNum
+	Consignee            Consignee
+	Vessel               Vessel
+	Port_of_Loading      PortLoading
+	Port_of_Discharge    PortDischarge
+	Notify_Address       NotifyAddress
+	Desc_of_Goods        DescGoods
+	Gross_Weight         GrossWeight
+	Freight_Payable_Amt  FreightPayableAmt
+	Freight_Adv_Amt      FreightAdvAmt
+	General_Instructions GeneralInstructions
+	Date_Shipped         Date
+	Issue_Details        IssueDetails
+	Num_Bol              NumBol
+	Master_Info          MasterInfo
+	Agent_for_Master     AgentMaster
+	Agent_for_Owner      AgentOwner
 }
 
 type Shipper struct {
-    Type string
+	Type string
 }
 
 type BolNum struct {
-    Type int
+	Type int
 }
 
 type RefNum struct {
-    Type int
+	Type int
 }
 
 type Consignee struct {
-    Type string //Null
+	Type string //Null
 }
 
 type Vessel struct {
-    Type int
+	Type int
 }
 
 type PortLoading struct {
-    Type int
+	Type int
 }
 
 type PortDischarge struct {
-    Type int
+	Type int
 }
 
 type NotifyAddress struct {
-    Type string
+	Type string
 }
 
 type DescGoods struct {
-    Type string
+	Type string
 }
 
 type GrossWeight struct {
-    Type int
+	Type int
 }
 
 type FreightPayableAmt struct {
-    Type int
+	Type int
 }
 
 type FreightAdvAmt struct {
-    Type int
+	Type int
 }
 
 type GeneralInstructions struct {
-    Type string
+	Type string
 }
 
 type Date struct {
-    Type   int
-    Format string
+	Type   int
+	Format string
 }
 
 type IssueDetails struct {
-    Type       string
-    Properties IssueDetailsProperties
+	Type       string
+	Properties IssueDetailsProperties
 }
 
 type IssueDetailsProperties struct {
-    Place_of_Issue PlaceIssue
-    Date_of_Issue  Date
+	Place_of_Issue PlaceIssue
+	Date_of_Issue  Date
 }
 
 type PlaceIssue struct {
-    Type string
+	Type string
 }
 
 type NumBol struct {
-    Type int
+	Type int
 }
 
 type MasterInfo struct {
-    Type       string
-    Properties MasterInfoProperties
+	Type       string
+	Properties MasterInfoProperties
 }
 
 type MasterInfoProperties struct {
-    First_Name FirstName
-    Last_Name  LastName
-    Sig        Sig
+	First_Name FirstName
+	Last_Name  LastName
+	Sig        Sig
 }
 
 type AgentMaster struct {
-    Type       string
-    Properties AgentMasterProperties
+	Type       string
+	Properties AgentMasterProperties
 }
 
 type AgentMasterProperties struct {
-    First_Name FirstName
-    Last_Name  LastName
-    Sig        Sig
+	First_Name FirstName
+	Last_Name  LastName
+	Sig        Sig
 }
 
 type AgentOwner struct {
-    Type       string
-    Properties AgentOwnerProperties
+	Type       string
+	Properties AgentOwnerProperties
 }
 
 type AgentOwnerProperties struct {
-    First_Name              FirstName
-    Last_Name               LastName
-    Sig                     Sig
-    Conditions_for_Carriage ConditionsCarriage
+	First_Name              FirstName
+	Last_Name               LastName
+	Sig                     Sig
+	Conditions_for_Carriage ConditionsCarriage
 }
 
 type FirstName struct {
-    Type string
+	Type string
 }
 
 type LastName struct {
-    Type string
+	Type string
 }
 
 type Sig struct {
-    Type string
+	Type string
 }
 
 type ConditionsCarriage struct {
-    Type string
+	Type string
 }
 
 // =================================================
