@@ -87,53 +87,53 @@ If you’d like to leave feedback, please [open an issue on GitHub](https://gith
 
 Blockfreight™ application code follows this convention:
 
-├──.gitignore
-├──.travis.yml
-├──glide.lock
-├──glide.yaml
-├──LICENSE
-├──Makefile
-├──README.md
-├──api
-├──assets
-├──bin
-├──build
-│  ├──ci
-│  └──package
-│     └──version
-├──cmd
-│  ├──bftnode
-│  └──bftx
-├──config
-├──deploy
-├──docs
-├──examples
-├──githooks
-├──init
-├──lib
-│  ├──app
-│  │  ├──bf_tx
-│  │  ├──bft
-│  │  └──validator
-│  └──pkg
-│     ├──common
-│     ├──crytpo
-│     └──leveldb
-├──pkg
-│  └──blockfreight
-├──plugins
-├──scripts
-├──test
-├──third_party
-├──tools
-├──vendor
-│  ├──github.com
-│  ├──golang.org
-│  └──google.golang.org
-└──web
-   ├──app
-   ├──static
-   └──template
+  ├──.gitignore
+  ├──.travis.yml
+  ├──glide.lock
+  ├──glide.yaml
+  ├──LICENSE
+  ├──Makefile
+  ├──README.md
+  ├──api
+  ├──assets
+  ├──bin
+  ├──build
+  │  ├──ci
+  │  └──package
+  │     └──version
+  ├──cmd
+  │  ├──bftnode
+  │  └──bftx
+  ├──config
+  ├──deploy
+  ├──docs
+  ├──examples
+  ├──githooks
+  ├──init
+  ├──lib
+  │  ├──app
+  │  │  ├──bf_tx
+  │  │  ├──bft
+  │  │  └──validator
+  │  └──pkg
+  │     ├──common
+  │     ├──crytpo
+  │     └──leveldb
+  ├──pkg
+  │  └──blockfreight
+  ├──plugins
+  ├──scripts
+  ├──test
+  ├──third_party
+  ├──tools
+  ├──vendor
+  │  ├──github.com
+  │  ├──golang.org
+  │  └──google.golang.org
+  └──web
+     ├──app
+     ├──static
+     └──template
 
 ## Blockfreight™ Application Code
 
