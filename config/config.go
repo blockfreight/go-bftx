@@ -2,11 +2,11 @@
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
-// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Author: Julian Nunez, Neil Tran, Julian Smith, Gian Felipe & contributors
 // Site: https://blockfreight.com
 // Support: <support@blockfreight.com>
 
-// Copyright 2017 Blockfreight, Inc.
+// Copyright © 2017 Blockfreight, Inc. All Rights Reserved.
 
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),

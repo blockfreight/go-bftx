@@ -2,11 +2,11 @@
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
-// Author: Julian Nunez, Neil Tran, Julian Smith & contributors
+// Author: Julian Nunez, Neil Tran, Julian Smith, Gian Felipe & contributors
 // Site: https://blockfreight.com
 // Support: <support@blockfreight.com>
 
-// Copyright 2017 Blockfreight, Inc.
+// Copyright © 2017 Blockfreight, Inc. All Rights Reserved.
 
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the "Software"),
@@ -47,129 +47,129 @@
 package leveldb
 
 import (
-    // =======================
-    // Golang Standard library
-    // =======================
-    "encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-    "errors"        // Implements functions to manipulate errors.
+	// =======================
+	// Golang Standard library
+	// =======================
+	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+	"errors"        // Implements functions to manipulate errors.
 
-    // ====================
-    // Third-party packages
-    // ====================
-    "github.com/syndtr/goleveldb/leveldb"   // Implementation of the LevelDB key/value database in the Go programming language.
-    
-    // ======================
-    // Blockfreight™ packages
-    // ======================
-    "github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	// ====================
+	// Third-party packages
+	// ====================
+	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
+
+	// ======================
+	// Blockfreight™ packages
+	// ======================
+	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-var db_path string = "bft-db"   //Folder name where is going to be the LevelDB
+var db_path string = "bft-db" //Folder name where is going to be the LevelDB
 
 // OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that ocurred.
 func OpenDB(db_path string) (db *leveldb.DB, err error) {
-    db, err = leveldb.OpenFile(db_path, nil)
-    return db, err
+	db, err = leveldb.OpenFile(db_path, nil)
+	return db, err
 
 }
 
 // CloseDB is a function that receives a DB pointer that closes the connection to DB.
 func CloseDB(db *leveldb.DB) {
-    db.Close()
+	db.Close()
 }
 
-// InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool. 
+// InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool.
 func InsertBF_TX(key string, value string, db *leveldb.DB) error {
-    return db.Put([]byte(key), []byte(value), nil)
+	return db.Put([]byte(key), []byte(value), nil)
 }
 
 // Total is a function that returns the total of BF_TX stored in the DB.
 func Total() (int, error) {
-    db, err := OpenDB(db_path)
-    defer CloseDB(db)
-    if err != nil {
-        return 0, err
-    }
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+	if err != nil {
+		return 0, err
+	}
 
-    iter := db.NewIterator(nil, nil)
-    n := 0
-    for iter.Next() {
-        n += 1
-    }
-    iter.Release()
-    return n, iter.Error()
+	iter := db.NewIterator(nil, nil)
+	n := 0
+	for iter.Next() {
+		n += 1
+	}
+	iter.Release()
+	return n, iter.Error()
 }
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
-func RecordOnDB( id string, json string) error {
-    db, err := OpenDB(db_path)
-    defer CloseDB(db)
-    if err != nil {
-        return err
-    }
-    err = InsertBF_TX(id, json, db)
-    if err != nil {
-        return err
-    }
-    return nil
+func RecordOnDB(id string, json string) error {
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+	if err != nil {
+		return err
+	}
+	err = InsertBF_TX(id, json, db)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
 func GetBfTx(id string) (bf_tx.BF_TX, error) {
-    var bftx bf_tx.BF_TX
-    db, err := OpenDB(db_path)
-    defer CloseDB(db)
-    if err != nil {
-        return bftx, err
-    }
+	var bftx bf_tx.BF_TX
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+	if err != nil {
+		return bftx, err
+	}
 
-    data, err := db.Get([]byte(id), nil)
-    if err != nil {
-        if(err.Error() == "leveldb: not found"){
-            return bftx, errors.New("LevelDB Get function: BF_TX not found.")
-        }
-        return bftx, errors.New("LevelDB Get function: "+err.Error())
-    }
-    
-    json.Unmarshal(data, &bftx)
-    return bftx, nil
+	data, err := db.Get([]byte(id), nil)
+	if err != nil {
+		if err.Error() == "leveldb: not found" {
+			return bftx, errors.New("LevelDB Get function: BF_TX not found.")
+		}
+		return bftx, errors.New("LevelDB Get function: " + err.Error())
+	}
+
+	json.Unmarshal(data, &bftx)
+	return bftx, nil
 }
 
 // Verify is a function that receives a content and look for a BF_TX that has the same content.
-func Verify(jcontent string) ([]byte, error){
-    var bftx bf_tx.BF_TX
-    db, err := OpenDB(db_path)
-    defer CloseDB(db)
-    if err != nil {
-        return nil, err
-    }
+func Verify(jcontent string) ([]byte, error) {
+	var bftx bf_tx.BF_TX
+	db, err := OpenDB(db_path)
+	defer CloseDB(db)
+	if err != nil {
+		return nil, err
+	}
 
-    iter := db.NewIterator(nil, nil)
-    for iter.Next() {
-        key := iter.Key()
-        value := iter.Value()
+	iter := db.NewIterator(nil, nil)
+	for iter.Next() {
+		key := iter.Key()
+		value := iter.Value()
 
-        // Get a BF_TX by id
-        json.Unmarshal(value, &bftx)
-        
-        // Reinitialize the BF_TX
-        bftx = bf_tx.Reinitialize(bftx)
-    
-        // Get the BF_TX old_content in string format
-        content, err := bf_tx.BF_TXContent(bftx)
-        if err != nil {
-            return nil, err
-        }
-    
-        if jcontent == content {
-            iter.Release()
-            //strconv.Atoi(string(buf))
-            return key, nil
-        }
-    }
-    iter.Release()
+		// Get a BF_TX by id
+		json.Unmarshal(value, &bftx)
 
-    return nil, iter.Error()
+		// Reinitialize the BF_TX
+		bftx = bf_tx.Reinitialize(bftx)
+
+		// Get the BF_TX old_content in string format
+		content, err := bf_tx.BF_TXContent(bftx)
+		if err != nil {
+			return nil, err
+		}
+
+		if jcontent == content {
+			iter.Release()
+			//strconv.Atoi(string(buf))
+			return key, nil
+		}
+	}
+	iter.Release()
+
+	return nil, iter.Error()
 }
 
 // =================================================
