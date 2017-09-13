@@ -61,7 +61,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
 var db_path string = "bft-db" //Folder name where is going to be the LevelDB
