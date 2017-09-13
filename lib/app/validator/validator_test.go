@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
 )
 
 func TestValidator(t *testing.T) {

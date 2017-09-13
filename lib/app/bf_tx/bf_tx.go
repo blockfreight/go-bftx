@@ -64,7 +64,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/common" // Implements common functions for Blockfreight™
+	"github.com/blockfreight/blockfreight-alpha/lib/pkg/common" // Implements common functions for Blockfreight™
 )
 
 // SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.

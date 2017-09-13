@@ -61,7 +61,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/blockfreight/lib/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
 // Function Sign_BF_TX has the whole process of signing each BF_TX.

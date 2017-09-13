@@ -52,7 +52,7 @@ VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null 
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
 GOPATH   = $(CURDIR)/.gopath~
 BIN      = $(GOPATH)/bin
-BASE     = $(GOPATH)/src/$(PACKAGE)
+BASE     = $(GOPATH)/src
 PKGS     = $(or $(PKG),$(shell cd $(BASE) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^$(PACKAGE)/vendor/"))
 TESTPKGS = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
 
