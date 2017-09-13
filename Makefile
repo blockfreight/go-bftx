@@ -42,7 +42,9 @@
 # // =================================================================================================================================================
 # // =================================================================================================================================================
 
-# note: call scripts from /scripts
+#  ================================
+#            Settings
+#  ================================
 
 PACKAGE  = blockfreight
 DATE    ?= $(shell date +%FT%T%z)
@@ -63,115 +65,114 @@ V = 0
 Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
-.PHONY: all
-all: fmt lint vendor | $(BASE) ; $(info $(M) building executable…) @ ## Build program binary
-	$Q cd $(BASE) && $(GO) build \
-		-tags release \
-		-ldflags '-X $(PACKAGE)/cmd.Version=$(VERSION) -X $(PACKAGE)/cmd.BuildDate=$(DATE)' \
-		-o bin/$(PACKAGE) main.go
+GOTOOLS =	github.com/mitchellh/gox \
+			github.com/Masterminds/glide \
+			github.com/rigelrozanski/shelldown/cmd/shelldown
 
-$(BASE): ; $(info $(M) setting GOPATH…)
-	@mkdir -p $(dir $@)
-	@ln -sf $(CURDIR) $@
+TUTORIALS=$(shell find docs/guide -name "*md" -type f)
 
-# Tools
+#  ================================
+#              Build
+#  ================================
 
-GOLINT = $(BIN)/golint
-$(BIN)/golint: | $(BASE) ; $(info $(M) building golint…)
-	$Q go get github.com/golang/lint/golint
+all: get_vendor_deps install test
 
-GOCOVMERGE = $(BIN)/gocovmerge
-$(BIN)/gocovmerge: | $(BASE) ; $(info $(M) building gocovmerge…)
-	$Q go get github.com/wadey/gocovmerge
+build:
+	go build ./cmd/...
 
-GOCOV = $(BIN)/gocov
-$(BIN)/gocov: | $(BASE) ; $(info $(M) building gocov…)
-	$Q go get github.com/axw/gocov/...
+install:
+	go install ./cmd/...
+	# go install ./docs/guide/counter/cmd/...
 
-GOCOVXML = $(BIN)/gocov-xml
-$(BIN)/gocov-xml: | $(BASE) ; $(info $(M) building gocov-xml…)
-	$Q go get github.com/AlekSi/gocov-xml
+dist:
+	# @bash scripts/dist.sh
+	# @bash scripts/publish.sh
 
-GO2XUNIT = $(BIN)/go2xunit
-$(BIN)/go2xunit: | $(BASE) ; $(info $(M) building go2xunit…)
-	$Q go get github.com/tebeka/go2xunit
+#  ================================
+#         Testine routines
+#  ================================
 
-# Tests
+test: test_unit test_cli test_tutorial
 
-TEST_TARGETS := test-default test-bench test-short test-verbose test-race
-.PHONY: $(TEST_TARGETS) test-xml check test tests
-test-bench:   ARGS=-run=__absolutelynothing__ -bench=. ## Run benchmarks
-test-short:   ARGS=-short        ## Run only short tests
-test-verbose: ARGS=-v            ## Run tests in verbose mode with coverage reporting
-test-race:    ARGS=-race         ## Run tests with race detector
-$(TEST_TARGETS): NAME=$(MAKECMDGOALS:test-%=%)
-$(TEST_TARGETS): test
-check test tests: fmt lint vendor | $(BASE) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests
-	$Q cd $(BASE) && $(GO) test -timeout $(TIMEOUT)s $(ARGS) $(TESTPKGS)
+test_unit:
+	go test `glide novendor`
+	#go run tests/tendermint/*.go
 
-test-xml: fmt lint vendor | $(BASE) $(GO2XUNIT) ; $(info $(M) running $(NAME:%=% )tests…) @ ## Run tests with xUnit output
-	$Q cd $(BASE) && 2>&1 $(GO) test -timeout 20s -v $(TESTPKGS) | tee test/tests.output
-	$(GO2XUNIT) -fail -input test/tests.output -output test/tests.xml
+test_cli: tests/cli/shunit2
+	# sudo apt-get install jq
+	@./tests/cli/basictx.sh
+	@./tests/cli/counter.sh
+	@./tests/cli/restart.sh
+	@./tests/cli/ibc.sh
 
-COVERAGE_MODE = atomic
-COVERAGE_PROFILE = $(COVERAGE_DIR)/profile.out
-COVERAGE_XML = $(COVERAGE_DIR)/coverage.xml
-COVERAGE_HTML = $(COVERAGE_DIR)/index.html
-.PHONY: test-coverage test-coverage-tools
-test-coverage-tools: | $(GOCOVMERGE) $(GOCOV) $(GOCOVXML)
-test-coverage: COVERAGE_DIR := $(CURDIR)/test/coverage.$(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
-test-coverage: fmt lint vendor test-coverage-tools | $(BASE) ; $(info $(M) running coverage tests…) @ ## Run coverage tests
-	$Q mkdir -p $(COVERAGE_DIR)/coverage
-	$Q cd $(BASE) && for pkg in $(TESTPKGS); do \
-		$(GO) test \
-			-coverpkg=$$($(GO) list -f '{{ join .Deps "\n" }}' $$pkg | \
-					grep '^$(PACKAGE)/' | grep -v '^$(PACKAGE)/vendor/' | \
-					tr '\n' ',')$$pkg \
-			-covermode=$(COVERAGE_MODE) \
-			-coverprofile="$(COVERAGE_DIR)/coverage/`echo $$pkg | tr "/" "-"`.cover" $$pkg ;\
-	 done
-	$Q $(GOCOVMERGE) $(COVERAGE_DIR)/coverage/*.cover > $(COVERAGE_PROFILE)
-	$Q $(GO) tool cover -html=$(COVERAGE_PROFILE) -o $(COVERAGE_HTML)
-	$Q $(GOCOV) convert $(COVERAGE_PROFILE) | $(GOCOVXML) > $(COVERAGE_XML)
+test_tutorial: docs/guide/shunit2
+	shelldown ${TUTORIALS}
+	for script in docs/guide/*.sh ; do \
+		bash $$script ; \
+	done
 
-.PHONY: lint
-lint: vendor | $(BASE) $(GOLINT) ; $(info $(M) running golint…) @ ## Run golint
-	$Q cd $(BASE) && ret=0 && for pkg in $(PKGS); do \
-		test -z "$$($(GOLINT) $$pkg | tee /dev/stderr)" || ret=1 ; \
-	 done ; exit $$ret
+tests/cli/shunit2:
+	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
+    	-q -O tests/cli/shunit2
 
-.PHONY: fmt
-fmt: ; $(info $(M) running gofmt…) @ ## Run gofmt on all source files
-	@ret=0 && for d in $$($(GO) list -f '{{.Dir}}' ./... | grep -v /vendor/); do \
-		$(GOFMT) -l -w $$d/*.go || ret=$$? ; \
-	 done ; exit $$ret
+#  ================================
+#       Update Documentation
+#  ================================
 
-# Dependency management
+docs/guide/shunit2:
+	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
+    	-q -O docs/guide/shunit2
 
-# glide.lock: glide.yaml | $(BASE) ; $(info $(M) updating dependencies…)
-	# $Q cd $(BASE) && $(GLIDE) update
-	# @touch $@
-# vendor: glide.lock | $(BASE) ; $(info $(M) retrieving dependencies…)
-	# $Q cd $(BASE) && $(GLIDE) --quiet install
-	# @ln -nsf . vendor/src
-	# @touch $@
+#  ================================
+#       Manage Dependencies
+#  ================================
 
-# Misc
+get_vendor_deps: tools
+	glide install
 
-.PHONY: clean
-clean: ; $(info $(M) cleaning…)	@ ## Cleanup everything
-	@rm -rf $(GOPATH)
-	@rm -rf bin
-	@rm -rf test/tests.* test/coverage.*
+#  ================================
+#       Build Docker Image
+#  ================================
 
-.PHONY: help
-help:
-	@grep -E '^[ a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-		awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}'
+build-docker:
+	docker run -it --rm -v "$(PWD):/go/src/github.com/tendermint/basecoin" -w \
+		"/go/src/github.com/tendermint/basecoin" -e "CGO_ENABLED=0" golang:alpine go build ./cmd/basecoin
+	docker build -t "tendermint/basecoin" .
 
-.PHONY: version
-version:
-	@echo $(VERSION)
+#  ================================
+#       Add Golang Build Tools
+#  ================================
+
+tools:
+	@go get $(GOTOOLS)
+
+#  ================================
+#     Remove Cached Dependencies
+#  ================================
+
+clean:
+	# maybe cleaning up cache and vendor is overkill, but sometimes
+	# you don't get the most recent versions with lots of branches, changes, rebases...
+	@rm -rf ~/.glide/cache/src/https-github.com-tendermint-*
+	@rm -rf ./vendor
+	@rm -f $GOPATH/bin/{basecoin,basecli,counter,countercli}
+
+# when your repo is getting a little stale... just make fresh
+fresh: clean get_vendor_deps install
+	@if [[ `git status -s` ]]; then echo; echo "Warning: uncommited changes"; git status -s; fi
+
+#  ================================
+#     Complete Build
+#  ================================
+
+.PHONY: all build install test test_cli test_unit get_vendor_deps build-docker clean fresh
+
+#  ================================
+#     Credits:
+#  ================================
+
+# Based on implementation of Tendermint team - thank you:
+# Ethan Frey, Anton Kaliaev, Rigel Rozanski, Jae Kwon & Ethan Buchman.
 
 # // =================================================
 # // Blockfreight™ | The blockchain of global freight.
