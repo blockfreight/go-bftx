@@ -148,13 +148,13 @@ fmt: ; $(info $(M) running gofmt…) @ ## Run gofmt on all source files
 
 # Dependency management
 
-glide.lock: glide.yaml | $(BASE) ; $(info $(M) updating dependencies…)
-	$Q cd $(BASE) && $(GLIDE) update
-	@touch $@
-vendor: glide.lock | $(BASE) ; $(info $(M) retrieving dependencies…)
-	$Q cd $(BASE) && $(GLIDE) --quiet install
-	@ln -nsf . vendor/src
-	@touch $@
+# glide.lock: glide.yaml | $(BASE) ; $(info $(M) updating dependencies…)
+	# $Q cd $(BASE) && $(GLIDE) update
+	# @touch $@
+# vendor: glide.lock | $(BASE) ; $(info $(M) retrieving dependencies…)
+	# $Q cd $(BASE) && $(GLIDE) --quiet install
+	# @ln -nsf . vendor/src
+	# @touch $@
 
 # Misc
 
