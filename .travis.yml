@@ -1,6 +1,8 @@
 language: go
 go:
  - 1.8.x
+install:
+  - go get github.com/Masterminds/glide
 
  # Specify Import Path (optional)
  # Example: go_import_path: example.org/pkg/foo
