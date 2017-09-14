@@ -84,6 +84,13 @@ install:
 	go install ./cmd/...
 	# go install ./docs/guide/counter/cmd/...
 
+#  ================================
+#       Add Golang Build Tools
+#  ================================
+
+tools:
+	@go get $(GOTOOLS)
+
 dist:
 	# @bash scripts/dist.sh
 	# @bash scripts/publish.sh
@@ -137,13 +144,6 @@ build-docker:
 	docker run -it --rm -v "$(PWD):/go/src/github.com/tendermint/basecoin" -w \
 		"/go/src/github.com/tendermint/basecoin" -e "CGO_ENABLED=0" golang:alpine go build ./cmd/basecoin
 	docker build -t "tendermint/basecoin" .
-
-#  ================================
-#       Add Golang Build Tools
-#  ================================
-
-tools:
-	@go get $(GOTOOLS)
 
 #  ================================
 #     Remove Cached Dependencies
