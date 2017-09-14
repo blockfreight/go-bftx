@@ -1,6 +1,13 @@
 package: github.com/blockfreight/blockfreight-alpha
+homepage: https://blockfreight.com
+license: MIT
+owners:
+- name: Blockfreight, Inc.
+  email: support@blockfreight.com
+  homepage: https://blockfreight.com
 import:
 - package: github.com/davecgh/go-spew
+  version: v1.1.0
   subpackages:
   - spew
 - package: github.com/syndtr/goleveldb
@@ -15,3 +22,4 @@ import:
 - package: github.com/tendermint/go-common
 - package: github.com/tendermint/go-merkle
 - package: github.com/urfave/cli
+  version: v1.19.1

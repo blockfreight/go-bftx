@@ -1,10 +1,18 @@
-hash: 8349e54ba2227c06fbb615c85c45e9a48f2b7c5e1c304d8b660e57d48846a790
-updated: 2017-03-11T02:51:32.993688821+11:00
+hash: 3d60c71c8abd193565f645ccff528055f54788bdfb149118655a254cfa04adf4
+updated: 2017-09-13T15:55:05.956351835+10:00
 imports:
 - name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
+  version: 346938d642f2ec3594ed81d874461961cd0faa76
   subpackages:
   - spew
+- name: github.com/go-kit/kit
+  version: 454871a6797ad352a5d31e3af3ccf5071de4affb
+  subpackages:
+  - log
+  - log/level
+  - log/term
+- name: github.com/go-logfmt/logfmt
+  version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
@@ -15,10 +23,14 @@ imports:
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
 - name: github.com/jmhodges/levigo
   version: c42d9e0ca023e2198120196f842701bb4c55d7b9
+- name: github.com/kr/logfmt
+  version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/mattn/go-colorable
   version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
 - name: github.com/mattn/go-isatty
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+- name: github.com/satori/go.uuid
+  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
 - name: github.com/syndtr/goleveldb
   version: 6ae1797c0b42b9323fc27ff7dcf568df88f2f33d
   subpackages:
@@ -41,21 +53,26 @@ imports:
   - server
   - types
 - name: github.com/tendermint/go-common
-  version: dcb015dff6c7af21e65c8e2f3b450df19d38c777
+  version: f9e3db037330c8a8d61d3966de8473eaf01154fa
 - name: github.com/tendermint/go-db
-  version: eac3f2bc147023957c8bf69432a4e6c4dc5c3f72
+  version: 9643f60bc2578693844aacf380a7c32e4c029fee
 - name: github.com/tendermint/go-logger
   version: cefb3a45c0bf3c493a04e9bcd9b1540528be59f2
 - name: github.com/tendermint/go-merkle
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
-  version: 2f3b7aafe21c80b19b6ee3210ecb3e3d07c7a471
+  version: 5f88da3dbc1a72844e6dfaf274ce87f851d488eb
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:
   - term
+- name: github.com/tendermint/tmlibs
+  version: 306795ae1d8e4f4a10dcc8bdb32a00455843c9d5
+  subpackages:
+  - common
+  - log
 - name: github.com/urfave/cli
-  version: b4f4786f378c0c1d3336b5bb798094b166edf5a9
+  version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
 - name: golang.org/x/crypto
   version: aa2481cbfe81d911eb62b642b7a6b5ec58bbea71
   subpackages:
@@ -86,4 +103,4 @@ imports:
   - stats
   - tap
   - transport
-testImports: []
+testImports: [] 

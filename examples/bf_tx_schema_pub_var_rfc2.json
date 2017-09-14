@@ -1,0 +1,75 @@
+{
+  "type": "object",
+  "properties": {
+    
+    "shipper": { "type": "string" },
+
+    "BOL_NUM": { "type": "number" },
+
+    "REF_NUM": { "type": "number"},
+
+    "consignee":{"type":"null"},
+
+    "vessel":{"type":"number"},
+
+    "port_of_loading":{"type":"number"},
+
+    "port_of_discharge":{"type":"number"},
+
+    "nofity_address":{"type":"string"},
+
+    "desc_of_goods":{"type":"string"},
+
+    "gross_weight":{"type":"number"},
+
+    "freight_payable_amt":{"type":"number"},
+
+    "freight_adv_amt":{"type":"number"},
+
+    "general_instructions":{"type":"string"},
+
+    "date_shipped":{"type":"number", "format":"date-time"},
+
+     "issue_details": {
+      "type": "object",
+      "properties": {
+        "place_of_issue": { "type": "string" },
+        "date_of_issue": { "type": "number", "format":"date-time" }
+      }
+    },
+
+    "num_BOL":{"type":"number"},
+
+    "master_info": {
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "sig":{"type":"null"}
+      }
+    },
+    
+
+    "agent_for_master": {
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "sig":{"type":"null"}
+      }
+    },
+   
+
+
+  "agent_for_owner": {
+      "type": "object",
+      "properties": {
+        "first_name": { "type": "string" },
+        "last_name": { "type": "string" },
+        "sig":{"type":"null"},
+        "conditions_for_carriage":{"type":"string"}
+      }
+    }
+
+  }
+}
