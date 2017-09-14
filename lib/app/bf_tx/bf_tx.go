@@ -59,7 +59,6 @@ import (
 	// Third-party packages
 	// ====================
 	"github.com/davecgh/go-spew/spew" // Implements a deep pretty printer for Go data structures to aid in debugging.
-	"github.com/satori/go.uuid"
 
 	// ======================
 	// Blockfreight™ packages
@@ -75,7 +74,6 @@ func SetBF_TX(jsonpath string) (BF_TX, error) {
 		return bf_tx, err
 	}
 	json.Unmarshal(file, &bf_tx)
-	bf_tx.Id = uuid.NewV4()
 	return bf_tx, nil
 }
 
@@ -141,13 +139,13 @@ type BF_TX struct {
 	// ===================================
 	// Blockfreight Transaction attributes
 	// ===================================
-	Id          uuid.UUID
+	Id          string
 	PrivateKey  ecdsa.PrivateKey
 	Signhash    []uint8
 	Signature   string
 	Verified    bool
 	Transmitted bool
-	Amendment   uuid.UUID
+	Amendment   string
 }
 
 type Properties struct {

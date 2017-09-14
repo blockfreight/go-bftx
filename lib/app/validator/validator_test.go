@@ -9,7 +9,7 @@ import (
 
 func TestValidator(t *testing.T) {
 	t.Log("Test on validator function")
-	bf_tx, err := bf_tx.SetBF_TX("../.././files/bf_tx_example.json")
+	bf_tx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
 	if err != nil {
         t.Log(err.Error())
     }
