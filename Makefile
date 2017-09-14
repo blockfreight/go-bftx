@@ -89,7 +89,7 @@ install:
 #  ================================
 
 tools:
-	@go get $(GOTOOLS)
+	go get $(GOTOOLS)
 
 dist:
 	# @bash scripts/dist.sh
