@@ -1,8 +1,8 @@
 package bf_tx
 
 import (
-	"testing"
 	"reflect"
+	"testing"
 )
 
 func TestSetBF_TX(t *testing.T) {
@@ -10,9 +10,9 @@ func TestSetBF_TX(t *testing.T) {
 	var prot BF_TX
 	bf_tx, err := SetBF_TX("../../../examples/bf_tx_example.json")
 	if err != nil {
-        t.Log(err.Error())
-    }
+		t.Log(err.Error())
+	}
 	if reflect.TypeOf(bf_tx) != reflect.TypeOf(prot) {
-    	t.Error("Error on type of result of SetBF_TX")
+		t.Error("Error on type of result of SetBF_TX")
 	}
 }
