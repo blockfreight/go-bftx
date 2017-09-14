@@ -132,7 +132,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-			Value: "../../examples/",
+			Value: "./examples/",
 			Usage: "define the source path where the json is",
 		},
 	}
