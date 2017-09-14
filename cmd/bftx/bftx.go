@@ -132,7 +132,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-			Value: "../../../examples/",
+			Value: "../../examples/",
 			Usage: "define the source path where the json is",
 		},
 	}
@@ -341,8 +341,6 @@ func getBlockAppHash() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	fmt.Printf("%+v\n", resInfo)
 
 	return resInfo.LastBlockAppHash, nil
 }

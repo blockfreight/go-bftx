@@ -8,7 +8,7 @@ import(
 
 func TestSign_BF_TX(t *testing.T) {
 	t.Log("Test on Sign_BF_TX function")
-	bftx, err := bf_tx.SetBF_TX("../.././files/bf_tx_example.json")
+	bftx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
     if err != nil {
         t.Log(err.Error())
     }
