@@ -75,7 +75,7 @@ TUTORIALS=$(shell find docs/guide -name "*md" -type f)
 #              Build
 #  ================================
 
-all: get_vendor_deps tools install test
+all: tools get_vendor_deps install test
 
 build:
 	go build ./cmd/...
