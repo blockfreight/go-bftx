@@ -17,5 +17,5 @@
 .glide/
 
 # Folders
-blockfreight/cmd/bftx/bft-db/
+cmd/bftx/bft-db/
 vendor/
