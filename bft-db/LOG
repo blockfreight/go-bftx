@@ -6,3 +6,15 @@
 12:32:14.648296 db@open done T·56.991839ms
 12:32:14.648487 db@close closing
 12:32:14.648582 db@close done T·92.329µs
+=============== Sep 14, 2017 (AEST) ===============
+15:18:18.549028 log@legend F·NumFile S·FileSize N·Entry C·BadEntry B·BadBlock Ke·KeyError D·DroppedEntry L·Level Q·SeqNum T·TimeElapsed
+15:18:18.550807 version@stat F·[] S·0B[] Sc·[]
+15:18:18.550844 db@open opening
+15:18:18.550959 journal@recovery F·1
+15:18:18.551485 journal@recovery recovering @1
+15:18:18.554462 memdb@flush created L0@2 N·1 S·983B "6cf..d4e,v1":"6cf..d4e,v1"
+15:18:18.555409 version@stat F·[1] S·983B[983B] Sc·[0.25]
+15:18:18.556607 db@janitor F·3 G·0
+15:18:18.556656 db@open done T·5.794957ms
+15:18:18.556766 db@close closing
+15:18:18.556990 db@close done T·215.706µs
