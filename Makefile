@@ -50,9 +50,9 @@ PACKAGE  = blockfreight
 DATE    ?= $(shell date +%FT%T%z)
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
-GOPATH   = $(CURDIR)/.gopath~
+#GOPATH   = $(CURDIR)/.gopath~
 BIN      = $(GOPATH)/bin
-BASE     = $(GOPATH)/src
+BASE     = $(GOPATH)/src/$(PACKAGE)
 PKGS     = $(or $(PKG),$(shell cd $(BASE) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^$(PACKAGE)/vendor/"))
 TESTPKGS = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
 
@@ -92,35 +92,34 @@ dist:
 #         Testine routines
 #  ================================
 
-test: test_unit test_cli test_tutorial
+test: test_unit #test_cli test_tutorial
 
 test_unit:
 	go test `glide novendor`
-	#go run tests/tendermint/*.go
 
-test_cli: tests/cli/shunit2
+#test_cli: tests/cli/shunit2
 	# sudo apt-get install jq
-	@./tests/cli/basictx.sh
-	@./tests/cli/counter.sh
-	@./tests/cli/restart.sh
-	@./tests/cli/ibc.sh
+#	@./tests/cli/basictx.sh
+#	@./tests/cli/counter.sh
+#	@./tests/cli/restart.sh
+#	@./tests/cli/ibc.sh
 
-test_tutorial: docs/guide/shunit2
-	shelldown ${TUTORIALS}
-	for script in docs/guide/*.sh ; do \
+#test_tutorial: docs/guide/shunit2
+#	shelldown ${TUTORIALS}
+#	for script in docs/guide/*.sh ; do \
 		bash $$script ; \
 	done
 
-tests/cli/shunit2:
-	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
+#tests/cli/shunit2:
+#	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
     	-q -O tests/cli/shunit2
 
 #  ================================
 #       Update Documentation
 #  ================================
 
-docs/guide/shunit2:
-	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
+#docs/guide/shunit2:
+#	wget "https://raw.githubusercontent.com/kward/shunit2/master/source/2.1/src/shunit2" \
     	-q -O docs/guide/shunit2
 
 #  ================================
