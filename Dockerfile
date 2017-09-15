@@ -21,8 +21,11 @@ VOLUME $BFTXHOME
 RUN apk add --no-cache bash curl jq
 
 RUN ls -la
-RUN cd /var/lib/judgem/records/ && ls
-RUN ls -la
+RUN ls -la .
+RUN ls -la ..
+RUN cd $BFTXHOME && ls -la
+RUN cd . && ls -la
+RUN cd . && ls -la
 
 COPY ./bftx/ /usr/bin/bftx
 
