@@ -21,6 +21,8 @@ VOLUME $BFTXHOME
 RUN apk add --no-cache bash curl jq
 
 RUN ls -la
+RUN cd bftx
+RUN ls -la
 
 COPY .bftx/ /usr/bin/bftx
 
