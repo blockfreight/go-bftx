@@ -22,7 +22,7 @@ RUN apk add --no-cache bash curl jq
 
 RUN ls -la
 
-COPY .bftx /usr/bin/bftx
+COPY .bftx/ /usr/bin/bftx
 
 ENTRYPOINT ["ENTRYPOINT"]
 
