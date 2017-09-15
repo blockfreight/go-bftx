@@ -20,7 +20,7 @@ VOLUME $BFTXHOME
 # could execute bash commands.
 RUN apk add --no-cache bash curl jq
 
-COPY blockfreight /usr/bin/blockfreight
+COPY blockfreight ./usr/bin/blockfreight
 
 ENTRYPOINT ["blockfreight"]
 
