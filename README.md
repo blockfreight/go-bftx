@@ -5,7 +5,7 @@
 [![](https://img.shields.io/badge/Slack-%23blockfreight-blue.svg?style=flat-square)](http://slack.blockfreight.com)
 [![Build Status](https://travis-ci.org/blockfreight/blockfreight-alpha.svg?branch=v0.2.0-dev)](https://travis-ci.org/blockfreight/blockfreight-alpha)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/golang-standards/project-lawet?style=flat-square)](https://goreportcard.com/report/github.com/blockfreight/blockfreight-alpha/tree/v0.2.0-dev)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blockfreight/blockfreight-alpha)](https://goreportcard.com/report/github.com/blockfreight/blockfreight-alpha)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/blockfreight/blockfreight-alpha)
 [![Release](https://img.shields.io/github/release/golang-standards/project-lawet.svg?style=flat-square)](https://github.com/golang-standards/blockfreight/blockfreight-alpha)
 
