@@ -22,7 +22,7 @@ RUN apk add --no-cache bash curl jq
 
 RUN ls -la
 
-COPY blockfreight ./usr/bin/blockfreight
+COPY blockfre ./usr/bin/blockfreight
 
 ENTRYPOINT ["blockfreight"]
 
