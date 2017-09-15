@@ -5,11 +5,11 @@ ENV BFTXHOME /bftx
 
 # Create a blockfreight user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
-RUN addgroup bftx && \
-    adduser -S -G bftx bftx
+RUN addgroup blockfreight && \
+    adduser -S -G blockfreight blockfreight
 
 RUN mkdir -p $BFTXHOME && \
-    chown -R bftx:bftx $BFTXHOME
+    chown -R blockfreight:blockfreight $BFTXHOME
 WORKDIR $BFTXHOME
 
 # Expose the blockfreight home directory as a volume since there's mutable state in there.
@@ -21,10 +21,10 @@ VOLUME $BFTXHOME
 RUN apk add --no-cache bash curl jq
 
 RUN ls -la
-RUN cd bftx
+RUN cd .
 RUN ls -la
 
-COPY .bftx/ /usr/bin/bftx
+COPY ./bftx/ /usr/bin/bftx
 
 ENTRYPOINT ["ENTRYPOINT"]
 
