@@ -7,9 +7,9 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/blockfreight/blockfreight-alpha)](https://goreportcard.com/report/github.com/blockfreight/blockfreight-alpha)
 [![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/blockfreight/blockfreight-alpha)
-[![Release](https://img.shields.io/github/release/golang-standards/project-lawet.svg?style=flat-square)](https://github.com/golang-standards/blockfreight/blockfreight-alpha)
+[![Release](https://img.shields.io/github/release/golang-standards/project-lawet.svg?style=flat-square)](https://github.com/blockfreight/blockfreight-alpha)
 
-Package: go-blockfreight - Blockfreight™ v0.2.0
+Package: go-blockfreight - Blockfreight™ v0.3.0
 
 ***Description:*** go-blockfreight is the reference full node implementation and cli-tool for Blockfreight™ the blockchain of global freight.
 
