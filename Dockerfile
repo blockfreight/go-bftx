@@ -25,9 +25,9 @@ RUN ls -la .
 RUN ls -la ..
 RUN cd $BFTXHOME && ls -la
 RUN cd . && ls -la
-RUN cd . && ls -la
+RUN cd .. && ls -la
 
-COPY ./bftx/ /usr/bin/bftx
+COPY ../bftx/ /usr/bin/bftx
 
 ENTRYPOINT ["ENTRYPOINT"]
 
