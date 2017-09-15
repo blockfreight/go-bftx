@@ -66,7 +66,7 @@ import (
 
 var db_path string = "bft-db" //Folder name where is going to be the LevelDB
 
-// OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that ocurred.
+// OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that occurred.
 func OpenDB(db_path string) (db *leveldb.DB, err error) {
 	db, err = leveldb.OpenFile(db_path, nil)
 	return db, err
