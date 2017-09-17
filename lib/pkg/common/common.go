@@ -52,6 +52,7 @@ import (
 	"errors"    // Implements functions to manipulate errors.
 	"fmt"       // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"io/ioutil" // Implements some I/O utility functions.
+	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
 )
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
@@ -62,6 +63,12 @@ func ReadJSON(path string) ([]byte, error) {
 		return file, errors.New("File error: " + e.Error())
 	}
 	return file, nil
+}
+
+func HashByteArrays(firstArray []byte, secondArray []byte) []byte {
+	sha := sha256.New()
+	sha.Write(append(firstArray[:], secondArray[:]...))
+	return sha.Sum(nil)
 }
 
 // =================================================

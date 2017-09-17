@@ -88,9 +88,7 @@ func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
 }
 
 func HashBF_TX_salt(hash []byte, salt []byte) []byte {
-	sha := sha256.New()
-	sha.Write(append(hash[:], salt[:]...))
-	return sha.Sum(nil)
+	return common.HashByteArrays(hash, salt)
 }
 
 // BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
