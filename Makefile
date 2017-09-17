@@ -50,11 +50,10 @@ PACKAGE  = blockfreight
 DATE    ?= $(shell date +%FT%T%z)
 VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null || \
 			cat $(CURDIR)/.version 2> /dev/null || echo v0)
-#GOPATH   = $(CURDIR)/.gopath~
 BIN      = $(GOPATH)/bin
 BASE     = $(GOPATH)/src/$(PACKAGE)
-PKGS     = $(or $(PKG),$(shell cd $(BASE) && env GOPATH=$(GOPATH) $(GO) list ./... | grep -v "^$(PACKAGE)/vendor/"))
-TESTPKGS = $(shell env GOPATH=$(GOPATH) $(GO) list -f '{{ if or .TestGoFiles .XTestGoFiles }}{{ .ImportPath }}{{ end }}' $(PKGS))
+#TESTPKGS = $(go list ./test/... | grep -v /vendor/) 
+TESTPKGS = $(shell go list ./test/... | grep -v vendor) 
 
 GO      = go
 GODOC   = godoc
@@ -66,7 +65,6 @@ Q = $(if $(filter 1,$V),,@)
 M = $(shell printf "\033[34;1m▶\033[0m")
 
 GOTOOLS =	github.com/mitchellh/gox \
-			github.com/Masterminds/glide \
 			github.com/rigelrozanski/shelldown/cmd/shelldown
 
 TUTORIALS=$(shell find docs/guide -name "*md" -type f)
@@ -100,10 +98,9 @@ dist:
 #         Testine routines
 #  ================================
 
-test: test_unit #test_cli test_tutorial
 
-test_unit:
-	go test `glide novendor`
+test:
+	go test $(TESTPKGS)
 
 #test_cli: tests/cli/shunit2
 	# sudo apt-get install jq
@@ -165,7 +162,7 @@ fresh: clean get_vendor_deps install
 #     Complete Build
 #  ================================
 
-.PHONY: all build install test test_cli test_unit get_vendor_deps build-docker clean fresh
+.PHONY: all build install test get_vendor_deps build-docker clean fresh
 
 #  ================================
 #     Credits:

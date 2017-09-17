@@ -3,12 +3,13 @@ package bf_tx
 import (
 	"reflect"
 	"testing"
+  "github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
 )
 
 func TestSetBF_TX(t *testing.T) {
 	t.Log("Test on SetBF_TX function")
-	var prot BF_TX
-	bf_tx, err := SetBF_TX("../../../examples/bf_tx_example.json")
+	var prot bf_tx.BF_TX
+	bf_tx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}

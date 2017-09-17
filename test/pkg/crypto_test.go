@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/lib/pkg/crypto"
 )
 
 func TestSign_BF_TX(t *testing.T) {
@@ -13,7 +14,7 @@ func TestSign_BF_TX(t *testing.T) {
 		t.Log(err.Error())
 	}
 
-	bftx, err = Sign_BF_TX(bftx)
+	bftx, err = crypto.Sign_BF_TX(bftx)
 	if err != nil {
 		t.Log(err.Error())
 	}

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
+	"github.com/blockfreight/blockfreight-alpha/lib/app/validator"
 )
 
 func TestValidator(t *testing.T) {
@@ -13,7 +14,7 @@ func TestValidator(t *testing.T) {
 	if err != nil {
 		t.Log(err.Error())
 	}
-	result, err := ValidateBf_Tx(bf_tx)
+	result, err := validator.ValidateBf_Tx(bf_tx)
 	if err != nil {
 		fmt.Println(result)
 		t.Log(err.Error())
