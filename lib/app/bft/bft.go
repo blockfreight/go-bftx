@@ -65,11 +65,13 @@ type BftApplication struct {
 	state merkle.Tree
 }
 
+// newBftApplication creates a new application
 func NewBftApplication() *BftApplication {
 	state := merkle.NewIAVLTree(0, nil)
 	return &BftApplication{state: state}
 }
 
+// Info returns information
 func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size())}
 }
@@ -85,15 +87,18 @@ func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	return types.OK
 }
 
+// Checktx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
 	return types.OK
 }
 
+// Commit commits transactions
 func (app *BftApplication) Commit() types.Result {
 	hash := app.state.Hash()
 	return types.NewResultOK(hash, "")
 }
 
+// Query executes queries and returns the result
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
 		value, proof, exists := app.state.Proof(reqQuery.Data)
