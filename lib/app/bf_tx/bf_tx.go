@@ -147,6 +147,7 @@ type BF_TX struct {
 	Amendment   string
 }
 
+// Properties struct
 type Properties struct {
 	Shipper              Shipper
 	Bol_Num              BolNum
@@ -169,38 +170,47 @@ type Properties struct {
 	Agent_for_Owner      AgentOwner
 }
 
+// Shipper struct
 type Shipper struct {
 	Type string
 }
 
+// BolNum struct
 type BolNum struct {
 	Type int
 }
 
+// RefNum struct
 type RefNum struct {
 	Type int
 }
 
+// Consignee struct
 type Consignee struct {
 	Type string //Null
 }
 
+// Vessel struct
 type Vessel struct {
 	Type int
 }
 
+// PortLoading struct
 type PortLoading struct {
 	Type int
 }
 
+// PortDischarge struct
 type PortDischarge struct {
 	Type int
 }
 
+// NotifyAddress struct
 type NotifyAddress struct {
 	Type string
 }
 
+// DescGoods struct
 type DescGoods struct {
 	Type string
 }
