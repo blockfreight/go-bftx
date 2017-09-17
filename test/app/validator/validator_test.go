@@ -17,6 +17,7 @@ func TestValidator(t *testing.T) {
   if err != nil {
     t.Log(err.Error())
   }
+
   if result != "Success! [OK]" {
     t.Error("Error on result of TestValidator")
     t.Error(result)

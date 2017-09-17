@@ -65,6 +65,7 @@ func ReadJSON(path string) ([]byte, error) {
 	return file, nil
 }
 
+// HashByteArrays hashes two byte arrays and returns a new one
 func HashByteArrays(firstArray []byte, secondArray []byte) []byte {
 	sha := sha256.New()
 	sha.Write(append(firstArray[:], secondArray[:]...))
