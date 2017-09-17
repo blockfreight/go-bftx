@@ -78,7 +78,7 @@ func SetBF_TX(jsonpath string) (BF_TX, error) {
 }
 
 //HashBF_TX hashes the BF_TX object
-func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
+func HashBF_TX(bf_tx BF_TX) ([]byte, error) {   
 	bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
 
 	hash := sha256.New()
@@ -87,6 +87,7 @@ func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
+//HashBF_TX_salt hashes two byte arrays and returns it.
 func HashBF_TX_salt(hash []byte, salt []byte) []byte {
 	return common.HashByteArrays(hash, salt)
 }

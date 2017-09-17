@@ -16,6 +16,6 @@ func TestHashByteArrays(t* testing.T){
   resultCommon := common.HashByteArrays(first_hash, second_hash)
 
   if  bytes.Compare(resultCommon, resultBftx) != 0 {
-    t.Error("ERROOOOOOOOOOOOOOOOOOOOOOOOR", resultCommon, resultBftx)
+    t.Error("Error on HashByteArrays!")
   }
 }
