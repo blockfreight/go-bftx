@@ -631,11 +631,6 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
-	res, err := client.EndBlockSync(0)
-	if err != nil {
-		return err
-	}
-
 	result := client.CommitSync()
 	printResponse(c, response{
 		Code: result.Code,
