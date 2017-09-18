@@ -636,8 +636,6 @@ func cmdCommit(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Printf("%+v\n", res)
-
 	result := client.CommitSync()
 	printResponse(c, response{
 		Code: result.Code,
