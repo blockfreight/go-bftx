@@ -46,30 +46,30 @@
 package common
 
 import (
-  // =======================
-  // Golang Standard library
-  // =======================
-  "crypto/sha256" // Implements the SHA256 Algorithm for Hash.
-  "errors"        // Implements functions to manipulate errors.
-  "fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
-  "io/ioutil"     // Implements some I/O utility functions.
+	// =======================
+	// Golang Standard library
+	// =======================
+	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
+	"errors"        // Implements functions to manipulate errors.
+	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io/ioutil"     // Implements some I/O utility functions.
 )
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
 func ReadJSON(path string) ([]byte, error) {
-  fmt.Println("\nReading " + path + "\n")
-  file, e := ioutil.ReadFile(path)
-  if e != nil {
-    return file, errors.New("File error: " + e.Error())
-  }
-  return file, nil
+	fmt.Println("\nReading " + path + "\n")
+	file, e := ioutil.ReadFile(path)
+	if e != nil {
+		return file, errors.New("File error: " + e.Error())
+	}
+	return file, nil
 }
 
 // HashByteArrays hashes two byte arrays and returns a new one
 func HashByteArrays(firstArray, secondArray []byte) []byte {
-  sha := sha256.New()
-  sha.Write(append(firstArray[:], secondArray[:]...))
-  return sha.Sum(nil)
+	sha := sha256.New()
+	sha.Write(append(firstArray[:], secondArray[:]...))
+	return sha.Sum(nil)
 }
 
 // =================================================
