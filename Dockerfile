@@ -20,16 +20,9 @@ VOLUME $BFTXHOME
 # could execute bash commands.
 RUN apk add --no-cache bash curl jq
 
-RUN ls -la
-RUN ls -la .
-RUN ls -la ..
-RUN cd $BFTXHOME && ls -la
-RUN cd . && ls -la
-RUN cd .. && ls -la
+#COPY bftx /usr/bin/bftx
 
-COPY ../bftx/ /usr/bin/bftx
-
-ENTRYPOINT ["ENTRYPOINT"]
+ENTRYPOINT usr/bin/bftx
 
 # By default you will get the ENTRYPOINT with local MerkleEyes and in-proc Tendermint.
 CMD ["start", "--dir=${BFTXHOME}"]
