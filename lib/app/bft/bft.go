@@ -59,6 +59,7 @@ import (
 	"github.com/tendermint/go-merkle"
 )
 
+// BftApplication struct
 type BftApplication struct {
 	types.BaseApplication
 

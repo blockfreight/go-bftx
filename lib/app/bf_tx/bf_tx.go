@@ -215,72 +215,87 @@ type DescGoods struct {
 	Type string
 }
 
+// GrossWeight struct
 type GrossWeight struct {
 	Type int
 }
 
+// FreightPayableAmt struct
 type FreightPayableAmt struct {
 	Type int
 }
 
+// FreightAdvAmt struct
 type FreightAdvAmt struct {
 	Type int
 }
 
+// GeneralInstructions struct 
 type GeneralInstructions struct {
 	Type string
 }
 
+// Date struct 
 type Date struct {
 	Type   int
 	Format string
 }
 
+// IssueDetails struct
 type IssueDetails struct {
 	Type       string
 	Properties IssueDetailsProperties
 }
 
+// IssueDetailsProperties struct 
 type IssueDetailsProperties struct {
 	Place_of_Issue PlaceIssue
 	Date_of_Issue  Date
 }
 
+// PlaceIssue struct
 type PlaceIssue struct {
 	Type string
 }
 
+// Numbol struct
 type NumBol struct {
 	Type int
 }
 
+// Masterinfo struct
 type MasterInfo struct {
 	Type       string
 	Properties MasterInfoProperties
 }
 
+// MasterInfoProperties struct
 type MasterInfoProperties struct {
 	First_Name FirstName
 	Last_Name  LastName
 	Sig        Sig
 }
 
+// AgentMaster struct
 type AgentMaster struct {
 	Type       string
 	Properties AgentMasterProperties
 }
 
+//AgentMasterProperties struct
 type AgentMasterProperties struct {
 	First_Name FirstName
 	Last_Name  LastName
 	Sig        Sig
 }
 
+// AgentOwner struct
 type AgentOwner struct {
 	Type       string
 	Properties AgentOwnerProperties
 }
 
+// AgentOwnerProperties struct 
 type AgentOwnerProperties struct {
 	First_Name              FirstName
 	Last_Name               LastName
@@ -288,18 +303,22 @@ type AgentOwnerProperties struct {
 	Conditions_for_Carriage ConditionsCarriage
 }
 
+// FirstName struct
 type FirstName struct {
 	Type string
 }
 
+// LastName struct
 type LastName struct {
 	Type string
 }
 
+// Sig struct
 type Sig struct {
 	Type string
 }
 
+// ConditionsCarriage struct
 type ConditionsCarriage struct {
 	Type string
 }

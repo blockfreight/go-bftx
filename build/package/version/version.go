@@ -45,10 +45,16 @@
 // Package version is a package that defines the current version of the project.
 package version
 
+// Maj constant
 const Maj = "0"
+
+// Min constant
 const Min = "2"
+
+// Fix constant
 const Fix = "0"
 
+// Version constant
 const Version = Maj + "." + Min + "." + Fix
 
 // =================================================
