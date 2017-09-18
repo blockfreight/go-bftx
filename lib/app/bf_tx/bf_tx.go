@@ -78,7 +78,7 @@ func SetBF_TX(jsonpath string) (BF_TX, error) {
 }
 
 //HashBF_TX hashes the BF_TX object
-func HashBF_TX(bf_tx BF_TX) ([]byte, error) {   
+func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
 	bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
 
 	hash := sha256.New()
@@ -230,12 +230,12 @@ type FreightAdvAmt struct {
 	Type int
 }
 
-// GeneralInstructions struct 
+// GeneralInstructions struct
 type GeneralInstructions struct {
 	Type string
 }
 
-// Date struct 
+// Date struct
 type Date struct {
 	Type   int
 	Format string
@@ -247,7 +247,7 @@ type IssueDetails struct {
 	Properties IssueDetailsProperties
 }
 
-// IssueDetailsProperties struct 
+// IssueDetailsProperties struct
 type IssueDetailsProperties struct {
 	Place_of_Issue PlaceIssue
 	Date_of_Issue  Date
@@ -295,7 +295,7 @@ type AgentOwner struct {
 	Properties AgentOwnerProperties
 }
 
-// AgentOwnerProperties struct 
+// AgentOwnerProperties struct
 type AgentOwnerProperties struct {
 	First_Name              FirstName
 	Last_Name               LastName
