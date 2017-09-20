@@ -7,7 +7,7 @@ ENV BFTXHOME /bftx
 # as the rest of this may change over time.
 RUN addgroup blockfreight && \
     useradd blockfreight && \
-    adduser blockfreight blockfreight
+    adduser -g blockfreight blockfreight
 
 RUN mkdir -p $BFTXHOME && \
     chown -R blockfreight:blockfreight $BFTXHOME
