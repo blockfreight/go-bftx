@@ -19,7 +19,7 @@ VOLUME $BFTXHOME
 # jq and curl used for extracting `pub_key` from private validator while
 # deploying tendermint with Kubernetes. It is nice to have bash so the users
 # could execute bash commands.
-RUN apk add --no-cache bash curl jq
+#RUN apk add --no-cache bash curl jq
 RUN go install $(go list ./... | grep -v /vendor/ | grep -v /test/)
 
 #COPY bftx /usr/bin/bftx
