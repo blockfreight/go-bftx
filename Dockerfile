@@ -6,7 +6,7 @@ ENV BFTXHOME /bftx
 # Create a blockfreight user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
 RUN addgroup blockfreight && \
-    adduser blockfreight blockfreight
+    useradd blockfreight blockfreight
 
 RUN mkdir -p $BFTXHOME && \
     chown -R blockfreight:blockfreight $BFTXHOME
