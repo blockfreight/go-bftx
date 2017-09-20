@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM golang:latest 
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
 ENV BFTXHOME /bftx
