@@ -20,8 +20,7 @@ ENV BFTXHOME /bftx
 
 # Create a blockfreight user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
-##RUN addgroup blockfreight && \
- ##adduser -S -G blockfreight blockfreight
+##RUN addgroup blockfreight && \ adduser -S -G blockfreight blockfreight
 
 ##RUN mkdir -p $BFTXHOME && \  chown -R blockfreight:blockfreight $BFTXHOME
 WORKDIR $BFTXHOME
@@ -32,7 +31,6 @@ VOLUME $BFTXHOME
 # jq and curl used for extracting `pub_key` from private validator while
 # deploying tendermint with Kubernetes. It is nice to have bash so the users
 # could execute bash commands.
-RUN apk add --no-cache bash curl jq
 
 COPY bftx /usr/bin/bftx
 
