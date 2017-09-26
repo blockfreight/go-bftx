@@ -3,9 +3,13 @@ FROM alpine:3.5
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
 ENV BFTXHOME /bftx
 
-# Create a blockfreight user and group first so the IDs get set the same way, even
+# Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
-RUN mkdir -p $BFTXHOME 
+RUN addgroup blockfreight && \
+    adduser -S -G blockfreight blockfreight
+    
+RUN mkdir -p $BFTXHOME && \
+    chown -R blockfreight:blockfreight $BFTXHOME
 WORKDIR $BFTXHOME
 
 # Expose the blockfreight home directory as a volume since there's mutable state in there.
