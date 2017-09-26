@@ -17,7 +17,7 @@ COPY . /go/src/github.com/blockfreight/blockfreight-alpha
 FROM alpine:3.5 
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
-ENV BFTXHOME /bftx
+ENV BFTXHOME /blockfreight-alpha
 
 # Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
@@ -37,7 +37,7 @@ VOLUME $BFTXHOME
 RUN apk add --no-cache bash curl jq
 COPY . /usr/bin/bftnode
 
-ENTRYPOINT ["bftnode"]
+ENTRYPOINT [bftnode]
 
 # By default you will get the ENTRYPOINT with local MerkleEyes and in-proc Tendermint.
 CMD ["start", "--dir=${BFTXHOME}"]
