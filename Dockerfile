@@ -1,4 +1,4 @@
-FROM golang:latest 
+FROM alpine:3.5 
 
 ##RUN apt-get update && apt-get install -y jq
 ##RUN go get github.com/Masterminds/glide 
@@ -22,7 +22,7 @@ ENV BFTXHOME /bftx
 # as the rest of this may change over time.
 ##RUN addgroup blockfreight && \ adduser -S -G blockfreight blockfreight
 
-##RUN mkdir -p $BFTXHOME && \  chown -R blockfreight:blockfreight $BFTXHOME
+RUN mkdir -p $BFTXHOME 
 WORKDIR $BFTXHOME
 
 # Expose the blockfreight home directory as a volume since there's mutable state in there.
@@ -31,8 +31,11 @@ VOLUME $BFTXHOME
 # jq and curl used for extracting `pub_key` from private validator while
 # deploying tendermint with Kubernetes. It is nice to have bash so the users
 # could execute bash commands.
+RUN pwd
+RUN apk add --no-cache bash curl jq
 
-COPY bftx /usr/bin/bftx
+RUN ls -la
+COPY . /usr/bin/bftx
 
 ENTRYPOINT ["bftx"]
 
