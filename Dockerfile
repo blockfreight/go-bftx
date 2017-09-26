@@ -1,19 +1,3 @@
-FROM golang:latest
-
-RUN apt-get update && apt-get install -y jq
-RUN go get github.com/Masterminds/glide 
-
-RUN mkdir -p /go/src/github.com/blockfreight/blockfreight-alpha
-WORKDIR /go/src/github.com/blockfreight/blockfreight-alpha
-
-COPY Makefile /go/src/github.com/blockfreight/blockfreight-alpha/
-COPY glide.yaml /go/src/github.com/blockfreight/blockfreight-alpha/
-COPY glide.lock /go/src/github.com/blockfreight/blockfreight-alpha/
-
-RUN make get_vendor_deps
-
-COPY . /go/src/github.com/blockfreight/blockfreight-alpha
-
 FROM alpine:3.5 
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
@@ -41,3 +25,20 @@ ENTRYPOINT [bftnode]
 
 # By default you will get the ENTRYPOINT with local MerkleEyes and in-proc Tendermint.
 CMD ["start", "--dir=${BFTXHOME}"]
+
+FROM golang:latest
+
+RUN apt-get update && apt-get install -y jq
+RUN go get github.com/Masterminds/glide 
+
+RUN mkdir -p /go/src/github.com/blockfreight/blockfreight-alpha
+WORKDIR /go/src/github.com/blockfreight/blockfreight-alpha
+
+COPY Makefile /go/src/github.com/blockfreight/blockfreight-alpha/
+COPY glide.yaml /go/src/github.com/blockfreight/blockfreight-alpha/
+COPY glide.lock /go/src/github.com/blockfreight/blockfreight-alpha/
+
+RUN make get_vendor_deps
+
+COPY . /go/src/github.com/blockfreight/blockfreight-alpha
+
