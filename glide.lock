@@ -1,6 +1,12 @@
-hash: 3d60c71c8abd193565f645ccff528055f54788bdfb149118655a254cfa04adf4
-updated: 2017-09-13T15:55:05.956351835+10:00
+hash: db6fdc6a08d8db45a3cb8c6ffdff051b6eb49d50a28b0829a6ad73af76f092d9
+updated: 2017-09-27T15:41:25.605485396+10:00
 imports:
+- name: github.com/btcsuite/btcd
+  version: b8df516b4b267acf2de46be593a9d948d1d2c420
+  subpackages:
+  - btcec
+- name: github.com/btcsuite/fastsha256
+  version: 637e656429416087660c84436a2a035d69d54e2e
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
   subpackages:
@@ -13,6 +19,12 @@ imports:
   - log/term
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
+- name: github.com/go-playground/locales
+  version: 1e5f1161c6416a5ff48840eb8724a394e48cc534
+  subpackages:
+  - currency
+- name: github.com/go-playground/universal-translator
+  version: 71201497bace774495daed26a3874fd339e0b538
 - name: github.com/go-stack/stack
   version: 100eb0c0a9c5b306ca2fb4f165df21d80ada4b82
 - name: github.com/golang/protobuf
@@ -29,8 +41,8 @@ imports:
   version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
 - name: github.com/mattn/go-isatty
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
-- name: github.com/satori/go.uuid
-  version: 5bf94b69c6b68ee1b541973bb8e1144db23a194b
+- name: github.com/pkg/errors
+  version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/syndtr/goleveldb
   version: 6ae1797c0b42b9323fc27ff7dcf568df88f2f33d
   subpackages:
@@ -52,8 +64,15 @@ imports:
   - client
   - server
   - types
+- name: github.com/tendermint/ed25519
+  version: 1f52c6f8b8a5c7908aff4497c186af344b428925
+  subpackages:
+  - edwards25519
+  - extra25519
 - name: github.com/tendermint/go-common
   version: f9e3db037330c8a8d61d3966de8473eaf01154fa
+- name: github.com/tendermint/go-crypto
+  version: 95b7c9e09c49b91bfbb71bb63dd514eb55450f16
 - name: github.com/tendermint/go-db
   version: 9643f60bc2578693844aacf380a7c32e4c029fee
 - name: github.com/tendermint/go-logger
@@ -62,12 +81,14 @@ imports:
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
   version: 5f88da3dbc1a72844e6dfaf274ce87f851d488eb
+  subpackages:
+  - data
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:
   - term
 - name: github.com/tendermint/tmlibs
-  version: 306795ae1d8e4f4a10dcc8bdb32a00455843c9d5
+  version: 9997e3a3b46db1d2f88aa9816ed0e7915dad6ac1
   subpackages:
   - common
   - log
@@ -76,7 +97,12 @@ imports:
 - name: golang.org/x/crypto
   version: aa2481cbfe81d911eb62b642b7a6b5ec58bbea71
   subpackages:
+  - nacl/secretbox
+  - openpgp/armor
+  - openpgp/errors
+  - poly1305
   - ripemd160
+  - salsa20/salsa
 - name: golang.org/x/net
   version: cfe3c2a7525b50c3d707256e371c90938cfef98a
   subpackages:
@@ -103,4 +129,6 @@ imports:
   - stats
   - tap
   - transport
-testImports: [] 
+- name: gopkg.in/go-playground/validator.v9
+  version: 6d8c18553ea1ac493d049edd6f102f52e618f085
+testImports: []
