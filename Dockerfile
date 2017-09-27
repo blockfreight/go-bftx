@@ -1,7 +1,7 @@
 FROM alpine:3.5 
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
-ENV BFTXHOME /blockfreight-alpha
+ENV BFTXHOME /go/src/github.com/blockfreight/blockfreight-alpha
 
 # Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
@@ -19,19 +19,12 @@ VOLUME $BFTXHOME
 # deploying tendermint with Kubernetes. It is nice to have bash so the users
 # could execute bash commands.
 RUN apk add --no-cache bash curl jq
-COPY . /usr/bin/bftnode
-
-ENTRYPOINT ["bftnode"]
-
-# By default you will get the ENTRYPOINT with local MerkleEyes and in-proc Tendermint.
-CMD ["start", "--dir=${BFTXHOME}"]
 
 FROM golang:latest
 
 RUN apt-get update && apt-get install -y jq
 RUN go get github.com/Masterminds/glide 
 
-RUN mkdir -p /go/src/github.com/blockfreight/blockfreight-alpha
 WORKDIR /go/src/github.com/blockfreight/blockfreight-alpha
 
 COPY Makefile /go/src/github.com/blockfreight/blockfreight-alpha/
@@ -42,3 +35,4 @@ RUN make get_vendor_deps
 
 COPY . /go/src/github.com/blockfreight/blockfreight-alpha
 
+ENTRYPOINT /go/bin/bftnode  
