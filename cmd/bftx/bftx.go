@@ -76,8 +76,8 @@ import (
 	"github.com/blockfreight/blockfreight-alpha/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/blockfreight-alpha/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-  "github.com/blockfreight/blockfreight-alpha/lib/pkg/key"           // Package used to provides functions and struct of a Key
 	"github.com/blockfreight/blockfreight-alpha/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/blockfreight-alpha/lib/pkg/key"           // Package used to provides functions and struct of a Key
 	"github.com/blockfreight/blockfreight-alpha/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 )
 
@@ -114,8 +114,8 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-		  Value: "tcp://127.0.0.1:46658",
-      //Value: "tcp://172.17.0.3:46658",
+			Value: "tcp://127.0.0.1:46658",
+			//Value: "tcp://172.17.0.3:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
@@ -266,11 +266,11 @@ func main() {
 			},
 		},
 		{
-		  Name: "new_key",
-		  Usage: "Generate a new Public/Private Key",
-		  Action: func (c *cli.Context) error {
-		    return cmdGenerateKey(c)
-		  },
+			Name:  "new_key",
+			Usage: "Generate a new Public/Private Key",
+			Action: func(c *cli.Context) error {
+				return cmdGenerateKey(c)
+			},
 		},
 	}
 	app.Before = before
@@ -348,10 +348,10 @@ func getBlockAppHash() ([]byte, error) {
 }
 
 func cmdGenerateKey(c *cli.Context) error {
-  result, err := key.GenerateNewKey()
-  if err != nil {
-    return nil
-  }
+	result, err := key.GenerateNewKey()
+	if err != nil {
+		return nil
+	}
 
 	printResponse(c, response{
 		Result: result,

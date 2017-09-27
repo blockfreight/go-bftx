@@ -46,39 +46,39 @@
 package key
 
 import (
-  // =======================
-  // Golang Standard library
-  // =======================
-  "encoding/json" //Implements encoding and decoding of JSON
+	// =======================
+	// Golang Standard library
+	// =======================
+	"encoding/json" //Implements encoding and decoding of JSON
 
-  // =======================
-  //    Tendermint Core
-  // =======================
-  "github.com/tendermint/go-crypto"
+	// =======================
+	//    Tendermint Core
+	// =======================
+	"github.com/tendermint/go-crypto"
 )
 
 // newKeyCmd function creates a new Key
 func GenerateNewKey() (string, error) {
-  result := genKey()
-  keyJSON, err := json.MarshalIndent(result, "", "\t")
-  if err != nil {
-    return "", err
-  }
-  return string(keyJSON), nil
+	result := genKey()
+	keyJSON, err := json.MarshalIndent(result, "", "\t")
+	if err != nil {
+		return "", err
+	}
+	return string(keyJSON), nil
 }
 
 // genKey function generates a new validator with private key.
 func genKey() *Key {
-  privKey := crypto.GenPrivKeyEd25519()
-  pubKey := privKey.PubKey()
-  addrBytes := pubKey.Address()
-  var addr Address
-  copy(addr[:], addrBytes)
-  return &Key{
-    Address: addr,
-    PubKey:  pubKey,
-    PrivKey: privKey.Wrap(),
-  }
+	privKey := crypto.GenPrivKeyEd25519()
+	pubKey := privKey.PubKey()
+	addrBytes := pubKey.Address()
+	var addr Address
+	copy(addr[:], addrBytes)
+	return &Key{
+		Address: addr,
+		PubKey:  pubKey,
+		PrivKey: privKey.Wrap(),
+	}
 }
 
 // Addres type
@@ -86,9 +86,9 @@ type Address [20]byte
 
 // Key struct
 type Key struct {
-  Address Address        `json:"address"`
-  PubKey  crypto.PubKey  `json:"pub_key"`
-  PrivKey crypto.PrivKey `json:"priv_key"`
+	Address Address        `json:"address"`
+	PubKey  crypto.PubKey  `json:"pub_key"`
+	PrivKey crypto.PrivKey `json:"priv_key"`
 }
 
 // =================================================

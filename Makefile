@@ -161,7 +161,7 @@ fresh: clean get_vendor_deps install
 #     Complete Build
 #  ================================
 
-.PHONY: all build install test get_vendor_deps build-docker clean fresh
+.PHONY: all build install get_vendor_deps test build-docker clean fresh
 
 #  ================================
 #     Credits:
