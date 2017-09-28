@@ -114,8 +114,8 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-			Value: "tcp://127.0.0.1:46658",
-			//Value: "tcp://172.17.0.3:46658",
+			//Value: "tcp://127.0.0.1:46658",
+			Value: "tcp://blockfreight:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
