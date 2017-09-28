@@ -58,9 +58,9 @@ $ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bft
 $ go install
 ```
 
-Then, you can execute `bftnode`. That app will start a server that is going to wait for requests from the `bftx`.
+Then, you can execute `bftnode start`. That app will start a server that is going to wait for requests from the `bftx`.
 ```
-$ bftnode
+$ bftnode start
 ```
 
 ### BFTX

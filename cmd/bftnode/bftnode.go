@@ -132,17 +132,11 @@ func main() {
 			},
 		},
 	}
-	app.Before = before
 	err := app.Run(os.Args)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-}
-
-func before(c *cli.Context) error {
-	introduction(c)
-	return nil
 }
 
 // cmdGenerateKey function creates a new public/private key
@@ -158,14 +152,12 @@ func cmdGenerateKey(c *cli.Context) error {
 	return nil
 }
 
-func introduction(c *cli.Context) {
+// cmdStartServer function creates the Blockfreight Node Application
+func cmdStartServer() {
+
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Node")
 	fmt.Println("...........................................\n")
-}
-
-// cmdStartServer function creates the Blockfreight Node Application
-func cmdStartServer() {
 
 	// Parameters
 	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
@@ -206,7 +198,7 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Printf("-> code: %s\n", rsp.Code.String())
 	}
 	if rsp.Result != "" {
-		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
+		fmt.Printf("%s", rsp.Result)
 	}
 	if len(rsp.Data) != 0 {
 		//fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
