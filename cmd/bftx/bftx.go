@@ -134,7 +134,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-			Value: "/go/src/github.com/blockfreight/blockfreight-alpha/",
+			Value: "$BFTHOME/examples/"
 			Usage: "define the source path where the json is",
 		},
 	}
