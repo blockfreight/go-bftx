@@ -32,6 +32,6 @@ COPY glide.yaml /go/src/github.com/blockfreight/blockfreight-alpha/
 COPY glide.lock /go/src/github.com/blockfreight/blockfreight-alpha/
 COPY . /go/src/github.com/blockfreight/blockfreight-alpha
 
-RUN make 
+RUN make
 
 ENTRYPOINT /go/bin/bftnode  
