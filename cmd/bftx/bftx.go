@@ -134,7 +134,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-			Value: "$BFTHOME/examples/"
+      Value: "$BFTHOME/examples/",
 			Usage: "define the source path where the json is",
 		},
 	}
