@@ -627,11 +627,11 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	// Check the BF_TX hash
-	res := client.CheckTxSync([]byte(content))
-
-	// Deliver / Publish a BF_TX
-	res = client.DeliverTxSync([]byte(content))
+  // Deliver / Publish a BF_TX
+  res := client.DeliverTxSync([]byte(content))
+  
+  // Check the BF_TX hash
+  res = client.CommitSync()
 
 	//Result
 	printResponse(c, response{
