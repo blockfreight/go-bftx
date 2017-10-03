@@ -419,7 +419,7 @@ func cmdInfo(c *cli.Context) error {
 		return err
 	}
 	printResponse(c, response{
-		//Data: []byte(resInfo.Data),
+		Data: resInfo.LastBlockAppHash,
 		Result: resInfo.Data,
 	})
 	return nil
