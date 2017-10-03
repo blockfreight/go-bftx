@@ -95,7 +95,7 @@ func (app *BftApplication) CheckTx(tx []byte) types.Result {
 
 // Commit commits transactions
 func (app *BftApplication) Commit() types.Result {
-	hash := app.state.Hash()
+	hash := app.state.Save()
 	return types.NewResultOK(hash, "")
 }
 
