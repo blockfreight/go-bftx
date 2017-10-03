@@ -85,7 +85,7 @@ func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	} else {
 		app.state.Set(tx, tx)
 	}
-	return types.OK
+  return types.OK
 }
 
 // Checktx checks a transaction
@@ -95,7 +95,8 @@ func (app *BftApplication) CheckTx(tx []byte) types.Result {
 
 // Commit commits transactions
 func (app *BftApplication) Commit() types.Result {
-	hash := app.state.Save()
+  newTree := app.state.Copy()
+	hash := newTree.Save()
 	return types.NewResultOK(hash, "")
 }
 

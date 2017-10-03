@@ -115,7 +115,7 @@ func main() {
 		cli.StringFlag{
 			Name:  "address",
 		 // Value: "tcp://127.0.0.1:46658",
-			Value: "tcp://blockfreight:46658",
+		  Value: "tcp://blockfreight:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
@@ -633,7 +633,6 @@ func cmdBroadcastBfTx(c *cli.Context) error {
   // Check the BF_TX hash
   res = client.CommitSync()
 
-
 	//Result
 	printResponse(c, response{
 		Code: res.Code,
@@ -838,9 +837,10 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
 
-	if !rsp.Code.IsOK() {
-		fmt.Printf("-> code: %s\n", rsp.Code.String())
-	}
+  if !rsp.Code.IsOK() {
+    fmt.Printf("-> code: %s\n", rsp.Code.String())
+  }
+
 	if rsp.Result != "" {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
 	}
