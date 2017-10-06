@@ -41,7 +41,7 @@ $ glide -v
 
 To install **blockfreight-alpha**, you can do it through:
 ```
-$ go get github.com/blockfreight/blockfreight-alpha
+$ go get github.com/blockfreight/blockfreight-alpha/cmd/bftnode
 ```
 
 Then, you need to update all dependencies by Glide. First go to **blockfreight-alpha** and update them:
