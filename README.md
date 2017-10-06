@@ -54,19 +54,19 @@ $ glide update
 ### BFT-Node
 Install BFT-Node through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bftnode
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/cmd/bftnode
 $ go install
 ```
 
-Then, you can execute `bftnode start`. That app will start a server that is going to wait for requests from the `bftx`.
+Then, you can execute `bftnode`. That app will start a server that is going to wait for requests from the `bftx`.
 ```
-$ bftnode start
+$ bftnode
 ```
 
 ### BFTX
 In other terminal, install BFTX through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/blockfreight/cmd/bftx
+$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/cmd/bftx
 $ go install
 ```
 
