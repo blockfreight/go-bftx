@@ -114,8 +114,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-		 // Value: "tcp://127.0.0.1:46658",
-		  Value: "tcp://blockfreight:46658",
+		  Value: "tcp://127.0.0.1:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
@@ -134,7 +133,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-      Value: "/go/src/github.com/blockfreight/blockfreight-alpha/examples/",
+      Value: "./examples/",
 			Usage: "define the source path where the json is",
 		},
 	}
