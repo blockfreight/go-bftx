@@ -3,11 +3,11 @@
 
 [![](https://img.shields.io/badge/made%20by-Blockfreight&#44;%20Inc&#46;-blue.svg?style=flat-square)](https://blockfreight.com)
 [![](https://img.shields.io/badge/Slack-%23blockfreight-blue.svg?style=flat-square)](http://slack.blockfreight.com)
-[![Build Status](https://travis-ci.org/blockfreight/blockfreight-alpha.svg?branch=v0.2.0-dev)](https://travis-ci.org/blockfreight/blockfreight-alpha)
+[![Build Status](https://travis-ci.org/blockfreight/go-bftx.svg?branch=v0.2.0-dev)](https://travis-ci.org/blockfreight/go-bftx)
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/blockfreight/blockfreight-alpha)](https://goreportcard.com/report/github.com/blockfreight/blockfreight-alpha)
-[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/blockfreight/blockfreight-alpha)
-[![Release](https://img.shields.io/github/release/golang-standards/project-lawet.svg?style=flat-square)](https://github.com/blockfreight/blockfreight-alpha)
+[![Go Report Card](https://goreportcard.com/badge/github.com/blockfreight/go-bftx)](https://goreportcard.com/report/github.com/blockfreight/go-bftx)
+[![Go Doc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](http://godoc.org/github.com/blockfreight/go-bftx)
+[![Release](https://img.shields.io/github/release/golang-standards/project-lawet.svg?style=flat-square)](https://github.com/blockfreight/go-bftx)
 
 Package: go-blockfreight - Blockfreight™ v0.3.0
 
@@ -41,12 +41,12 @@ $ glide -v
 
 To install **blockfreight-alpha**, you can do it through:
 ```
-$ go get github.com/blockfreight/blockfreight-alpha/cmd/bftnode
+$ go get github.com/blockfreight/go-bftx/cmd/bftnode
 ```
 
 Then, you need to update all dependencies by Glide. First go to **blockfreight-alpha** and update them:
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx
 $ glide install
 $ glide update
 ```
@@ -54,7 +54,7 @@ $ glide update
 ### BFT-Node
 Install BFT-Node through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/cmd/bftnode
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftnode
 $ go install
 ```
 
@@ -66,7 +66,7 @@ $ bftnode
 ### BFTX
 In other terminal, install BFTX through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/blockfreight-alpha/cmd/bftx
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftx
 $ go install
 ```
 
@@ -76,7 +76,7 @@ $ bftx help
 ```
 
 ## Use
-To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/blockfreight-alpha/blob/v0.2.0-dev/blockfreight/files/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
+To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/go-bftx/blob/v0.2.0-dev/blockfreight/files/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
 
 After that step, you can read the menu of bftx.
 
