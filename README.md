@@ -32,19 +32,19 @@ Validate you have [Go installed](https://golang.org/doc/install) and have define
 ### Glide
 Glide version 0.12.3+ or above.
 
-To manage all dependencies for **blockfreight-alpha**, it is necessary to have [Glide installed](https://github.com/Masterminds/glide).
+To manage all dependencies for **go-bftx**, it is necessary to have [Glide installed](https://github.com/Masterminds/glide).
 ```
 $ glide -v
 ```
 
 ## Installation
 
-To install **blockfreight-alpha**, you can do it through:
+To install **go-bftx**, you can do it through:
 ```
-$ go get github.com/blockfreight/go-bftx/cmd/bftnode
+$ go get github.com/blockfreight/go-bftx
 ```
 
-Then, you need to update all dependencies by Glide. First go to **blockfreight-alpha** and update them:
+Then, you need to update all dependencies by Glide. First go to **go-bftx** and update them:
 ```
 $ cd $GOPATH/src/github.com/blockfreight/go-bftx
 $ glide install
