@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/common"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
 )
 
 func TestHashByteArrays(t *testing.T) {

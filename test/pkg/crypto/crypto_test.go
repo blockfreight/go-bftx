@@ -3,8 +3,8 @@ package crypto
 import (
 	"testing"
 
-	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 )
 
 func TestSign_BF_TX(t *testing.T) {

@@ -55,7 +55,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
 // ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
