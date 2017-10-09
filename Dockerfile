@@ -1,4 +1,4 @@
-FROM alpine:3.5 
+FROM alpine:3.5
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
 ENV BFTXHOME /go/src/github.com/blockfreight/blockfreight-alpha
@@ -7,7 +7,7 @@ ENV BFTXHOME /go/src/github.com/blockfreight/blockfreight-alpha
 # as the rest of this may change over time.
 RUN addgroup blockfreight && \
     adduser -S -G blockfreight blockfreight
-    
+
 RUN mkdir -p $BFTXHOME && \
     chown -R blockfreight:blockfreight $BFTXHOME
 WORKDIR $BFTXHOME
@@ -23,7 +23,7 @@ RUN apk add --no-cache bash curl jq
 FROM golang:latest
 
 RUN apt-get update && apt-get install -y jq
-RUN go get github.com/Masterminds/glide 
+RUN go get github.com/Masterminds/glide
 
 WORKDIR /go/src/github.com/blockfreight/blockfreight-alpha
 
@@ -34,4 +34,4 @@ COPY . /go/src/github.com/blockfreight/blockfreight-alpha
 
 RUN make
 
-ENTRYPOINT /go/bin/bftnode  
+ENTRYPOINT /go/bin/bftnode
