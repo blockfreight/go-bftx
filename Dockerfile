@@ -1,7 +1,7 @@
 FROM alpine:3.5
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
-ENV BFTXHOME /go/src/github.com/blockfreight/blockfreight-alpha
+ENV BFTXHOME /go/src/github.com/blockfreight/go-bftx
 
 # Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
@@ -25,12 +25,12 @@ FROM golang:latest
 RUN apt-get update && apt-get install -y jq
 RUN go get github.com/Masterminds/glide
 
-WORKDIR /go/src/github.com/blockfreight/blockfreight-alpha
+WORKDIR /go/src/github.com/blockfreight/go-bftx
 
-COPY Makefile /go/src/github.com/blockfreight/blockfreight-alpha/
-COPY glide.yaml /go/src/github.com/blockfreight/blockfreight-alpha/
-COPY glide.lock /go/src/github.com/blockfreight/blockfreight-alpha/
-COPY . /go/src/github.com/blockfreight/blockfreight-alpha
+COPY Makefile /go/src/github.com/blockfreight/go-bftx/
+COPY glide.yaml /go/src/github.com/blockfreight/go-bftx/
+COPY glide.lock /go/src/github.com/blockfreight/go-bftx/
+COPY . /go/src/github.com/blockfreight/go-bftx
 
 RUN make
 

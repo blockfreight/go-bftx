@@ -59,7 +59,6 @@ import (
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
-
 	// ======================
 	// Blockfreight™ packages
 	// ======================
