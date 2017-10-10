@@ -14,7 +14,7 @@ WORKDIR $BFTXHOME
 
 # Expose the blockfreight home directory as a volume since there's mutable state in there.
 VOLUME $BFTXHOME
-
+ 
 # jq and curl used for extracting `pub_key` from private validator while
 # deploying tendermint with Kubernetes. It is nice to have bash so the users
 # could execute bash commands.
