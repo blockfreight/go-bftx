@@ -67,8 +67,8 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/key"
+	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
+	"github.com/blockfreight/go-bftx/lib/pkg/key"
 )
 
 // Structure for data passed to print response.

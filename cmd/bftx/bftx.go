@@ -73,12 +73,12 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/blockfreight-alpha/build/package/version" // Defines the current version of the project.
-	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/blockfreight-alpha/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/key"           // Package used to provides functions and struct of a Key
-	"github.com/blockfreight/blockfreight-alpha/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/key"           // Package used to provides functions and struct of a Key
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 )
 
 // Structure for data passed to print response.
@@ -113,9 +113,9 @@ func main() {
 	app.Version = version.Version
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
-			Name:  "address",
-		 // Value: "tcp://127.0.0.1:46658",
-		  Value: "tcp://blockfreight:46658",
+			Name: "address",
+			// Value: "tcp://127.0.0.1:46658",
+			Value: "tcp://blockfreight:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
@@ -134,7 +134,7 @@ func main() {
 		},*/
 		cli.StringFlag{
 			Name:  "json_path, jp",
-      Value: "/go/src/github.com/blockfreight/blockfreight-alpha/examples/",
+			Value: "/go/src/github.com/blockfreight/go-bftx/examples/",
 			Usage: "define the source path where the json is",
 		},
 	}
@@ -419,7 +419,7 @@ func cmdInfo(c *cli.Context) error {
 		return err
 	}
 	printResponse(c, response{
-		Data: resInfo.LastBlockAppHash,
+		Data:   resInfo.LastBlockAppHash,
 		Result: resInfo.Data,
 	})
 	return nil
@@ -627,11 +627,11 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-  // Deliver / Publish a BF_TX
-  res := client.DeliverTxSync([]byte(content))
-  
-  // Check the BF_TX hash
-  res = client.CommitSync()
+	// Deliver / Publish a BF_TX
+	res := client.DeliverTxSync([]byte(content))
+
+	// Check the BF_TX hash
+	res = client.CommitSync()
 
 	//Result
 	printResponse(c, response{
@@ -837,9 +837,9 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
 
-  if !rsp.Code.IsOK() {
-    fmt.Printf("-> code: %s\n", rsp.Code.String())
-  }
+	if !rsp.Code.IsOK() {
+		fmt.Printf("-> code: %s\n", rsp.Code.String())
+	}
 
 	if rsp.Result != "" {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)

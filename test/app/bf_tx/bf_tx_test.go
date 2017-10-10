@@ -1,9 +1,10 @@
 package bf_tx
 
 import (
-	bftx "github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
 	"reflect"
 	"testing"
+
+	bftx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 )
 
 func TestSetBF_TX(t *testing.T) {

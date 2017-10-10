@@ -3,8 +3,8 @@ package validator
 import (
 	"testing"
 
-	"github.com/blockfreight/blockfreight-alpha/lib/app/bf_tx"
-	"github.com/blockfreight/blockfreight-alpha/lib/app/validator"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	"github.com/blockfreight/go-bftx/lib/app/validator"
 )
 
 func TestValidator(t *testing.T) {

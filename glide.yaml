@@ -1,4 +1,4 @@
-package: github.com/blockfreight/blockfreight-alpha
+package: github.com/blockfreight/go-bftx
 homepage: https://blockfreight.com
 license: MIT
 owners:
