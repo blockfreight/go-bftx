@@ -81,7 +81,7 @@ func genKey() *Key {
 	}
 }
 
-// Addres type
+// Address type
 type Address [20]byte
 
 // Key struct
