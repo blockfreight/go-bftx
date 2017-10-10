@@ -76,7 +76,7 @@ $ bftx help
 ```
 
 ## Use
-To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/go-bftx/blob/v0.2.0-dev/blockfreight/files/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
+To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/go-bftx/blob/master/examples/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
 
 After that step, you can read the menu of bftx.
 
