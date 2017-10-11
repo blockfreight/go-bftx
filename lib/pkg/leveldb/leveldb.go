@@ -156,7 +156,7 @@ func Verify(jcontent string) ([]byte, error) {
 		bftx = bf_tx.Reinitialize(bftx)
 
 		// Get the BF_TX old_content in string format
-		content, err := bf_tx.BF_TXContent(bftx)
+		content, err := bf_tx.BFTXContent(bftx)
 		if err != nil {
 			return nil, err
 		}

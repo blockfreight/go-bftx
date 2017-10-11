@@ -316,13 +316,13 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
 	}
 
 	// Hash BF_TX Object
-	hash, err := bf_tx.HashBF_TX(bftx)
+	hash, err := bf_tx.HashBFTX(bftx)
 	if err != nil {
 		return nil, err
 	}
 
 	// Generate BF_TX id
-	bftxID := bf_tx.HashBF_TX_salt(hash, salt)
+	bftxID := bf_tx.GenerateBFTXSalt(hash, salt)
 
 	//printResponse (blah blah)
 
@@ -425,13 +425,13 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	jbftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	jbftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
 
 	// Get the BF_TX old_content in string format
-	jcontent, err := bf_tx.BF_TXContent(jbftx)
+	jcontent, err := bf_tx.BFTXContent(jbftx)
 	if err != nil {
 		return err
 	}
@@ -465,7 +465,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
@@ -492,7 +492,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
@@ -512,7 +512,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 	}
 
 	// Get the BF_TX content in string format
-	content, err := bf_tx.BF_TXContent(bftx)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return err
 	}
@@ -554,7 +554,7 @@ func cmdSignBfTx(c *cli.Context) error {
 	}
 
 	// Get the BF_TX content in string format
-	content, err := bf_tx.BF_TXContent(bftx)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return err
 	}
@@ -595,7 +595,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	bftx.Transmitted = true
 
 	// Get the BF_TX content in string format
-	content, err := bf_tx.BF_TXContent(bftx)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return err
 	}
@@ -643,8 +643,8 @@ func cmdCommit(c *cli.Context) error {
 
     // TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
     // TODO JCNM: Query from blockchain
-    bft_tx := bf_tx.SetBF_TX(c.GlobalString("json_path")+string(args[0]))
-    queryBytes := []byte(bf_tx.BF_TXContent(bft_tx))
+    bft_tx := bf_tx.SetBFTX(c.GlobalString("json_path")+string(args[0]))
+    queryBytes := []byte(bf_tx.BFTXContent(bft_tx))
 
     resQuery, err := client.QuerySync(types.RequestQuery{
         Data:   queryBytes,
@@ -682,7 +682,7 @@ func cmdGetBfTx(c *cli.Context) error {
 	}
 
 	// Get the BF_TX content in string format
-	content, err := bf_tx.BF_TXContent(bftx)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return err
 	}
@@ -714,7 +714,7 @@ func cmdAppendBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	newBftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	newBftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
@@ -726,11 +726,11 @@ func cmdAppendBfTx(c *cli.Context) error {
 	oldBftx.Amendment = newBftx.Id
 
 	// Get the BF_TX (old and new) content in string format
-	newContent, err := bf_tx.BF_TXContent(newBftx)
+	newContent, err := bf_tx.BFTXContent(newBftx)
 	if err != nil {
 		return err
 	}
-	oldContent, err := bf_tx.BF_TXContent(oldBftx)
+	oldContent, err := bf_tx.BFTXContent(oldBftx)
 	if err != nil {
 		return err
 	}
@@ -788,7 +788,7 @@ func cmdPrintBfTx(c *cli.Context) error {
 	}
 
 	// Print the BF_TX clearly
-	bf_tx.PrintBF_TX(bftx)
+	bf_tx.PrintBFTX(bftx)
 	return nil
 }
 

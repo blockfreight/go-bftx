@@ -9,7 +9,7 @@ import (
 
 func TestSignBFTX(t *testing.T) {
 	t.Log("Test on SignBFTX function")
-	bftx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bftx, err := bf_tx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}

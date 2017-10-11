@@ -67,7 +67,7 @@ import (
 // SignBFTX has the whole process of signing each BF_TX.
 func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
-	content, err := bf_tx.BF_TXContent(bftx)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return bftx, err
 	}

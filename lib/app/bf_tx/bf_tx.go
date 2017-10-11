@@ -66,48 +66,48 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
 )
 
-// SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
-func SetBF_TX(jsonpath string) (BF_TX, error) {
-	var bf_tx BF_TX
+// SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
+func SetBFTX(jsonpath string) (BF_TX, error) {
+	var bftx BF_TX
 	file, err := common.ReadJSON(jsonpath)
 	if err != nil {
-		return bf_tx, err
+		return bftx, err
 	}
-	json.Unmarshal(file, &bf_tx)
-	return bf_tx, nil
+	json.Unmarshal(file, &bftx)
+	return bftx, nil
 }
 
-//HashBF_TX hashes the BF_TX object
-func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
-	bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
+//HashBFTX hashes the BF_TX object
+func HashBFTX(bftx BF_TX) ([]byte, error) {
+	bftxBytes := []byte(fmt.Sprintf("%v", bftx))
 
 	hash := sha256.New()
-	hash.Write(bf_tx_bytes)
+	hash.Write(bftxBytes)
 
 	return hash.Sum(nil), nil
 }
 
-//HashBF_TX_salt hashes two byte arrays and returns it.
-func HashBF_TX_salt(hash []byte, salt []byte) []byte {
+//GenerateBFTXSalt hashes two byte arrays and returns it.
+func GenerateBFTXSalt(hash []byte, salt []byte) []byte {
 	return common.HashByteArrays(hash, salt)
 }
 
-// BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
-func BF_TXContent(bf_tx BF_TX) (string, error) {
-	jsonContent, err := json.Marshal(bf_tx)
+// BFTXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
+func BFTXContent(bftx BF_TX) (string, error) {
+	jsonContent, err := json.Marshal(bftx)
 	return string(jsonContent), err
 }
 
-// PrintBF_TX receives a BF_TX and prints it clearly.
-func PrintBF_TX(bf_tx BF_TX) {
-	spew.Dump(bf_tx)
+// PrintBFTX receives a BF_TX and prints it clearly.
+func PrintBFTX(bftx BF_TX) {
+	spew.Dump(bftx)
 }
 
 // State reports the current state of a BF_TX
-func State(bf_tx BF_TX) string {
-	if bf_tx.Transmitted {
+func State(bftx BF_TX) string {
+	if bftx.Transmitted {
 		return "Transmitted!"
-	} else if bf_tx.Verified {
+	} else if bftx.Verified {
 		return "Signed!"
 	} else {
 		return "Constructed!"
@@ -115,16 +115,16 @@ func State(bf_tx BF_TX) string {
 }
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
-func Reinitialize(bf_tx BF_TX) BF_TX {
-	bf_tx.PrivateKey.Curve = nil
-	bf_tx.PrivateKey.X = nil
-	bf_tx.PrivateKey.Y = nil
-	bf_tx.PrivateKey.D = nil
-	bf_tx.Signhash = nil
-	bf_tx.Signature = ""
-	bf_tx.Verified = false
-	bf_tx.Transmitted = false
-	return bf_tx
+func Reinitialize(bftx BF_TX) BF_TX {
+	bftx.PrivateKey.Curve = nil
+	bftx.PrivateKey.X = nil
+	bftx.PrivateKey.Y = nil
+	bftx.PrivateKey.D = nil
+	bftx.Signhash = nil
+	bftx.Signature = ""
+	bftx.Verified = false
+	bftx.Transmitted = false
+	return bftx
 }
 
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.

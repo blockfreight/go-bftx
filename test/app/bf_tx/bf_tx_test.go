@@ -7,21 +7,21 @@ import (
 	bftx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 )
 
-func TestSetBF_TX(t *testing.T) {
-	t.Log("Test on SetBF_TX function")
+func TestSetBFTX(t *testing.T) {
+	t.Log("Test on SetBFTX function")
 	var prot bftx.BF_TX
-	bf_tx, err := bftx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bf_tx, err := bftx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
 	if reflect.TypeOf(bf_tx) != reflect.TypeOf(prot) {
-		t.Error("Error on type of result of SetBF_TX")
+		t.Error("Error on type of result of SetBFTX")
 	}
 }
 
 func TestTransmitedState(t *testing.T) {
 	t.Log("Test on State function")
-	bf_tx, err := bftx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bf_tx, err := bftx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
@@ -37,7 +37,7 @@ func TestTransmitedState(t *testing.T) {
 
 func TestSignedState(t *testing.T) {
 	t.Log("Test on State function")
-	bf_tx, err := bftx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bf_tx, err := bftx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
@@ -53,7 +53,7 @@ func TestSignedState(t *testing.T) {
 
 func TestConstructedState(t *testing.T) {
 	t.Log("Test on State function")
-	bf_tx, err := bftx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bf_tx, err := bftx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
