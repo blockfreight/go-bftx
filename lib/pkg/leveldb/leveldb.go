@@ -64,7 +64,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-var dbPath string = "bft-db" //Folder name where is going to be the LevelDB
+var dbPath = "bft-db" //Folder name where is going to be the LevelDB
 
 // OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that occurred.
 func OpenDB(dbPath string) (db *leveldb.DB, err error) {

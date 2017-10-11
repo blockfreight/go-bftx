@@ -308,7 +308,7 @@ func persistentArgs(line []byte) []string {
 
 //--------------------------------------------------------------------------------
 
-func cmdGenerate_bftx_id(bftx bf_tx.BF_TX) ([]byte, error) {
+func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 	salt, err := getBlockAppHash()
 	if err != nil {
@@ -322,11 +322,11 @@ func cmdGenerate_bftx_id(bftx bf_tx.BF_TX) ([]byte, error) {
 	}
 
 	// Generate BF_TX id
-	bf_tx_id := bf_tx.HashBF_TX_salt(hash, salt)
+	bftxID := bf_tx.HashBF_TX_salt(hash, salt)
 
 	//printResponse (blah blah)
 
-	return bf_tx_id, nil
+	return bftxID, nil
 }
 
 func getBlockAppHash() ([]byte, error) {
@@ -457,7 +457,7 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	return nil
 }
 
-// Validate a BF_TX
+// cmdValidateBfTx validates a BFTX
 func cmdValidateBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
@@ -465,13 +465,13 @@ func cmdValidateBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	bf_tx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
 
 	// Validate the BF_TX
-	result, err := validator.ValidateBFTX(bf_tx)
+	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
 		return err
@@ -497,7 +497,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 		return err
 	}
 
-	newId, err := cmdGenerate_bftx_id(bftx)
+	newId, err := cmdGenerateBftxID(bftx)
 	if err != nil {
 		return err
 	}
@@ -702,7 +702,7 @@ func cmdAppendBfTx(c *cli.Context) error {
 	}
 
 	// Get a BF_TX by id
-	old_bftx, err := leveldb.GetBfTx(args[1])
+	oldBftx, err := leveldb.GetBfTx(args[1])
 	if err != nil {
 		return err
 	}
@@ -714,42 +714,42 @@ func cmdAppendBfTx(c *cli.Context) error {
 	}
 
 	// Read JSON and instance the BF_TX structure
-	new_bftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
+	newBftx, err := bf_tx.SetBF_TX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
 	}
 
 	// Set the BF_TX id
-	//new_bftx.Id = n+1     //TODO JCNM: Solve concurrency problem
+	//newBftx.Id = n+1     //TODO JCNM: Solve concurrency problem
 
 	// Update the BF_TX appended attribute of the old BF_TX
-	old_bftx.Amendment = new_bftx.Id
+	oldBftx.Amendment = newBftx.Id
 
 	// Get the BF_TX (old and new) content in string format
-	new_content, err := bf_tx.BF_TXContent(new_bftx)
+	newContent, err := bf_tx.BF_TXContent(newBftx)
 	if err != nil {
 		return err
 	}
-	old_content, err := bf_tx.BF_TXContent(old_bftx)
+	oldContent, err := bf_tx.BF_TXContent(oldBftx)
 	if err != nil {
 		return err
 	}
 
 	// Save on DB
-	err = leveldb.RecordOnDB(string(new_bftx.Id), new_content)
+	err = leveldb.RecordOnDB(string(newBftx.Id), newContent)
 	if err != nil {
 		return err
 	}
 
 	// Update on DB
-	err = leveldb.RecordOnDB(string(old_bftx.Id), old_content)
+	err = leveldb.RecordOnDB(string(oldBftx.Id), oldContent)
 	if err != nil {
 		return err
 	}
 
 	//Result
 	printResponse(c, response{
-		Result: "BF_TX Id: " + string(new_bftx.Id),
+		Result: "BF_TX Id: " + string(newBftx.Id),
 	})
 
 	return nil
