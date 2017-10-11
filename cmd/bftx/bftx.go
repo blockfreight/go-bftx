@@ -471,7 +471,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	}
 
 	// Validate the BF_TX
-	result, err := validator.ValidateBf_Tx(bf_tx)
+	result, err := validator.ValidateBFTX(bf_tx)
 	if err != nil {
 		fmt.Println(result)
 		return err
@@ -505,7 +505,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 	bftx.Id = fmt.Sprintf("%x", newId)
 
 	// Re-validate a BF_TX before create a BF_TX
-	result, err := validator.ValidateBf_Tx(bftx)
+	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
 		return err

@@ -13,7 +13,7 @@ func TestValidator(t *testing.T) {
 	if err != nil {
 		t.Log(err.Error())
 	}
-	result, err := validator.ValidateBf_Tx(bftx)
+	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		t.Log(err.Error())
 	}
