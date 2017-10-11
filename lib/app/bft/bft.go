@@ -66,7 +66,7 @@ type BftApplication struct {
 	state merkle.Tree
 }
 
-// newBftApplication creates a new application
+// NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
 	state := merkle.NewIAVLTree(0, nil)
 	return &BftApplication{state: state}
