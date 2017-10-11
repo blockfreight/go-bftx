@@ -64,8 +64,8 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-// Sign_BF_TX has the whole process of signing each BF_TX.
-func Sign_BF_TX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
+// SignBFTX has the whole process of signing each BF_TX.
+func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
 	content, err := bf_tx.BF_TXContent(bftx)
 	if err != nil {

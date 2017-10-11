@@ -568,7 +568,7 @@ func cmdSignBfTx(c *cli.Context) error {
 	}
 
 	// Sign BF_TX
-	bftx, err = crypto.Sign_BF_TX(bftx)
+	bftx, err = crypto.SignBFTX(bftx)
 	if err != nil {
 		return err
 	}

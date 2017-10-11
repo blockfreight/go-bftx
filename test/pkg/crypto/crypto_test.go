@@ -7,14 +7,14 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 )
 
-func TestSign_BF_TX(t *testing.T) {
-	t.Log("Test on Sign_BF_TX function")
+func TestSignBFTX(t *testing.T) {
+	t.Log("Test on SignBFTX function")
 	bftx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
 
-	bftx, err = crypto.Sign_BF_TX(bftx)
+	bftx, err = crypto.SignBFTX(bftx)
 	if err != nil {
 		t.Log(err.Error())
 	}
