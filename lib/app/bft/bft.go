@@ -77,7 +77,7 @@ func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: app.state.Hash(), LastBlockHeight: uint64(app.state.Height())}
 }
 
-// tx is either "key=value" or just arbitrary bytes
+// DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	parts := strings.Split(string(tx), "=")
 	if len(parts) == 2 {
@@ -88,7 +88,7 @@ func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	return types.OK
 }
 
-// Checktx checks a transaction
+// CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
 	return types.OK
 }
@@ -114,17 +114,18 @@ func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.Re
 			resQuery.Log = "does not exist"
 		}
 		return
-	} else {
-		index, value, exists := app.state.Get(reqQuery.Data)
-		resQuery.Index = int64(index)
-		resQuery.Value = value
-		if exists {
-			resQuery.Log = "exists"
-		} else {
-			resQuery.Log = "does not exist"
-		}
-		return
 	}
+
+	index, value, exists := app.state.Get(reqQuery.Data)
+	resQuery.Index = int64(index)
+	resQuery.Value = value
+	if exists {
+		resQuery.Log = "exists"
+	} else {
+		resQuery.Log = "does not exist"
+	}
+	return
+
 }
 
 // =================================================
