@@ -77,7 +77,6 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/key"           // Package used to provides functions and struct of a Key
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 )
 
@@ -264,13 +263,6 @@ func main() {
 				os.Exit(0)
 			},
 		},
-		{
-			Name:  "new_key",
-			Usage: "Generate a new Public/Private Key",
-			Action: func(c *cli.Context) error {
-				return cmdGenerateKey(c)
-			},
-		},
 	}
 	app.Before = before
 	err := app.Run(os.Args)
@@ -344,18 +336,6 @@ func getBlockAppHash() ([]byte, error) {
 	}
 
 	return resInfo.LastBlockAppHash, nil
-}
-
-func cmdGenerateKey(c *cli.Context) error {
-	result, err := key.GenerateNewKey()
-	if err != nil {
-		return nil
-	}
-
-	printResponse(c, response{
-		Result: result,
-	})
-	return nil
 }
 
 func cmdBatch(app *cli.App, c *cli.Context) error {
