@@ -149,25 +149,25 @@ type BF_TX struct {
 
 // Properties struct
 type Properties struct {
-	Shipper              Shipper
-	Bol_Num              BolNum
-	Ref_Num              RefNum
-	Consignee            Consignee
-	Vessel               Vessel
-	Port_of_Loading      PortLoading
-	Port_of_Discharge    PortDischarge
-	Notify_Address       NotifyAddress
-	Desc_of_Goods        DescGoods
-	Gross_Weight         GrossWeight
-	Freight_Payable_Amt  FreightPayableAmt
-	Freight_Adv_Amt      FreightAdvAmt
-	General_Instructions GeneralInstructions
-	Date_Shipped         Date
-	Issue_Details        IssueDetails
-	Num_Bol              NumBol
-	Master_Info          MasterInfo
-	Agent_for_Master     AgentMaster
-	Agent_for_Owner      AgentOwner
+	Shipper             Shipper
+	BolNum              BolNum
+	RefNum              RefNum
+	Consignee           Consignee
+	Vessel              Vessel
+	PortOfLoading       PortLoading
+	PortOfDischarge     PortDischarge
+	NotifyAddress       NotifyAddress
+	DescOfGoods         DescGoods
+	GrossWeight         GrossWeight
+	FreightPayableAmt   FreightPayableAmt
+	FreightAdvAmt       FreightAdvAmt
+	GeneralInstructions GeneralInstructions
+	DateShipped         Date
+	IssueDetails        IssueDetails
+	NumBol              NumBol
+	MasterInfo          MasterInfo
+	AgentForMaster      AgentMaster
+	AgentForOwner       AgentOwner
 }
 
 // Shipper struct
@@ -249,8 +249,8 @@ type IssueDetails struct {
 
 // IssueDetailsProperties struct
 type IssueDetailsProperties struct {
-	Place_of_Issue PlaceIssue
-	Date_of_Issue  Date
+	PlaceOfIssue PlaceIssue
+	DateOfIssue  Date
 }
 
 // PlaceIssue struct
@@ -258,12 +258,12 @@ type PlaceIssue struct {
 	Type string
 }
 
-// Numbol struct
+// NumBol struct
 type NumBol struct {
 	Type int
 }
 
-// Masterinfo struct
+// MasterInfo struct
 type MasterInfo struct {
 	Type       string
 	Properties MasterInfoProperties
@@ -271,9 +271,9 @@ type MasterInfo struct {
 
 // MasterInfoProperties struct
 type MasterInfoProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+	FirstName FirstName
+	LastName  LastName
+	Sig       Sig
 }
 
 // AgentMaster struct
@@ -284,9 +284,9 @@ type AgentMaster struct {
 
 //AgentMasterProperties struct
 type AgentMasterProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+	FirstName FirstName
+	LastName  LastName
+	Sig       Sig
 }
 
 // AgentOwner struct
@@ -297,10 +297,10 @@ type AgentOwner struct {
 
 // AgentOwnerProperties struct
 type AgentOwnerProperties struct {
-	First_Name              FirstName
-	Last_Name               LastName
-	Sig                     Sig
-	Conditions_for_Carriage ConditionsCarriage
+	FirstName             FirstName
+	LastName              LastName
+	Sig                   Sig
+	ConditionsForCarriage ConditionsCarriage
 }
 
 // FirstName struct

@@ -3,57 +3,57 @@
     "properties": {
       
       "shipper": { "type": "VLX454323F" },
-      "BOL_NUM": { "type": 15554 },
-      "REF_NUM": { "type": 154532165},
+      "BolNum": { "type": 15554 },
+      "RefNum": { "type": 154532165},
       "consignee":{"type":null},
       "vessel":{"type":132153456},
-      "port_of_loading":{"type":21514},
-      "port_of_discharge":{"type":51651},
-      "notify_address":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
-      "desc_of_goods":{"type":"This is the goods description."},
-      "gross_weight":{"type":15523},
-      "freight_payable_amt":{"type":354534},
-      "freight_adv_amt":{"type":35448552},
-      "general_instructions":{"type":"There are many general instructions."},
-      "date_shipped":{"type":20161128, "format":"date-time"},
+      "PortOfLoading":{"type":21514},
+      "PortOfDischarge":{"type":51651},
+      "NotifyAddress":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
+      "DescOfGoods":{"type":"This is the goods description."},
+      "GrossWeight":{"type":15523},
+      "FreightPayableAmt":{"type":354534},
+      "FreightAdvAmt":{"type":35448552},
+      "GeneralInstructions":{"type":"There are many general instructions."},
+      "DateShipped":{"type":20161128, "format":"date-time"},
   
-      "issue_details": {
+      "IssueDetails": {
           "type": "object",
           "properties": {
-            "place_of_issue": { "type": "Melbourne, Australia" },
-            "date_of_issue": { "type": 20161128, "format":"date-time" }
+            "PlaceOfIssue": { "type": "Melbourne, Australia" },
+            "DateOfIssue": { "type": 20161128, "format":"date-time" }
         }
       },
   
-      "num_BOL":{"type":54684010805},
+      "NumBol":{"type":54684010805},
   
-      "master_info": {
+      "MasterInfo": {
         "type": "object",
         "properties": {
-          "first_name": { "type": "Master First Name" },
-          "last_name": { "type": "Master Last Name" },
+          "FirstName": { "type": "Master First Name" },
+          "LastName": { "type": "Master Last Name" },
           "sig":{"type":null}
         }
       },
       
   
-      "agent_for_master": {
+      "AgentForMaster": {
         "type": "object",
         "properties": {
-          "first_name": { "type": "Agent First Name" },
-          "last_name": { "type": "Agent Last Name" },
+          "FirstName": { "type": "Agent First Name" },
+          "LastName": { "type": "Agent Last Name" },
           "sig":{"type":null}
         }
       },
   
   
-      "agent_for_owner": {
+      "AgentForOwner": {
         "type": "object",
         "properties": {
-          "first_name": { "type": "Owner First Name" },
-          "last_name": { "type": "Owner Last Name" },
+          "FirstName": { "type": "Owner First Name" },
+          "LastName": { "type": "Owner Last Name" },
           "sig":{"type":null},
-          "conditions_for_carriage":{"type":"There are the carriage conditions."}
+          "ConditionsForCarriage":{"type":"There are the carriage conditions."}
         }
       }
   
