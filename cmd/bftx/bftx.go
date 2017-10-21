@@ -56,8 +56,9 @@ import (
 	"io"           // Provides basic interfaces to I/O primitives.
 	"log"          // Implements a simple logging package.
 	"os"           // Provides a platform-independent interface to operating system functionality.
-	"strconv"      // Implements conversions to and from string representations of basic data types.
-	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
+	"os/exec"
+	"strconv" // Implements conversions to and from string representations of basic data types.
+	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
 
 	// ====================
 	// Third-party packages
@@ -257,6 +258,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "python",
+			Usage: "Test Python Hello Function",
+			Action: func(c *cli.Context) error {
+				return cmdHelloPython(c)
+			},
+		},
+		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -377,19 +385,19 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-// Have the application echo a message
-/*func cmdEcho(c *cli.Context) error {
-    args := c.Args()
-    if len(args) != 1 {
-        return errors.New("Command echo takes 1 argument")
-    }
-    resEcho := client.EchoSync(args[0])
-    printResponse(c, response{
-        //Data: resEcho.Data,
-        Result: string(resEcho.Data),
-    })
-    return nil
-}*/
+func cmdHelloPython(c *cli.Context) error {
+	cmdStr := "python3 ./lib/pkg/python/hello.py"
+	out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
+
+	if err != nil {
+		return err
+	}
+
+	printResponse(c, response{
+		Result: string(out),
+	})
+	return nil
+}
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
