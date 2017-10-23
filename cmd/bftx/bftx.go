@@ -386,10 +386,13 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 }
 
 func cmdHelloPython(c *cli.Context) error {
-	cmdStr := "python3 ./lib/pkg/python/hello.py"
-	out, err := exec.Command("/bin/sh", "-c", cmdStr).Output()
+
+	cmd := exec.Command("python", "-c", "import hello; print hello.HelloPython()")
+	cmd.Dir = "./lib/pkg/python/"
+	out, err := cmd.Output()
 
 	if err != nil {
+		fmt.Println(err)
 		return err
 	}
 

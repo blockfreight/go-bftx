@@ -1,4 +1,2 @@
-import sys
-
-def ReturnHelloName():
-    print("Hello!")
+def HelloPython():
+    return "Hello, Python!"

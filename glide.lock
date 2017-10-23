@@ -1,12 +1,6 @@
 hash: 39764b9ef1b18ec544706e2222cea9fd5a2e3101016c09c34bf576f446c20610
-updated: 2017-10-10T14:23:41.261641828+11:00
+updated: 2017-10-23T10:33:49.251810059+11:00
 imports:
-- name: github.com/btcsuite/btcd
-  version: b8df516b4b267acf2de46be593a9d948d1d2c420
-  subpackages:
-  - btcec
-- name: github.com/btcsuite/fastsha256
-  version: 637e656429416087660c84436a2a035d69d54e2e
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
   subpackages:
@@ -43,6 +37,12 @@ imports:
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
+- name: github.com/qiniu/errors
+  version: 4aa58a55ece75dc0efce5a2e2908457f35534f3e
+- name: github.com/qiniu/log
+  version: a304a74568d6982c5b89de1c68ac8fca3add196a
+- name: github.com/qiniu/py
+  version: 1331402b4dd808298b11b067fb4ae4eabe0cb61d
 - name: github.com/syndtr/goleveldb
   version: 6ae1797c0b42b9323fc27ff7dcf568df88f2f33d
   subpackages:
@@ -64,11 +64,6 @@ imports:
   - client
   - server
   - types
-- name: github.com/tendermint/ed25519
-  version: 1f52c6f8b8a5c7908aff4497c186af344b428925
-  subpackages:
-  - edwards25519
-  - extra25519
 - name: github.com/tendermint/go-common
   version: f9e3db037330c8a8d61d3966de8473eaf01154fa
 - name: github.com/tendermint/go-crypto
@@ -81,8 +76,6 @@ imports:
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
   version: 5f88da3dbc1a72844e6dfaf274ce87f851d488eb
-  subpackages:
-  - data
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:
@@ -97,12 +90,7 @@ imports:
 - name: golang.org/x/crypto
   version: aa2481cbfe81d911eb62b642b7a6b5ec58bbea71
   subpackages:
-  - nacl/secretbox
-  - openpgp/armor
-  - openpgp/errors
-  - poly1305
   - ripemd160
-  - salsa20/salsa
 - name: golang.org/x/net
   version: cfe3c2a7525b50c3d707256e371c90938cfef98a
   subpackages:
