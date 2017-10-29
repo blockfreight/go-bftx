@@ -57,6 +57,13 @@ Install BFT-Node through
 $ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftnode
 $ go install
 ```
+### BFT-Node on OSX
+Install BFT-Node through
+```
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftnode
+$ go build
+$ ./bftnode
+```
 
 Then, you can execute `bftnode`. That app will start a server that is going to wait for requests from the `bftx`.
 ```
@@ -68,6 +75,12 @@ In other terminal, install BFTX through
 ```
 $ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftx
 $ go install
+```
+### BFTX on OSX
+In other terminal, install BFTX through
+```
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftx
+$ go build
 ```
 
 After that step, you can execute `bftx`. If you need some extra information, just add `help` after.
