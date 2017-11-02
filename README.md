@@ -38,7 +38,7 @@ $ glide -v
 ```
 
 ### Python
-Python version 2.7+ or above. If you have it installed you can skip this section and go to [BFTX Installation](## Installation)
+Python version 2.7+ or above. If you have it installed you can skip this section and go to [BFTX Installation](# Installation)
 
 To run Python functions, it is necessary to have it installed. However, before install Python, you should install [Homebrew](https://brew.sh/):
 ```
