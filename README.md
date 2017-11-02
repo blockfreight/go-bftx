@@ -45,7 +45,7 @@ To run Python functions, it is necessary to have it installed. However, before i
 $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 ```
 
-Now you can install Python using te following command:
+Now you can install Python using the following command:
 ```
 $ brew install python
 ```
