@@ -258,10 +258,10 @@ func main() {
 			},
 		},
 		{
-			Name:  "python",
+			Name:  "fednode",
 			Usage: "Test Python Hello Function",
 			Action: func(c *cli.Context) error {
-				return cmdHelloPython(c)
+				return cmdFednode(c)
 			},
 		},
 		{
@@ -387,7 +387,7 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 
 func cmdHelloPython(c *cli.Context) error {
 
-	cmd := exec.Command("python", "-c", "import hello; print hello.HelloPython()")
+	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('fednode ps')")
 	cmd.Dir = "./lib/pkg/python/"
 	out, err := cmd.Output()
 
@@ -402,6 +402,23 @@ func cmdHelloPython(c *cli.Context) error {
 	return nil
 }
 
+func cmdFednode(c *cli.Context) error {
+	args := "fednode "+strings.Join(c.Args(), " ")
+	fmt.Println(args)
+	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('"+args+"')")
+
+	cmd.Dir = "./lib/pkg/python/"
+	out, err := cmd.Output()
+	
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	printResponse(c, response{
+		Result: string(out),
+	})
+	return nil
+}
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
 	resInfo, err := client.InfoSync()
