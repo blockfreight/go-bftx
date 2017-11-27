@@ -406,19 +406,23 @@ func cmdFednode(c *cli.Context) error {
 	args := "fednode "+strings.Join(c.Args(), " ")
 	fmt.Println(args)
 	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('"+args+"')")
-
 	cmd.Dir = "./lib/pkg/python/"
-	out, err := cmd.Output()
+	cmd.Stdout = os.Stdout
+    cmd.Stderr = os.Stderr
+    cmd.Stdin = os.Stdin
+    err := cmd.Run()
 	
 	if err != nil {
 		fmt.Println(err)
 		return err
 	}
-	printResponse(c, response{
-		Result: string(out),
-	})
+	// printResponse(c, response{
+	// 	Result: string(out),
+	// })
 	return nil
 }
+
+
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
 	resInfo, err := client.InfoSync()
