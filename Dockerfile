@@ -22,7 +22,7 @@ RUN apk add --no-cache bash curl jq
 
 FROM golang:latest
 
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install -y jq ssh
 RUN go get github.com/Masterminds/glide
 
 WORKDIR /go/src/github.com/blockfreight/go-bftx
