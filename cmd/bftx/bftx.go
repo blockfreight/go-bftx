@@ -59,6 +59,7 @@ import (
 	"os/exec"
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	
 
 	// ====================
 	// Third-party packages
@@ -79,6 +80,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/api/route"
 )
 
 // Structure for data passed to print response.
@@ -289,6 +291,9 @@ func before(c *cli.Context) error {
 			log.Fatal(err.Error())
 		}
 	}
+
+	route.StartApi()
+
 	return nil
 }
 
