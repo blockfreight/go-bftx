@@ -22,5 +22,6 @@ import:
 - package: github.com/tendermint/go-common
 - package: github.com/tendermint/go-crypto
 - package: github.com/tendermint/go-merkle
+- package: github.com/gorilla/mux
 - package: github.com/urfave/cli
   version: v1.19.1
