@@ -44,9 +44,27 @@
 
 // Blockfreight™ App Configuration
 
+// Package config is a package that handles with the application configutarions.
 package config
 
-// @todo: Specify application variables here.
+import (
+    "github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
+    "encoding/json"
+)
+
+type Config struct {
+	BFTX_API_ADDRESS string `json:"bftx-api-adress"`
+}
+
+func LoadConfiguration() (Config, error) {
+    var config Config
+    configFile, err := common.ReadJSON("./config.json")
+    if err != nil {
+		return config, err
+	}
+    json.Unmarshal(configFile, &config)
+    return config, nil
+}
 
 // =================================================
 // Blockfreight™ | The blockchain of global freight.
