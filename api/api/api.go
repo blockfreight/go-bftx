@@ -1,4 +1,4 @@
-package route
+package api
 
 import (
 	"net/http" // Provides HTTP client and server implementations.
@@ -20,7 +20,7 @@ import (
 // client is a global variable so it can be reused by the console
 var TendermintClient abcicli.Client
 
-func StartApi() error {
+func Start() error {
 	//configuration, _ := config.LoadConfiguration()
 	router := mux.NewRouter()
 	router.HandleFunc("/fulltransaction", apiFullTransactionBfTx).Methods("POST")

@@ -80,7 +80,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/api/route"
+	"github.com/blockfreight/go-bftx/api/api"
 )
 
 // Structure for data passed to print response.
@@ -297,7 +297,7 @@ func before(c *cli.Context) error {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		route.TendermintClient = client
+		api.TendermintClient = client
 	}
 
 	return nil
@@ -349,7 +349,7 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
 }
 
 func cmdStartAPI(c *cli.Context) error {
-	err := route.StartApi()
+	err := api.Start()
 
 	fmt.Println("err")
 	fmt.Println(err)
