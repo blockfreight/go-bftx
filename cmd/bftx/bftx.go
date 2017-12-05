@@ -267,6 +267,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "API",
+			Usage: "Start BFTX API",
+			Action: func(c *cli.Context) error {
+				return cmdStartAPI(c)
+			},
+		},
+		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -291,8 +298,6 @@ func before(c *cli.Context) error {
 			log.Fatal(err.Error())
 		}
 	}
-
-	route.StartApi()
 
 	return nil
 }
@@ -340,6 +345,23 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
 	//printResponse (blah blah)
 
 	return bftxID, nil
+}
+
+func cmdStartAPI(c *cli.Context) error {
+	err := route.StartApi()
+
+	fmt.Println("err")
+	fmt.Println(err)
+
+	if err != nil {
+		return err
+	}
+
+	 printResponse(c, response{
+	 	Result: "Running API on: http://localhost:12345",
+	 })
+
+	return nil
 }
 
 func getBlockAppHash() ([]byte, error) {
@@ -912,6 +934,7 @@ func introduction(c *cli.Context) {
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Go App")
 	fmt.Println("Address " + c.GlobalString("address"))
+	fmt.Println("API Address http://localhost:12345")
 	fmt.Println("BFT Implementation:  " + c.GlobalString("call"))
 	fmt.Println("...........................................\n")
 	/*name := "Blockfreight Community"
