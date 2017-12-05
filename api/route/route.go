@@ -3,10 +3,19 @@ package route
 import (
 	"net/http" // Provides HTTP client and server implementations.
 	"github.com/gorilla/mux" //Implements a request router and dispatcher for matching incoming requests to their respective handler
+	"fmt"
 	"encoding/json"
 	//"github.com/blockfreight/go-bftx/config" //Package that handles with the application configutarions.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	
+	// ===============
+	// Tendermint Core
+	// ===============
+	"github.com/tendermint/abci/client"
 )
+
+// client is a global variable so it can be reused by the console
+var TendermintClient abcicli.Client
 
 func StartApi() error {
 	//configuration, _ := config.LoadConfiguration()
@@ -22,44 +31,33 @@ func apiConstructBfTx(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 	w.WriteHeader(http.StatusOK)
 	
-	var bftx bf_tx.BF_TX
-	_ = json.NewDecoder(r.Body).Decode(&bftx)
-	if err := json.NewEncoder(w).Encode(bftx); err != nil {
+	var transaction bf_tx.BF_TX
+	_ = json.NewDecoder(r.Body).Decode(&transaction)
+
+	resInfo, err := TendermintClient.InfoSync()
+	if err != nil {
+		errorResponse(transaction, w, err)
+		return
+	}
+
+	hash, err := bf_tx.HashBFTX(transaction)
+	if err != nil {
+		errorResponse(transaction, w, err)
+		return
+	}
+
+	// Generate BF_TX id
+	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
+	
+	if err := json.NewEncoder(w).Encode(transaction); err != nil {
+        panic(err)
+	}
+	
+}
+
+func errorResponse(transaction bf_tx.BF_TX, w http.ResponseWriter, err error) {
+	w.WriteHeader(http.StatusInternalServerError)
+    if err := json.NewEncoder(w).Encode(transaction); err != nil {
         panic(err)
     }
-/*
-	// Read JSON and instance the BF_TX structure
-	bftx, err := bf_tx.SetBFTX(tx)
-	if err != nil {
-		return err
-	}
-
-	newId, err := cmdGenerateBftxID(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Re-validate a BF_TX before create a BF_TX
-	result, err := validator.ValidateBFTX(bftx)
-	if err != nil {
-		fmt.Println(result)
-		return err
-	}
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Save on DB
-	err = leveldb.RecordOnDB(bftx.Id, content)
-	if err != nil {
-		return err
-	}
-
-	// Result
-	printResponse(c, response{
-		Result: "BF_TX Id: " + bftx.Id,
-	})*/
 }

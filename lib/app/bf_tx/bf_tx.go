@@ -114,6 +114,8 @@ func State(bftx BF_TX) string {
 	}
 }
 
+
+
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
 func Reinitialize(bftx BF_TX) BF_TX {
 	bftx.PrivateKey.Curve = nil

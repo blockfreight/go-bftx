@@ -297,6 +297,7 @@ func before(c *cli.Context) error {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+		route.TendermintClient = client
 	}
 
 	return nil
