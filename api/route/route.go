@@ -27,6 +27,7 @@ func StartApi() error {
 	router.HandleFunc("/transaction/construct", apiConstructBfTx).Methods("POST")
 	router.HandleFunc("/transaction/sign/{id}", apiSignBfTx).Methods("PUT")
 	router.HandleFunc("/transaction/broadcast/{id}", apiBroadcastBfTx).Methods("PUT")
+	router.HandleFunc("/transaction/{id}", apiGetTransaction).Methods("GET")
 	return http.ListenAndServe(":12345", router)	
 }
 
@@ -246,6 +247,30 @@ func apiBroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(transaction); err != nil {
         panic(err)
 	}	
+}
+
+func apiGetTransaction(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+
+	// Get a BF_TX by id
+	transaction, err := leveldb.GetBfTx(params["id"])
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			w.WriteHeader(http.StatusNotFound)
+			if err := json.NewEncoder(w).Encode(err); err != nil {
+				panic(err)
+			}
+			return
+		}
+		errorResponse(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(transaction); err != nil {
+        panic(err)
+	}
 }
 
 func errorResponse(w http.ResponseWriter, err error) {
