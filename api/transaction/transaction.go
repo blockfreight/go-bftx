@@ -9,6 +9,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/lib/app/response"
 
 	// ===============
 	// Tendermint Core
@@ -25,13 +26,13 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 
 	resInfo, err := TendermintClient.InfoSync()
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	hash, err := bf_tx.HashBFTX(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -41,17 +42,14 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	// Re-validate a BF_TX before create a BF_TX
 	_ , err = validator.ValidateBFTX(transaction)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
+		response.Error(w, err, http.StatusBadRequest)
 		return
 	}	
 
 	// Sign BF_TX
 	transaction, err = crypto.SignBFTX(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -60,14 +58,14 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(transaction.Id, content)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -77,11 +75,7 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	// Check the BF_TX hash
 	TendermintClient.CommitSync()
 	
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(transaction); err != nil {
-        panic(err)
-	}
+	response.Success(w, transaction)
 	
 }
 
@@ -91,13 +85,13 @@ func ConstructBfTx(w http.ResponseWriter, r *http.Request) {
 
 	resInfo, err := TendermintClient.InfoSync()
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	hash, err := bf_tx.HashBFTX(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -107,32 +101,25 @@ func ConstructBfTx(w http.ResponseWriter, r *http.Request) {
 	// Re-validate a BF_TX before create a BF_TX
 	_ , err = validator.ValidateBFTX(transaction)
 	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
+		response.Error(w, err, http.StatusBadRequest)
 		return
 	}	
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(transaction.Id, content)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(transaction); err != nil {
-        panic(err)
-	}
+	response.Success(w, transaction)
 }
 
 func SignBfTx(w http.ResponseWriter, r *http.Request) {
@@ -141,7 +128,7 @@ func SignBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(params["id"])
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 	if transaction.Verified {
@@ -155,29 +142,25 @@ func SignBfTx(w http.ResponseWriter, r *http.Request) {
 	// Sign BF_TX
 	transaction, err = crypto.SignBFTX(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(transaction.Id), content)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(transaction); err != nil {
-        panic(err)
-	}
+	response.Success(w, transaction)
 }
 
 func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
@@ -186,22 +169,16 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(params["id"])
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	if !transaction.Verified {
-		w.WriteHeader(http.StatusConflict)
-		if err := json.NewEncoder(w).Encode(transaction); err != nil {
-			panic(err)
-		}
+		response.Error(w, err, http.StatusConflict)
 		return
 	}
 	if transaction.Transmitted {
-		w.WriteHeader(http.StatusConflict)
-		if err := json.NewEncoder(w).Encode(transaction); err != nil {
-			panic(err)
-		}
+		response.Error(w, err, http.StatusConflict)
 		return
 	}
 
@@ -211,14 +188,14 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(transaction.Id), content)
 	if err != nil {
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
@@ -228,11 +205,7 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	// Check the BF_TX hash
 	TendermintClient.CommitSync()
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(transaction); err != nil {
-        panic(err)
-	}	
+	response.Success(w, transaction)
 }
 
 func GetTransaction(w http.ResponseWriter, r *http.Request) {
@@ -242,26 +215,13 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	transaction, err := leveldb.GetBfTx(params["id"])
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			w.WriteHeader(http.StatusNotFound)
-			if err := json.NewEncoder(w).Encode(err); err != nil {
-				panic(err)
-			}
+			response.Error(w, err, http.StatusNotFound)
 			return
 		}
-		errorResponse(w, err)
+		response.Error(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(transaction); err != nil {
-        panic(err)
-	}
+	response.Success(w, transaction)
 }
 
-func errorResponse(w http.ResponseWriter, err error) {
-	w.WriteHeader(http.StatusInternalServerError)
-    if err := json.NewEncoder(w).Encode(err); err != nil {
-        panic(err)
-    }
-}
