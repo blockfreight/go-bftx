@@ -81,6 +81,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/api/transaction"
 )
 
 // Structure for data passed to print response.
@@ -297,7 +298,7 @@ func before(c *cli.Context) error {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		api.TendermintClient = client
+		transaction.TendermintClient = client
 	}
 
 	return nil
