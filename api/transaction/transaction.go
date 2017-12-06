@@ -9,7 +9,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/lib/app/response"
+	"github.com/blockfreight/go-bftx/lib/app/response"
 
 	// ===============
 	// Tendermint Core
