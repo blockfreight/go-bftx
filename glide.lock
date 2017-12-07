@@ -1,5 +1,5 @@
-hash: b7962febaffb370842c9fb318604dbbe7a4d03b924372ff744bc8f2c2869a45a
-updated: 2017-12-04T18:35:10.108644+11:00
+hash: f636e7fa01097caaadaa4f8c83ef50574b688a107a009c38599b188c03b36032
+updated: 2017-12-07T15:09:28.206668+11:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
@@ -31,6 +31,21 @@ imports:
   version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: c572efe4294d5a0e354e01f2ddaa8b1f0c3cb3dd
+- name: github.com/graphql-go/graphql
+  version: 7731016ba482d3741eea075d23dc6366b932f8f4
+  subpackages:
+  - gqlerrors
+  - language/ast
+  - language/kinds
+  - language/lexer
+  - language/location
+  - language/parser
+  - language/printer
+  - language/source
+  - language/typeInfo
+  - language/visitor
+- name: github.com/graphql-go/graphql-go-handler
+  version: f0393b2c10daeebea900292b8e092e73475399d9
 - name: github.com/jmhodges/levigo
   version: c42d9e0ca023e2198120196f842701bb4c55d7b9
 - name: github.com/kr/logfmt
