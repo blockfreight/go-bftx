@@ -1,33 +1,75 @@
 package api
 
 import (
-	"net/http" // Provides HTTP client and server implementations.
-	//"github.com/gorilla/mux" //Implements a request router and dispatcher for matching incoming requests to their respective handler
-	//"github.com/blockfreight/go-bftx/api/transaction"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
 )
 
-/*
-   Create User object type with fields "id" and "name" by using GraphQLObjectTypeConfig:
-       - Name: name of object type
-       - Fields: a map of fields by using GraphQLFields
-   Setup type of field use GraphQLFieldConfig
-*/
-var userType = graphql.NewObject(
+func Start() error {
+	http.HandleFunc("/graphql", graphRoute)
+	fmt.Println("Now server is running on port 12345")
+	fmt.Println("Test with Get      : curl -g 'http://localhost:12345/graphql?query={transaction(id:<BFTX-ID>){Id}}'")
+	return http.ListenAndServe(":12345", nil)
+
+}
+
+var propertiesType = graphql.NewObject(
 	graphql.ObjectConfig{
-		Name: "User",
+		Name: "Properties",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
+			"Shipper": &graphql.Field{
 				Type: graphql.String,
 			},
-			"name": &graphql.Field{
+			"BolNum": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"RefNum": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"Consignee": &graphql.Field{
 				Type: graphql.String,
 			},
+			"Vessel": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"PortOfLoading": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"PortOfDischarge": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"NotifyAddress": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DescOfGoods": &graphql.Field{
+				Type: graphql.String,
+			},
+			"GrossWeight": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"FreightPayableAmt": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"FreightAdvAmt": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"GeneralInstructions": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DateShipped": &graphql.Field{
+				Type: graphql.Int,
+			},
+			//"IssueDetails": &graphql.Field{
+			"NumBol": &graphql.Field{
+				Type: graphql.Int,
+			},
+			//"MasterInfo": &graphql.Field{
+			//"AgentForMaster": &graphql.Field{
+			//"AgentForOwner": &graphql.Field{
 		},
 	},
 )
@@ -36,18 +78,21 @@ var transactionType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Transaction",
 		Fields: graphql.Fields{
-			"id": &graphql.Field{
+			"Id": &graphql.Field{
 				Type: graphql.String,
 			},
-			"portOfDischarge": &graphql.Field{
+			"Type": &graphql.Field{
 				Type: graphql.String,
 			},
-			/*"PortOfLoading": &graphql.Field{
-				Type: graphql.String,
+			"Verified": &graphql.Field{
+				Type: graphql.Boolean,
 			},
-			"PortOfDischarge": &graphql.Field{
-				Type: graphql.String,
-			},*/
+			"Transmitted": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"Properties": &graphql.Field{
+				Type: propertiesType,
+			},
 		},
 	},
 )
@@ -58,55 +103,6 @@ var schema, _ = graphql.NewSchema(
 	},
 )
 
-type user struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type transaction struct {
-	ID                  string `json:"id"`
-	Shipper             string
-	BolNum              int
-	RefNum              int
-	Consignee           string
-	Vessel              int
-	PortOfLoading       int
-	PortOfDischarge     int `json:"portOfDischarge"`
-	NotifyAddress       string
-	DescOfGoods         string
-	GrossWeight         int
-	FreightPayableAmt   int
-	FreightAdvAmt       int
-	GeneralInstructions string
-	DateShipped         string
-	NumBol              int
-	MasterInfo          string
-	AgentForMaster      string
-	AgentForOwner       string
-	Type                string `json:"type"`
-}
-
-var data map[string]user
-
-func Start() error {
-	//configuration, _ := config.LoadConfiguration()
-	/*router := mux.NewRouter()
-	router.HandleFunc("/fulltransaction", transaction.FullTransactionBfTx).Methods("POST")
-	router.HandleFunc("/transaction/construct", transaction.ConstructBfTx).Methods("POST")
-	router.HandleFunc("/transaction/sign/{id}", transaction.SignBfTx).Methods("PUT")
-	router.HandleFunc("/transaction/broadcast/{id}", transaction.BroadcastBfTx).Methods("PUT")
-	router.HandleFunc("/transaction/{id}", transaction.GetTransaction).Methods("GET")
-	router.HandleFunc("/transaction", transaction.GetTransaction).Methods("GET")*/
-
-	_ = importJSONDataFromFile("data.json", &data)
-
-	http.HandleFunc("/graphql", graphRoute)
-	fmt.Println("Now server is running on port 12345")
-	fmt.Println("Test with Get      : curl -g 'http://localhost:12345/graphql?query={user(id:\"1\"){name}}'")
-	return http.ListenAndServe(":12345", nil)
-
-}
-
 func graphRoute(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 
@@ -114,34 +110,10 @@ func graphRoute(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
-/*
-   Create Query object type with fields "user" has type [userType] by using GraphQLObjectTypeConfig:
-       - Name: name of object type
-       - Fields: a map of fields by using GraphQLFields
-   Setup type of field use GraphQLFieldConfig to define:
-       - Type: type of field
-       - Args: arguments to query with current field
-       - Resolve: function to query data using params from [Args] and return value with current type
-*/
 var queryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"user": &graphql.Field{
-				Type: userType,
-				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					idQuery, isOK := p.Args["id"].(string)
-					if isOK {
-						return data[idQuery], nil
-					}
-					return nil, nil
-				},
-			},
 			"transaction": &graphql.Field{
 				Type: transactionType,
 				Args: graphql.FieldConfigArgument{
@@ -159,7 +131,6 @@ var queryType = graphql.NewObject(
 					if err != nil {
 						return nil, nil
 					}
-
 					return bftx, nil
 				},
 			},
@@ -174,22 +145,6 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 	if len(result.Errors) > 0 {
 		fmt.Printf("wrong result, unexpected errors: %v", result.Errors)
 	}
-	fmt.Printf("%+v\n", result)
-	return result
-}
 
-//Helper function to import json from file to map
-func importJSONDataFromFile(fileName string, result interface{}) (isOK bool) {
-	isOK = true
-	content, err := ioutil.ReadFile(fileName)
-	if err != nil {
-		fmt.Print("Error:", err)
-		isOK = false
-	}
-	err = json.Unmarshal(content, result)
-	if err != nil {
-		isOK = false
-		fmt.Print("Error:", err)
-	}
-	return
+	return result
 }
