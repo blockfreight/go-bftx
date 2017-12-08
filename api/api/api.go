@@ -17,6 +17,130 @@ func Start() error {
 
 }
 
+var issueDetailsProperties = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "IssueDetailsProperties",
+		Fields: graphql.Fields{
+			"PlaceOfIssue": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DateOfIssue": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var issueDetails = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "IssueDetails",
+		Fields: graphql.Fields{
+			"Type": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Properties": &graphql.Field{
+				Type: issueDetailsProperties,
+			},
+		},
+	},
+)
+
+var masterInfoProperties = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "MasterInfoProperties",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"sig": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var masterInfo = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "MasterInfo",
+		Fields: graphql.Fields{
+			"Type": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Properties": &graphql.Field{
+				Type: masterInfoProperties,
+			},
+		},
+	},
+)
+
+var agentForMasterProperties = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AgentForMasterProperties",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"sig": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var agentForMaster = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AgentForMaster",
+		Fields: graphql.Fields{
+			"Type": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Properties": &graphql.Field{
+				Type: agentForMasterProperties,
+			},
+		},
+	},
+)
+
+var agentForOwnerProperties = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AgentForOwnerProperties",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"sig": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ConditionsForCarriage": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var agentForOwner = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AgentForOwner",
+		Fields: graphql.Fields{
+			"Type": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Properties": &graphql.Field{
+				Type: agentForOwnerProperties,
+			},
+		},
+	},
+)
+
 var propertiesType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Properties",
@@ -63,13 +187,21 @@ var propertiesType = graphql.NewObject(
 			"DateShipped": &graphql.Field{
 				Type: graphql.Int,
 			},
-			//"IssueDetails": &graphql.Field{
+			"IssueDetails": &graphql.Field{
+				Type: issueDetails,
+			},
 			"NumBol": &graphql.Field{
 				Type: graphql.Int,
 			},
-			//"MasterInfo": &graphql.Field{
-			//"AgentForMaster": &graphql.Field{
-			//"AgentForOwner": &graphql.Field{
+			"MasterInfo": &graphql.Field{
+				Type: masterInfo,
+			},
+			"AgentForMaster": &graphql.Field{
+				Type: agentForMaster,
+			},
+			"AgentForOwner": &graphql.Field{
+				Type: agentForOwner,
+			},
 		},
 	},
 )
@@ -122,12 +254,12 @@ var queryType = graphql.NewObject(
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftxId, isOK := p.Args["id"].(string)
+					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
 						return nil, nil
 					}
 
-					bftx, err := leveldb.GetBfTx(bftxId)
+					bftx, err := leveldb.GetBfTx(bftxID)
 					if err != nil {
 						return nil, nil
 					}
