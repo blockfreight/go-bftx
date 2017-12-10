@@ -50,10 +50,13 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/sha256"
+	"encoding/json" // Implements the SHA256 Algorithm for Hash.
+	"reflect"
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+
+	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
 
 	// ====================
 	// Third-party packages
@@ -63,6 +66,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
 	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
 )
 
@@ -114,7 +118,58 @@ func State(bftx BF_TX) string {
 	}
 }
 
+func SetField(obj interface{}, name string, value interface{}) error {
 
+	structValue := reflect.ValueOf(obj).Elem()
+	fieldVal := structValue.FieldByName(name)
+
+	if !fieldVal.IsValid() {
+		return fmt.Errorf("No such field: %s in obj", name)
+	}
+
+	if !fieldVal.CanSet() {
+		return fmt.Errorf("Cannot set %s field value", name)
+	}
+
+	val := reflect.ValueOf(value)
+
+	if fieldVal.Type() != val.Type() {
+
+		if m, ok := value.(map[string]interface{}); ok {
+
+			// if field value is struct
+			if fieldVal.Kind() == reflect.Struct {
+				return FillStruct(m, fieldVal.Addr().Interface())
+			}
+
+			// if field value is a pointer to struct
+			if fieldVal.Kind() == reflect.Ptr && fieldVal.Type().Elem().Kind() == reflect.Struct {
+				if fieldVal.IsNil() {
+					fieldVal.Set(reflect.New(fieldVal.Type().Elem()))
+				}
+				// fmt.Printf("recursive: %v %v\n", m,fieldVal.Interface())
+				return FillStruct(m, fieldVal.Interface())
+			}
+
+		}
+
+		return fmt.Errorf("Provided value type didn't match obj field type")
+	}
+
+	fieldVal.Set(val)
+	return nil
+
+}
+
+func FillStruct(m map[string]interface{}, s interface{}) error {
+	for k, v := range m {
+		err := SetField(s, k, v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
 func Reinitialize(bftx BF_TX) BF_TX {
@@ -134,7 +189,7 @@ type BF_TX struct {
 	// =========================
 	// Bill of Lading attributes
 	// =========================
-	Type       string
+	Type       string `json:"Type`
 	Properties Properties
 
 	// ===================================
@@ -151,22 +206,22 @@ type BF_TX struct {
 
 // Properties struct
 type Properties struct {
-	Shipper             Shipper
-	BolNum              BolNum
-	RefNum              RefNum
-	Consignee           Consignee
-	Vessel              Vessel
-	PortOfLoading       PortLoading
-	PortOfDischarge     PortDischarge
-	NotifyAddress       NotifyAddress
-	DescOfGoods         DescGoods
-	GrossWeight         GrossWeight
-	FreightPayableAmt   FreightPayableAmt
-	FreightAdvAmt       FreightAdvAmt
-	GeneralInstructions GeneralInstructions
-	DateShipped         Date
+	Shipper             string `json:"Shipper`
+	BolNum              int    `json:"BolNum`
+	RefNum              int    `json:"RefNum`
+	Consignee           string `json:"Consignee`
+	Vessel              int
+	PortOfLoading       int
+	PortOfDischarge     int
+	NotifyAddress       string
+	DescOfGoods         string
+	GrossWeight         int
+	FreightPayableAmt   int
+	FreightAdvAmt       int
+	GeneralInstructions string
+	DateShipped         string
 	IssueDetails        IssueDetails
-	NumBol              NumBol
+	NumBol              int
 	MasterInfo          MasterInfo
 	AgentForMaster      AgentMaster
 	AgentForOwner       AgentOwner
@@ -245,14 +300,8 @@ type Date struct {
 
 // IssueDetails struct
 type IssueDetails struct {
-	Type       string
-	Properties IssueDetailsProperties
-}
-
-// IssueDetailsProperties struct
-type IssueDetailsProperties struct {
-	PlaceOfIssue PlaceIssue
-	DateOfIssue  Date
+	PlaceOfIssue string
+	DateOfIssue  string
 }
 
 // PlaceIssue struct
@@ -267,42 +316,24 @@ type NumBol struct {
 
 // MasterInfo struct
 type MasterInfo struct {
-	Type       string
-	Properties MasterInfoProperties
-}
-
-// MasterInfoProperties struct
-type MasterInfoProperties struct {
-	FirstName FirstName
-	LastName  LastName
-	Sig       Sig
+	FirstName string
+	LastName  string
+	Sig       string
 }
 
 // AgentMaster struct
 type AgentMaster struct {
-	Type       string
-	Properties AgentMasterProperties
-}
-
-//AgentMasterProperties struct
-type AgentMasterProperties struct {
-	FirstName FirstName
-	LastName  LastName
-	Sig       Sig
+	FirstName string
+	LastName  string
+	Sig       string
 }
 
 // AgentOwner struct
 type AgentOwner struct {
-	Type       string
-	Properties AgentOwnerProperties
-}
-
-// AgentOwnerProperties struct
-type AgentOwnerProperties struct {
-	FirstName             FirstName
-	LastName              LastName
-	Sig                   Sig
-	ConditionsForCarriage ConditionsCarriage
+	FirstName             string
+	LastName              string
+	Sig                   string
+	ConditionsForCarriage string
 }
 
 // FirstName struct

@@ -3,8 +3,12 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http" // Provides HTTP client and server implementations.
 
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
+
+	"github.com/blockfreight/go-bftx/api/transaction"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
 )
@@ -17,189 +21,133 @@ func Start() error {
 
 }
 
-var issueDetailsProperties = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "IssueDetailsProperties",
-		Fields: graphql.Fields{
-			"PlaceOfIssue": &graphql.Field{
-				Type: graphql.String,
-			},
-			"DateOfIssue": &graphql.Field{
-				Type: graphql.String,
-			},
-		},
-	},
-)
-
-var issueDetails = graphql.NewObject(
-	graphql.ObjectConfig{
+var issueDetails = graphql.NewInputObject(
+	graphql.InputObjectConfig{
 		Name: "IssueDetails",
-		Fields: graphql.Fields{
-			"Type": &graphql.Field{
+		Fields: graphql.InputObjectConfigFieldMap{
+			"PlaceOfIssue": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"Properties": &graphql.Field{
-				Type: issueDetailsProperties,
-			},
-		},
-	},
-)
-
-var masterInfoProperties = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "MasterInfoProperties",
-		Fields: graphql.Fields{
-			"FirstName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"LastName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"sig": &graphql.Field{
+			"DateOfIssue": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
 		},
 	},
 )
 
-var masterInfo = graphql.NewObject(
-	graphql.ObjectConfig{
+var masterInfo = graphql.NewInputObject(
+	graphql.InputObjectConfig{
 		Name: "MasterInfo",
-		Fields: graphql.Fields{
-			"Type": &graphql.Field{
+		Fields: graphql.InputObjectConfigFieldMap{
+			"FirstName": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"Properties": &graphql.Field{
-				Type: masterInfoProperties,
-			},
-		},
-	},
-)
-
-var agentForMasterProperties = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "AgentForMasterProperties",
-		Fields: graphql.Fields{
-			"FirstName": &graphql.Field{
+			"LastName": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"LastName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"sig": &graphql.Field{
+			"Sig": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
 		},
 	},
 )
 
-var agentForMaster = graphql.NewObject(
-	graphql.ObjectConfig{
+var agentForMaster = graphql.NewInputObject(
+	graphql.InputObjectConfig{
 		Name: "AgentForMaster",
-		Fields: graphql.Fields{
-			"Type": &graphql.Field{
+		Fields: graphql.InputObjectConfigFieldMap{
+			"FirstName": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"Properties": &graphql.Field{
-				Type: agentForMasterProperties,
-			},
-		},
-	},
-)
-
-var agentForOwnerProperties = graphql.NewObject(
-	graphql.ObjectConfig{
-		Name: "AgentForOwnerProperties",
-		Fields: graphql.Fields{
-			"FirstName": &graphql.Field{
+			"LastName": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"LastName": &graphql.Field{
-				Type: graphql.String,
-			},
-			"sig": &graphql.Field{
-				Type: graphql.String,
-			},
-			"ConditionsForCarriage": &graphql.Field{
+			"Sig": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
 		},
 	},
 )
 
-var agentForOwner = graphql.NewObject(
-	graphql.ObjectConfig{
+var agentForOwner = graphql.NewInputObject(
+	graphql.InputObjectConfig{
 		Name: "AgentForOwner",
-		Fields: graphql.Fields{
-			"Type": &graphql.Field{
+		Fields: graphql.InputObjectConfigFieldMap{
+			"FirstName": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"Properties": &graphql.Field{
-				Type: agentForOwnerProperties,
+			"LastName": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"Sig": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"ConditionsForCarriage": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
 			},
 		},
 	},
 )
 
-var propertiesType = graphql.NewObject(
-	graphql.ObjectConfig{
+var propertiesType = graphql.NewInputObject(
+	graphql.InputObjectConfig{
 		Name: "Properties",
-		Fields: graphql.Fields{
-			"Shipper": &graphql.Field{
+		Fields: graphql.InputObjectConfigFieldMap{
+			"Shipper": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"BolNum": &graphql.Field{
+			"BolNum": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"RefNum": &graphql.Field{
+			"RefNum": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"Consignee": &graphql.Field{
+			"Consignee": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"Vessel": &graphql.Field{
+			"Vessel": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"PortOfLoading": &graphql.Field{
+			"PortOfLoading": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"PortOfDischarge": &graphql.Field{
+			"PortOfDischarge": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"NotifyAddress": &graphql.Field{
+			"NotifyAddress": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"DescOfGoods": &graphql.Field{
+			"DescOfGoods": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"GrossWeight": &graphql.Field{
+			"GrossWeight": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"FreightPayableAmt": &graphql.Field{
+			"FreightPayableAmt": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"FreightAdvAmt": &graphql.Field{
+			"FreightAdvAmt": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"GeneralInstructions": &graphql.Field{
+			"GeneralInstructions": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
-			"DateShipped": &graphql.Field{
-				Type: graphql.Int,
+			"DateShipped": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
 			},
-			"IssueDetails": &graphql.Field{
+			"IssueDetails": &graphql.InputObjectFieldConfig{
 				Type: issueDetails,
 			},
-			"NumBol": &graphql.Field{
+			"NumBol": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
-			"MasterInfo": &graphql.Field{
+			"MasterInfo": &graphql.InputObjectFieldConfig{
 				Type: masterInfo,
 			},
-			"AgentForMaster": &graphql.Field{
+			"AgentForMaster": &graphql.InputObjectFieldConfig{
 				Type: agentForMaster,
 			},
-			"AgentForOwner": &graphql.Field{
+			"AgentForOwner": &graphql.InputObjectFieldConfig{
 				Type: agentForOwner,
 			},
 		},
@@ -231,14 +179,16 @@ var transactionType = graphql.NewObject(
 
 var schema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
-		Query: queryType,
+		Query:    queryType,
+		Mutation: mutationType,
 	},
 )
 
 func graphRoute(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("query")
-
-	result := executeQuery(query, schema)
+	query, _ := ioutil.ReadAll(r.Body)
+	result := executeQuery(string(query), schema)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
 }
 
@@ -269,14 +219,48 @@ var queryType = graphql.NewObject(
 		},
 	})
 
+var mutationType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Mutation",
+		Fields: graphql.Fields{
+			"constructBFTX": &graphql.Field{
+				Type: transactionType,
+				Args: graphql.FieldConfigArgument{
+					"Type": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+					"Properties": &graphql.ArgumentConfig{
+						Description: "Transaction properties.",
+						Type:        propertiesType,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftx := bf_tx.BF_TX{}
+					jsonProperties, err := json.Marshal(p.Args)
+					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
+						fmt.Printf("err")
+						fmt.Print(err)
+					}
+					fmt.Printf("%+v\n", bftx)
+
+					bftx, err = transaction.ConstructBfTx(bftx)
+					if err != nil {
+						return nil, err
+					}
+
+					return bftx, err
+				},
+			},
+		},
+	},
+)
+
 func executeQuery(query string, schema graphql.Schema) *graphql.Result {
+
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: query,
 	})
-	if len(result.Errors) > 0 {
-		fmt.Printf("wrong result, unexpected errors: %v", result.Errors)
-	}
 
 	return result
 }

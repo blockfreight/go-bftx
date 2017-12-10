@@ -1,15 +1,16 @@
 package transaction
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"net/http" // Provides HTTP client and server implementations.
-	"github.com/gorilla/mux" //Implements a request router and dispatcher for matching incoming requests to their respective handler
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/response"
+	"github.com/blockfreight/go-bftx/lib/app/validator" // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"    // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"   // Provides some useful functions to work with LevelDB.
+	"github.com/gorilla/mux"                            //Implements a request router and dispatcher for matching incoming requests to their respective handler
 
 	// ===============
 	// Tendermint Core
@@ -40,16 +41,16 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
 
 	// Re-validate a BF_TX before create a BF_TX
-	_ , err = validator.ValidateBFTX(transaction)
+	_, err = validator.ValidateBFTX(transaction)
 	if err != nil {
 		response.Error(w, http.StatusBadRequest)
 		return
-	}	
+	}
 
 	// Sign BF_TX
 	transaction, err = crypto.SignBFTX(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -58,7 +59,7 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -70,54 +71,46 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 
 	// Deliver / Publish a BF_TX
 	TendermintClient.DeliverTxSync([]byte(content))
-	
+
 	// Check the BF_TX hash
 	TendermintClient.CommitSync()
-	
+
 	response.SuccessTx(w, transaction)
-	
+
 }
 
-func ConstructBfTx(w http.ResponseWriter, r *http.Request) {
-	var transaction bf_tx.BF_TX
-	_ = json.NewDecoder(r.Body).Decode(&transaction)
-
+func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	resInfo, err := TendermintClient.InfoSync()
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return bf_tx.BF_TX{}, err
 	}
 
 	hash, err := bf_tx.HashBFTX(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
-		return
+		return bf_tx.BF_TX{}, err
 	}
 
 	// Generate BF_TX id
 	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
 
 	// Re-validate a BF_TX before create a BF_TX
-	_ , err = validator.ValidateBFTX(transaction)
+	_, err = validator.ValidateBFTX(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusBadRequest)
-		return
-	}	
+		return bf_tx.BF_TX{}, err
+	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
-		return
+		return bf_tx.BF_TX{}, err
 	}
 
 	// Save on DB
 	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return bf_tx.BF_TX{}, err
 	}
 
-	response.SuccessTx(w, transaction)
+	return transaction, nil
 }
 
 func SignBfTx(w http.ResponseWriter, r *http.Request) {
@@ -126,7 +119,7 @@ func SignBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(params["id"])
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError)
 		return
 	}
 	if transaction.Verified {
@@ -134,13 +127,13 @@ func SignBfTx(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewEncoder(w).Encode(transaction); err != nil {
 			panic(err)
 		}
-	
+
 	}
 
 	// Sign BF_TX
 	transaction, err = crypto.SignBFTX(transaction)
 	if err != nil {
-		response.Error(w,  http.StatusInternalServerError)
+		response.Error(w, http.StatusInternalServerError)
 		return
 	}
 
@@ -206,7 +199,7 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 
 func GetTransaction(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	
+
 	if params["id"] == "" {
 		total, _ := leveldb.Total()
 		response.SuccessInt(w, total)
@@ -226,4 +219,3 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 
 	response.SuccessTx(w, transaction)
 }
-
