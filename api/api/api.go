@@ -21,7 +21,7 @@ func Start() error {
 
 }
 
-var issueDetails = graphql.NewInputObject(
+var issueDetailsInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "IssueDetails",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -35,7 +35,21 @@ var issueDetails = graphql.NewInputObject(
 	},
 )
 
-var masterInfo = graphql.NewInputObject(
+var issueDetails = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "IssueDetails",
+		Fields: graphql.Fields{
+			"PlaceOfIssue": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DateOfIssue": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var masterInfoInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "MasterInfo",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -52,7 +66,24 @@ var masterInfo = graphql.NewInputObject(
 	},
 )
 
-var agentForMaster = graphql.NewInputObject(
+var masterInfo = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "MasterInfo",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Sig": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var agentForMasterInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "AgentForMaster",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -69,7 +100,24 @@ var agentForMaster = graphql.NewInputObject(
 	},
 )
 
-var agentForOwner = graphql.NewInputObject(
+var agentForMaster = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "AgentForMaster",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Sig": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var agentForOwnerInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "AgentForOwner",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -89,7 +137,92 @@ var agentForOwner = graphql.NewInputObject(
 	},
 )
 
-var propertiesType = graphql.NewInputObject(
+var agentForOwner = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "agentForOwner",
+		Fields: graphql.Fields{
+			"FirstName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"LastName": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Sig": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ConditionsForCarriage": &graphql.Field{
+				Type: graphql.String,
+			},
+		},
+	},
+)
+
+var propertiesType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Properties",
+		Fields: graphql.Fields{
+			"Shipper": &graphql.Field{
+				Type: graphql.String,
+			},
+			"BolNum": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"RefNum": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"Consignee": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Vessel": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"PortOfLoading": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"PortOfDischarge": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"NotifyAddress": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DescOfGoods": &graphql.Field{
+				Type: graphql.String,
+			},
+			"GrossWeight": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"FreightPayableAmt": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"FreightAdvAmt": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"GeneralInstructions": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DateShipped": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"IssueDetails": &graphql.Field{
+				Type: issueDetails,
+			},
+			"NumBol": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"MasterInfo": &graphql.Field{
+				Type: masterInfo,
+			},
+			"AgentForMaster": &graphql.Field{
+				Type: agentForMaster,
+			},
+			"AgentForOwner": &graphql.Field{
+				Type: agentForOwner,
+			},
+		},
+	},
+)
+
+var propertiesInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "Properties",
 		Fields: graphql.InputObjectConfigFieldMap{
@@ -136,19 +269,19 @@ var propertiesType = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"IssueDetails": &graphql.InputObjectFieldConfig{
-				Type: issueDetails,
+				Type: issueDetailsInput,
 			},
 			"NumBol": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
 			},
 			"MasterInfo": &graphql.InputObjectFieldConfig{
-				Type: masterInfo,
+				Type: masterInfoInput,
 			},
 			"AgentForMaster": &graphql.InputObjectFieldConfig{
-				Type: agentForMaster,
+				Type: agentForMasterInput,
 			},
 			"AgentForOwner": &graphql.InputObjectFieldConfig{
-				Type: agentForOwner,
+				Type: agentForOwnerInput,
 			},
 		},
 	},
@@ -185,7 +318,12 @@ var schema, _ = graphql.NewSchema(
 )
 
 func graphRoute(w http.ResponseWriter, r *http.Request) {
-	query, _ := ioutil.ReadAll(r.Body)
+	query := r.URL.Query().Get("query")
+	if query == "" {
+		params, _ := ioutil.ReadAll(r.Body)
+		query = string(params)
+	}
+
 	result := executeQuery(string(query), schema)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -213,6 +351,9 @@ var queryType = graphql.NewObject(
 					if err != nil {
 						return nil, nil
 					}
+
+					fmt.Printf("%+v\n", bftx)
+
 					return bftx, nil
 				},
 			},
@@ -231,7 +372,7 @@ var mutationType = graphql.NewObject(
 					},
 					"Properties": &graphql.ArgumentConfig{
 						Description: "Transaction properties.",
-						Type:        propertiesType,
+						Type:        propertiesInput,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
