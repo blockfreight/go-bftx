@@ -1,16 +1,17 @@
-package transaction
+package graphqlObj
 
 import (
 	"encoding/json"
 	"fmt"
-	"net/http" // Provides HTTP client and server implementations.
+	"net/http"
 
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/app/response"
-	"github.com/blockfreight/go-bftx/lib/app/validator" // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"    // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"   // Provides some useful functions to work with LevelDB.
-	"github.com/gorilla/mux"                            //Implements a request router and dispatcher for matching incoming requests to their respective handler
+	"github.com/blockfreight/go-bftx/lib/app/validator"
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	"github.com/gorilla/mux"
+	"github.com/graphql-go/graphql"
 
 	// ===============
 	// Tendermint Core
@@ -219,3 +220,26 @@ func GetTransaction(w http.ResponseWriter, r *http.Request) {
 
 	response.SuccessTx(w, transaction)
 }
+
+var TransactionType = graphql.NewObject(
+	graphql.ObjectConfig{
+		Name: "Transaction",
+		Fields: graphql.Fields{
+			"Id": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Type": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Verified": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"Transmitted": &graphql.Field{
+				Type: graphql.Boolean,
+			},
+			"Properties": &graphql.Field{
+				Type: PropertiesType,
+			},
+		},
+	},
+)

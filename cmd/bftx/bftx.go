@@ -59,7 +59,6 @@ import (
 	"os/exec"
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
-	
 
 	// ====================
 	// Third-party packages
@@ -75,13 +74,13 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/api/graphqlObj"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/api/transaction"
 )
 
 // Structure for data passed to print response.
@@ -298,7 +297,7 @@ func before(c *cli.Context) error {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		transaction.TendermintClient = client
+		graphqlObj.TendermintClient = client
 	}
 
 	return nil
@@ -359,9 +358,9 @@ func cmdStartAPI(c *cli.Context) error {
 		return err
 	}
 
-	 printResponse(c, response{
-	 	Result: "Running API on: http://localhost:12345",
-	 })
+	printResponse(c, response{
+		Result: "Running API on: http://localhost:12345",
+	})
 
 	return nil
 }
@@ -432,15 +431,15 @@ func cmdHelloPython(c *cli.Context) error {
 }
 
 func cmdFednode(c *cli.Context) error {
-	args := "fednode "+strings.Join(c.Args(), " ")
+	args := "fednode " + strings.Join(c.Args(), " ")
 	fmt.Println(args)
 	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('"+args+"')")
 	cmd.Dir = "./lib/pkg/python/"
 	cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    cmd.Stdin = os.Stdin
-    err := cmd.Run()
-	
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+
 	if err != nil {
 		fmt.Println(err)
 		return err
@@ -450,7 +449,6 @@ func cmdFednode(c *cli.Context) error {
 	// })
 	return nil
 }
-
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
