@@ -75,7 +75,7 @@ import (
 	// Blockfreight™ packages
 	// ======================
 	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/api/graphqlObj"
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
@@ -297,7 +297,7 @@ func before(c *cli.Context) error {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		graphqlObj.TendermintClient = client
+		handlers.TendermintClient = client
 	}
 
 	return nil
@@ -342,8 +342,6 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
 
 	// Generate BF_TX id
 	bftxID := bf_tx.GenerateBFTXSalt(hash, salt)
-
-	//printResponse (blah blah)
 
 	return bftxID, nil
 }

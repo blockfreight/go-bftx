@@ -7,6 +7,7 @@ import (
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/api/graphqlObj"
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
@@ -78,7 +79,7 @@ var mutationType = graphql.NewObject(
 						fmt.Print(err)
 					}
 
-					bftx, err = graphqlObj.ConstructBfTx(bftx)
+					bftx, err = handlers.ConstructBfTx(bftx)
 					if err != nil {
 						return nil, err
 					}
