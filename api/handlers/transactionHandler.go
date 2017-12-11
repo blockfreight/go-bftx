@@ -94,6 +94,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
 
 	// Re-validate a BF_TX before create a BF_TX
+	fmt.Printf("%+v\n", transaction)
 	_, err = validator.ValidateBFTX(transaction)
 	if err != nil {
 		return bf_tx.BF_TX{}, err

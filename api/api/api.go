@@ -11,13 +11,8 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
+	"github.com/graphql-go/handler"
 )
-
-func Start() error {
-	http.HandleFunc("/graphql", graphRoute)
-	fmt.Println("Now server is running on: http://localhost:12345")
-	return http.ListenAndServe(":12345", nil)
-}
 
 var schema, _ = graphql.NewSchema(
 	graphql.SchemaConfig{
@@ -90,6 +85,17 @@ var mutationType = graphql.NewObject(
 		},
 	},
 )
+
+func Start() error {
+	h := handler.New(&handler.Config{
+		Schema: &schema,
+		Pretty: true,
+	})
+
+	http.Handle("/graphql", h)
+	fmt.Println("Now server is running on: http://localhost:12345")
+	return http.ListenAndServe(":12345", nil)
+}
 
 func graphRoute(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")

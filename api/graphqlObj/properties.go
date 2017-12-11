@@ -22,10 +22,10 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.Int,
 			},
 			"PortOfLoading": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PortOfDischarge": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"NotifyAddress": &graphql.Field{
 				Type: graphql.String,
@@ -87,10 +87,10 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.Int,
 			},
 			"PortOfLoading": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PortOfDischarge": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"NotifyAddress": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,

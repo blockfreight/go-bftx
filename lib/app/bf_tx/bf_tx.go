@@ -189,7 +189,6 @@ type BF_TX struct {
 	// =========================
 	// Bill of Lading attributes
 	// =========================
-	Type       string `json:"Type`
 	Properties Properties
 
 	// ===================================
@@ -206,10 +205,10 @@ type BF_TX struct {
 
 // Properties struct
 type Properties struct {
-	Shipper             string `json:"Shipper`
-	BolNum              int    `json:"BolNum`
-	RefNum              int    `json:"RefNum`
-	Consignee           string `json:"Consignee`
+	Shipper             string
+	BolNum              int
+	RefNum              int
+	Consignee           string
 	HouseBill           string
 	Vessel              int
 	Packages            int
@@ -226,11 +225,11 @@ type Properties struct {
 	ContainerSeal       string
 	ContainerMode       string
 	ContainerType       string
-	Volume              float32
+	Volume              float64
 	UnitOfVolume        string
 	NotifyAddress       string
 	DescOfGoods         string
-	GrossWeight         int
+	GrossWeight         float64
 	FreightPayableAmt   int
 	FreightAdvAmt       int
 	GeneralInstructions string

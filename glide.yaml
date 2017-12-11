@@ -25,5 +25,6 @@ import:
 - package: github.com/gorilla/mux
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
+- package: github.com/graphql-go/handler
 - package: github.com/urfave/cli
   version: v1.19.1
