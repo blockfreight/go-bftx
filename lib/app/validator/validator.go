@@ -104,10 +104,10 @@ func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
 	if (reflect.TypeOf(bftx.Properties.Vessel) != reflect.TypeOf(1)) || bftx.Properties.Vessel == 0 {
 		return false, "bftx.Properties.Vessel is not a number."
 	}
-	if (reflect.TypeOf(bftx.Properties.PortOfLoading) != reflect.TypeOf(1)) || bftx.Properties.PortOfLoading == 0 {
+	if reflect.TypeOf(bftx.Properties.PortOfLoading) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.PortOfLoading is not a number."
 	}
-	if (reflect.TypeOf(bftx.Properties.PortOfDischarge) != reflect.TypeOf(1)) || bftx.Properties.PortOfDischarge == 0 {
+	if reflect.TypeOf(bftx.Properties.PortOfDischarge) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.PortOfDischarge is not a number."
 	}
 	if reflect.TypeOf(bftx.Properties.NotifyAddress) != reflect.TypeOf("s") {

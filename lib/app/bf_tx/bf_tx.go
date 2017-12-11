@@ -210,9 +210,24 @@ type Properties struct {
 	BolNum              int    `json:"BolNum`
 	RefNum              int    `json:"RefNum`
 	Consignee           string `json:"Consignee`
+	HouseBill           string
 	Vessel              int
-	PortOfLoading       int
-	PortOfDischarge     int
+	Packages            int
+	PackType            string
+	INCOTerms           string
+	PortOfLoading       string
+	PortOfDischarge     string
+	Destination         string
+	MarksAndNumbers     string
+	UnitOfWeight        string
+	DeliverAgent        string
+	ReceiveAgent        string
+	Container           string
+	ContainerSeal       string
+	ContainerMode       string
+	ContainerType       string
+	Volume              float32
+	UnitOfVolume        string
 	NotifyAddress       string
 	DescOfGoods         string
 	GrossWeight         int
