@@ -86,9 +86,6 @@ func ValidateBFTX(bftx bf_tx.BF_TX) (string, error) {
 
 // ValidateFields is a function that receives the BF_TX, validates every field in the BF_TX and return true or false, and a message if some field is wrong.
 func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
-	if reflect.TypeOf(bftx.Type) != reflect.TypeOf("s") {
-		return false, "bftx.Type is not a string."
-	}
 	if reflect.TypeOf(bftx.Properties.Shipper) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.Shipperis not a string."
 	}
@@ -116,7 +113,7 @@ func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
 	if reflect.TypeOf(bftx.Properties.DescOfGoods) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.DescOfGoods is not a string."
 	}
-	if (reflect.TypeOf(bftx.Properties.GrossWeight) != reflect.TypeOf(1)) || bftx.Properties.GrossWeight == 0 {
+	if (reflect.TypeOf(bftx.Properties.GrossWeight) != reflect.TypeOf(1.12)) || bftx.Properties.GrossWeight == 0 {
 		return false, "bftx.Properties.GrossWeight is not a number."
 	}
 	if (reflect.TypeOf(bftx.Properties.FreightPayableAmt) != reflect.TypeOf(1)) || bftx.Properties.FreightPayableAmt == 0 {
