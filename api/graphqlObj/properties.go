@@ -144,7 +144,7 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"GrossWeight": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.Float,
 			},
 			"FreightPayableAmt": &graphql.InputObjectFieldConfig{
 				Type: graphql.Int,
