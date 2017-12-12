@@ -79,7 +79,8 @@ func ValidateBFTX(bftx bf_tx.BF_TX) (string, error) {
 
     Invalid structure in JSON provided. JSON 结构无效.
     Struttura JSON non valido. هيكل JSON صالح. 無効なJSON構造.
-    Estructura inválida en el JSON dado.
+	Estructura inválida en el JSON dado.
+	Estrutura inválida no JSON enviado.
 
     support: support@blockfreight.com`, espErr
 }
