@@ -205,40 +205,40 @@ type BF_TX struct {
 
 // Properties struct
 type Properties struct {
-	Shipper             string
-	BolNum              int
-	RefNum              int
-	Consignee           string
-	HouseBill           string
-	Vessel              int
-	Packages            int
-	PackType            string
-	INCOTerms           string
-	PortOfLoading       string
-	PortOfDischarge     string
-	Destination         string
-	MarksAndNumbers     string
-	UnitOfWeight        string
-	DeliverAgent        string
-	ReceiveAgent        string
-	Container           string
-	ContainerSeal       string
-	ContainerMode       string
-	ContainerType       string
-	Volume              float64
-	UnitOfVolume        string
-	NotifyAddress       string
-	DescOfGoods         string
-	GrossWeight         float64
-	FreightPayableAmt   int
-	FreightAdvAmt       int
-	GeneralInstructions string
-	DateShipped         string
-	IssueDetails        IssueDetails
-	NumBol              int
-	MasterInfo          MasterInfo
-	AgentForMaster      AgentMaster
-	AgentForOwner       AgentOwner
+	Shipper             string       `json:"Shipper"`
+	BolNum              int          `json:"BolNum"`
+	RefNum              int          `json:"RefNum"`
+	Consignee           string       `json:"Consignee"`
+	HouseBill           string       `json:"HouseBill"`
+	Vessel              int          `json:"Vessel"`
+	Packages            int          `json:"Packages"`
+	PackType            string       `json:"PackType"`
+	INCOTerms           string       `json:"INCOTerms"`
+	PortOfLoading       string       `json:"PortOfLoading"`
+	PortOfDischarge     string       `json:"PortOfDischarge"`
+	Destination         string       `json:"Destination"`
+	MarksAndNumbers     string       `json:"MarksAndNumbers"`
+	UnitOfWeight        string       `json:"UnitOfWeight"`
+	DeliverAgent        string       `json:"DeliverAgent"`
+	ReceiveAgent        string       `json:"ReceiveAgent"`
+	Container           string       `json:"Container"`
+	ContainerSeal       string       `json:"ContainerSeal"`
+	ContainerMode       string       `json:"ContainerMode"`
+	ContainerType       string       `json:"ContainerType"`
+	Volume              float64      `json:"Volume"`
+	UnitOfVolume        string       `json:"UnitOfVolume"`
+	NotifyAddress       string       `json:"NotifyAddress"`
+	DescOfGoods         string       `json:"DescOfGoods"`
+	GrossWeight         float64      `json:"GrossWeight"`
+	FreightPayableAmt   int          `json:"FreightPayableAmt"`
+	FreightAdvAmt       int          `json:"FreightAdvAmt"`
+	GeneralInstructions string       `json:"GeneralInstructions"`
+	DateShipped         string       `json:"DateShipped"`
+	IssueDetails        IssueDetails `json:"IssueDetails"`
+	NumBol              int          `json:"NumBol"`
+	MasterInfo          MasterInfo   `json:"MasterInfo"`
+	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
+	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
 }
 
 // Shipper struct
@@ -314,8 +314,8 @@ type Date struct {
 
 // IssueDetails struct
 type IssueDetails struct {
-	PlaceOfIssue string
-	DateOfIssue  string
+	PlaceOfIssue string `json:"PlaceOfIssue"`
+	DateOfIssue  string `json:"DateOfIssue"`
 }
 
 // PlaceIssue struct
@@ -330,24 +330,24 @@ type NumBol struct {
 
 // MasterInfo struct
 type MasterInfo struct {
-	FirstName string
-	LastName  string
-	Sig       string
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentMaster struct
 type AgentMaster struct {
-	FirstName string
-	LastName  string
-	Sig       string
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentOwner struct
 type AgentOwner struct {
-	FirstName             string
-	LastName              string
-	Sig                   string
-	ConditionsForCarriage string
+	FirstName             string `json:"FirstName"`
+	LastName              string `json:"LastName"`
+	Sig                   string `json:"Sig"`
+	ConditionsForCarriage string `json:"ConditionsForCarriage"`
 }
 
 // FirstName struct

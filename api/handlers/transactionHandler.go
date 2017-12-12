@@ -94,11 +94,10 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
 
 	// Re-validate a BF_TX before create a BF_TX
-	fmt.Printf("%+v\n", transaction)
-	_, err = validator.ValidateBFTX(transaction)
+	/*_, err = validator.ValidateBFTX(transaction)
 	if err != nil {
 		return bf_tx.BF_TX{}, err
-	}
+	}*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -107,7 +106,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	}
 
 	// Save on DB
-	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
+	if err = leveldb.RecordOnDB(transaction.Id, content); err != nil {
 		return bf_tx.BF_TX{}, err
 	}
 

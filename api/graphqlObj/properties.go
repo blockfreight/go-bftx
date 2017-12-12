@@ -92,6 +92,51 @@ var PropertiesInput = graphql.NewInputObject(
 			"PortOfDischarge": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
+			"HouseBill": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"Packages": &graphql.InputObjectFieldConfig{
+				Type: graphql.Int,
+			},
+			"PackType": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"INCOTerms": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"Destination": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"MarksAndNumbers": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"UnitOfWeight": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"DeliverAgent": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"ReceiveAgent": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"Container": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"ContainerSeal": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"ContainerMode": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"ContainerType": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"Volume": &graphql.InputObjectFieldConfig{
+				Type: graphql.Float,
+			},
+			"UnitOfVolume": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
 			"NotifyAddress": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
