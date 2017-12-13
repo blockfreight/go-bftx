@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -38,7 +39,7 @@ func FullTransactionBfTx(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Generate BF_TX id
-	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
+	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
 
 	// Re-validate a BF_TX before create a BF_TX
 	_, err = validator.ValidateBFTX(transaction)
@@ -91,7 +92,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	}
 
 	// Generate BF_TX id
-	transaction.Id = fmt.Sprintf("%x", bf_tx.GenerateBFTXSalt(hash, resInfo.LastBlockAppHash))
+	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
 
 	// Re-validate a BF_TX before create a BF_TX
 	/*_, err = validator.ValidateBFTX(transaction)
@@ -113,63 +114,52 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	return transaction, nil
 }
 
-func SignBfTx(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	fmt.Println(params["id"])
+func SignBfTx(idBftx string) (interface{}, error) {
 	// Get a BF_TX by id
-	transaction, err := leveldb.GetBfTx(params["id"])
+	fmt.Println(idBftx)
+	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 	if transaction.Verified {
-		w.WriteHeader(http.StatusConflict)
-		if err := json.NewEncoder(w).Encode(transaction); err != nil {
-			panic(err)
-		}
-
+		return nil, err
 	}
+
+	fmt.Printf("%+v\n", transaction)
 
 	// Sign BF_TX
 	transaction, err = crypto.SignBFTX(transaction)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
-	response.SuccessTx(w, transaction)
+	return transaction, nil
 }
 
-func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	fmt.Println(params["id"])
+func BroadcastBfTx(idBftx string) (interface{}, error) {
+
 	// Get a BF_TX by id
-	transaction, err := leveldb.GetBfTx(params["id"])
+	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	if !transaction.Verified {
-		response.Error(w, http.StatusConflict)
-		return
+		return nil, errors.New("Transaction not verified.")
 	}
 	if transaction.Transmitted {
-		response.Error(w, http.StatusConflict)
-		return
+		return nil, errors.New("Transaction already transmitted.")
 	}
 
 	// Change the boolean valud for Transmitted attribute
@@ -178,14 +168,12 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		response.Error(w, http.StatusInternalServerError)
-		return
+		return nil, err
 	}
 
 	// Deliver / Publish a BF_TX
@@ -194,7 +182,7 @@ func BroadcastBfTx(w http.ResponseWriter, r *http.Request) {
 	// Check the BF_TX hash
 	TendermintClient.CommitSync()
 
-	response.SuccessTx(w, transaction)
+	return transaction, nil
 }
 
 func GetTransaction(w http.ResponseWriter, r *http.Request) {

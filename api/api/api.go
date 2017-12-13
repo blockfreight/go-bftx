@@ -82,14 +82,47 @@ var mutationType = graphql.NewObject(
 					return bftx, err
 				},
 			},
+			"signBFTX": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["Id"].(string)
+					if !isOK {
+						return nil, nil
+					}
+
+					return handlers.SignBfTx(bftxID)
+				},
+			},
+			"broadcastBFTX": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["Id"].(string)
+					if !isOK {
+						return nil, nil
+					}
+
+					return handlers.BroadcastBfTx(bftxID)
+				},
+			},
 		},
 	},
 )
 
 func Start() error {
 	h := handler.New(&handler.Config{
-		Schema: &schema,
-		Pretty: true,
+		Schema:   &schema,
+		Pretty:   true,
+		GraphiQL: true,
 	})
 
 	http.Handle("/graphql", h)
@@ -115,6 +148,8 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 		Schema:        schema,
 		RequestString: query,
 	})
+
+	fmt.Printf("%+v\n", result.Data)
 
 	return result
 }

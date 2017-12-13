@@ -327,21 +327,21 @@ func persistentArgs(line []byte) []string {
 
 //--------------------------------------------------------------------------------
 
-func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
+func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 	salt, err := getBlockAppHash()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Hash BF_TX Object
 	hash, err := bf_tx.HashBFTX(bftx)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	// Generate BF_TX id
-	bftxID := bf_tx.GenerateBFTXSalt(hash, salt)
+	bftxID := bf_tx.GenerateBFTXUID(hash, salt)
 
 	return bftxID, nil
 }
@@ -559,7 +559,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 		return err
 	}
 
-	bftx.Id = fmt.Sprintf("%x", newId)
+	bftx.Id = newId
 
 	// Re-validate a BF_TX before create a BF_TX
 	result, err := validator.ValidateBFTX(bftx)
