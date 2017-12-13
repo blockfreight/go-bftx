@@ -3,7 +3,6 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/api/graphqlObj"
@@ -130,7 +129,7 @@ func Start() error {
 	return http.ListenAndServe(":12345", nil)
 }
 
-func graphRoute(w http.ResponseWriter, r *http.Request) {
+/*func graphRoute(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query().Get("query")
 	if query == "" {
 		params, _ := ioutil.ReadAll(r.Body)
@@ -153,3 +152,4 @@ func executeQuery(query string, schema graphql.Schema) *graphql.Result {
 
 	return result
 }
+*/
