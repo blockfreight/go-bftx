@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http" // Provides HTTP client and server implementations.
+	"strconv"
 
 	"github.com/blockfreight/go-bftx/api/graphqlObj"
-	"github.com/blockfreight/go-bftx/api/handlers"
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Provides some useful functions to work with LevelDB.
+	apiHandler "github.com/blockfreight/go-bftx/api/handlers"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
 )
@@ -37,14 +37,7 @@ var queryType = graphql.NewObject(
 						return nil, nil
 					}
 
-					bftx, err := leveldb.GetBfTx(bftxID)
-					if err != nil {
-						return nil, nil
-					}
-
-					fmt.Printf("%+v\n", bftx)
-
-					return bftx, nil
+					return apiHandler.GetTransaction(bftxID)
 				},
 			},
 		},
@@ -73,12 +66,7 @@ var mutationType = graphql.NewObject(
 						fmt.Print(err)
 					}
 
-					bftx, err = handlers.ConstructBfTx(bftx)
-					if err != nil {
-						return nil, err
-					}
-
-					return bftx, err
+					return apiHandler.ConstructBfTx(bftx)
 				},
 			},
 			"signBFTX": &graphql.Field{
@@ -94,7 +82,7 @@ var mutationType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return handlers.SignBfTx(bftxID)
+					return apiHandler.SignBfTx(bftxID)
 				},
 			},
 			"broadcastBFTX": &graphql.Field{
@@ -110,7 +98,7 @@ var mutationType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return handlers.BroadcastBfTx(bftxID)
+					return apiHandler.BroadcastBfTx(bftxID)
 				},
 			},
 		},
@@ -118,38 +106,50 @@ var mutationType = graphql.NewObject(
 )
 
 func Start() error {
-	h := handler.New(&handler.Config{
-		Schema:   &schema,
-		Pretty:   true,
-		GraphiQL: true,
-	})
-
-	http.Handle("/graphql", h)
+	http.HandleFunc("/graphql", httpHandler(&schema))
 	fmt.Println("Now server is running on: http://localhost:12345")
 	return http.ListenAndServe(":12345", nil)
 }
 
-/*func graphRoute(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query().Get("query")
-	if query == "" {
-		params, _ := ioutil.ReadAll(r.Body)
-		query = string(params)
+func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request) {
+	return func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+
+		// parse http.Request into handler.RequestOptions
+		opts := handler.NewRequestOptions(r)
+
+		// inject context objects http.ResponseWrite and *http.Request into rootValue
+		// there is an alternative example of using `net/context` to store context instead of using rootValue
+		rootValue := map[string]interface{}{
+			"response": rw,
+			"request":  r,
+			"viewer":   "john_doe",
+		}
+
+		// execute graphql query
+		// here, we passed in Query, Variables and OperationName extracted from http.Request
+		params := graphql.Params{
+			Schema:         *schema,
+			RequestString:  opts.Query,
+			VariableValues: opts.Variables,
+			OperationName:  opts.OperationName,
+			RootObject:     rootValue,
+		}
+		result := graphql.Do(params)
+
+		js, err := json.Marshal(result)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		if result.HasErrors() {
+			httpStatus, _ := strconv.Atoi(result.Errors[0].Error())
+			rw.WriteHeader(httpStatus)
+			return
+		}
+
+		rw.Write(js)
 	}
 
-	result := executeQuery(string(query), schema)
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(result)
 }
-
-func executeQuery(query string, schema graphql.Schema) *graphql.Result {
-	result := graphql.Do(graphql.Params{
-		Schema:        schema,
-		RequestString: query,
-	})
-
-	fmt.Printf("%+v\n", result.Data)
-
-	return result
-}
-*/
