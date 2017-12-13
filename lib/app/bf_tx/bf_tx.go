@@ -91,9 +91,9 @@ func HashBFTX(bftx BF_TX) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-//GenerateBFTXSalt hashes two byte arrays and returns it.
-func GenerateBFTXSalt(hash []byte, salt []byte) []byte {
-	return common.HashByteArrays(hash, salt)
+//GenerateBFTXUID hashes two byte arrays and returns it.
+func GenerateBFTXUID(hash []byte, salt []byte) string {
+	return "BFTX" + fmt.Sprintf("%x", common.HashByteArrays(hash, salt))
 }
 
 // BFTXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
