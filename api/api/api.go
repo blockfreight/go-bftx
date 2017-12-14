@@ -114,7 +114,7 @@ func Start() error {
 func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request) {
 	return func(rw http.ResponseWriter, r *http.Request) {
 		rw.Header().Set("Content-Type", "application/json")
-
+		httpStatusResponse := http.StatusOK
 		// parse http.Request into handler.RequestOptions
 		opts := handler.NewRequestOptions(r)
 
@@ -136,19 +136,18 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 			RootObject:     rootValue,
 		}
 		result := graphql.Do(params)
-
 		js, err := json.Marshal(result)
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
-			return
-		}
 
+		}
 		if result.HasErrors() {
-			httpStatus, _ := strconv.Atoi(result.Errors[0].Error())
-			rw.WriteHeader(httpStatus)
-			return
+			httpStatusResponse, err = strconv.Atoi(result.Errors[0].Error())
+			if err != nil {
+				httpStatusResponse = http.StatusInternalServerError
+			}
 		}
-
+		rw.WriteHeader(httpStatusResponse)
 		rw.Write(js)
 	}
 
