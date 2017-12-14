@@ -34,4 +34,6 @@ COPY . /go/src/github.com/blockfreight/go-bftx
 
 RUN make
 
+EXPOSE 12345
+
 ENTRYPOINT /go/bin/bftnode
