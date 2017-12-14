@@ -31,7 +31,6 @@ COPY Makefile /go/src/github.com/blockfreight/go-bftx/
 COPY glide.yaml /go/src/github.com/blockfreight/go-bftx/
 COPY glide.lock /go/src/github.com/blockfreight/go-bftx/
 COPY . /go/src/github.com/blockfreight/go-bftx
-ADD supervisord.conf /etc/supervisor/conf.d/supervisord.c
 
 RUN make
 
