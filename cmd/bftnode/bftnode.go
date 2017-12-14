@@ -56,14 +56,19 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
+	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 )
+
+var client abcicli.Client
 
 func main() {
 
@@ -85,6 +90,18 @@ func main() {
 		log.Fatal(err.Error())
 	}
 	fmt.Println("Service created by " + *abciPtr + " server")
+
+	client, err = abcicli.NewClient(*addrPtr, "socket", false)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
+	handlers.TendermintClient = client
+
+	err = api.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Wait forever
 	tendermint.TrapSignal(func() {

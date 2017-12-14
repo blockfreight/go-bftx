@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 
 	"net/http" // Provides HTTP client and server implementations.
@@ -49,14 +48,13 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 }
 
 func SignBfTx(idBftx string) (interface{}, error) {
-	// Get a BF_TX by id
-	fmt.Println(idBftx)
 	transaction, err := leveldb.GetBfTx(idBftx)
 
 	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+		}
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	} else if err.Error() == "LevelDB Get function: BF_TX not found." {
-		return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 	}
 
 	if transaction.Verified {
@@ -88,9 +86,10 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+		}
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	} else if err.Error() == "LevelDB Get function: BF_TX not found." {
-		return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 	}
 
 	if !transaction.Verified {
@@ -124,18 +123,12 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 }
 
 func GetTransaction(idBftx string) (interface{}, error) {
-
-	if idBftx == "" {
-		total, _ := leveldb.Total()
-		return total, nil
-	}
-
-	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+		}
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	} else if err.Error() == "LevelDB Get function: BF_TX not found." {
-		return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 	}
 
 	return transaction, nil
