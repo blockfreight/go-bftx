@@ -115,6 +115,10 @@ func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 	return bftx, nil
 }
 
+func CryptoTransaction(content string) []byte {
+	return []byte(content)
+}
+
 // =================================================
 // Blockfreight™ | The blockchain of global freight.
 // =================================================
