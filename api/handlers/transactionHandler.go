@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"strconv"
 
@@ -33,18 +34,25 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	// Generate BF_TX id
 	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
 
+	jsonContent, err := json.Marshal(transaction)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
+	/* TODO: ENCRYPT TRANSACTION */
+
 	// Save on DB
 	if err = leveldb.RecordOnDB(transaction.Id, content); err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
-
-	/* TODO: ENCRYPT TRANSACTION */
 
 	return transaction, nil
 }
@@ -69,6 +77,13 @@ func SignBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
+	jsonContent, err := json.Marshal(transaction)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
@@ -79,8 +94,6 @@ func SignBfTx(idBftx string) (interface{}, error) {
 	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
-
-	/* TODO: ENCRYPT TRANSACTION */
 
 	return transaction, nil
 }
@@ -103,10 +116,17 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
 	}
 
+	/* TODO: ENCRYPT TRANSACTION */
+
 	// Change the boolean valud for Transmitted attribute
 	transaction.Transmitted = true
 
-	/* TODO: ENCRYPT TRANSACTION */
+	jsonContent, err := json.Marshal(transaction)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
