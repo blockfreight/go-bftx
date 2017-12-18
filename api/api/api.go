@@ -148,7 +148,10 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 			}
 		}
 		rw.WriteHeader(httpStatusResponse)
-		rw.Write(js)
+
+		if httpStatusResponse == 200 {
+			rw.Write(js)
+		}
 	}
 
 }

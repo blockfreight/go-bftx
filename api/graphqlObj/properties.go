@@ -94,19 +94,19 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"IssueDetails": &graphql.Field{
-				Type: IssueDetailsInput,
+				Type: IssueDetails,
 			},
 			"NumBol": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"MasterInfo": &graphql.Field{
-				Type: MasterInfoInput,
+				Type: MasterInfo,
 			},
 			"AgentForMaster": &graphql.Field{
-				Type: AgentForMasterInput,
+				Type: AgentForMaster,
 			},
 			"AgentForOwner": &graphql.Field{
-				Type: AgentForOwnerInput,
+				Type: AgentForOwner,
 			},
 		},
 	},
