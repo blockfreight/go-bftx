@@ -27,6 +27,51 @@ var PropertiesType = graphql.NewObject(
 			"PortOfDischarge": &graphql.Field{
 				Type: graphql.String,
 			},
+			"HouseBill": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Packages": &graphql.Field{
+				Type: graphql.Int,
+			},
+			"PackType": &graphql.Field{
+				Type: graphql.String,
+			},
+			"INCOTerms": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Destination": &graphql.Field{
+				Type: graphql.String,
+			},
+			"MarksAndNumbers": &graphql.Field{
+				Type: graphql.String,
+			},
+			"UnitOfWeight": &graphql.Field{
+				Type: graphql.String,
+			},
+			"DeliverAgent": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ReceiveAgent": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Container": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ContainerSeal": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ContainerMode": &graphql.Field{
+				Type: graphql.String,
+			},
+			"ContainerType": &graphql.Field{
+				Type: graphql.String,
+			},
+			"Volume": &graphql.Field{
+				Type: graphql.Float,
+			},
+			"UnitOfVolume": &graphql.Field{
+				Type: graphql.String,
+			},
 			"NotifyAddress": &graphql.Field{
 				Type: graphql.String,
 			},
@@ -34,7 +79,7 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"GrossWeight": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.Float,
 			},
 			"FreightPayableAmt": &graphql.Field{
 				Type: graphql.Int,
@@ -46,22 +91,22 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"DateShipped": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"IssueDetails": &graphql.Field{
-				Type: IssueDetails,
+				Type: IssueDetailsInput,
 			},
 			"NumBol": &graphql.Field{
 				Type: graphql.Int,
 			},
 			"MasterInfo": &graphql.Field{
-				Type: MasterInfo,
+				Type: MasterInfoInput,
 			},
 			"AgentForMaster": &graphql.Field{
-				Type: AgentForMaster,
+				Type: AgentForMasterInput,
 			},
 			"AgentForOwner": &graphql.Field{
-				Type: AgentForOwner,
+				Type: AgentForOwnerInput,
 			},
 		},
 	},

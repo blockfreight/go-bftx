@@ -201,6 +201,7 @@ type BF_TX struct {
 	Verified    bool
 	Transmitted bool
 	Amendment   string
+	Private     string
 }
 
 // Properties struct

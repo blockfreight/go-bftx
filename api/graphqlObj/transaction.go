@@ -23,6 +23,9 @@ var TransactionType = graphql.NewObject(
 			"Properties": &graphql.Field{
 				Type: PropertiesType,
 			},
+			"Private": &graphql.Field{
+				Type: graphql.String,
+			},
 		},
 	},
 )

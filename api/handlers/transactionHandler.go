@@ -44,6 +44,8 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
+	/* TODO: ENCRYPT TRANSACTION */
+
 	return transaction, nil
 }
 
@@ -78,6 +80,8 @@ func SignBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
+	/* TODO: ENCRYPT TRANSACTION */
+
 	return transaction, nil
 }
 
@@ -101,6 +105,8 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 
 	// Change the boolean valud for Transmitted attribute
 	transaction.Transmitted = true
+
+	/* TODO: ENCRYPT TRANSACTION */
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -130,6 +136,8 @@ func GetTransaction(idBftx string) (interface{}, error) {
 		}
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
+
+	/* TODO: DECRYPT TRANSACTION */
 
 	return transaction, nil
 }
