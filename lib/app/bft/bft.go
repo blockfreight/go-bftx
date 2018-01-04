@@ -49,7 +49,7 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	// Implements simple functions to manipulate UTF-8 encoded strings.
 
 	// ===============
 	// Tendermint Core
@@ -82,15 +82,7 @@ func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	parts := strings.Split(string(tx), "=")
-	if len(parts) == 2 {
-		app.state.
-			Set([]byte(parts[0]), []byte(parts[1]))
-	} else {
-		app.state.Set(tx, tx)
-	}
-
-	return types.OK
+	return app.DeliverTx(tx)
 }
 
 // CheckTx checks a transaction
