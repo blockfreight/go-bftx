@@ -54,6 +54,7 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
+
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
 	wire "github.com/tendermint/go-wire"
@@ -83,16 +84,18 @@ func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	parts := strings.Split(string(tx), "=")
 	if len(parts) == 2 {
-		app.state.Set([]byte(parts[0]), []byte(parts[1]))
+		app.state.
+			Set([]byte(parts[0]), []byte(parts[1]))
 	} else {
 		app.state.Set(tx, tx)
 	}
+
 	return types.OK
 }
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return types.OK
+	return app.CheckTx(tx)
 }
 
 // Commit commits transactions
@@ -111,7 +114,7 @@ func (app *BftApplication) Commit() types.Result {
 		}
 	}
 
-	return types.NewResultOK(hash, "")
+	return types.NewResult(0, hash, "")
 }
 
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
