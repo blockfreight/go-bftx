@@ -55,6 +55,8 @@ import (
 	// Tendermint Core
 	// ===============
 
+	"bytes"
+
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
 	wire "github.com/tendermint/go-wire"
@@ -82,7 +84,16 @@ func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	return app.DeliverTx(tx)
+	var key, value []byte
+	parts := bytes.Split(tx, []byte("="))
+	if len(parts) == 2 {
+		key, value = parts[0], parts[1]
+	} else {
+		key, value = tx, tx
+	}
+	app.state.Set(key, value)
+
+	return types.NewResult(0, []byte(""), "")
 }
 
 // CheckTx checks a transaction
