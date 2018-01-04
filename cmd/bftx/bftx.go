@@ -260,10 +260,10 @@ func main() {
 			},
 		},
 		{
-			Name:  "fednode",
-			Usage: "Test Python Hello Function",
+			Name:  "encrypt",
+			Usage: "Test Encryption Integration",
 			Action: func(c *cli.Context) error {
-				return cmdFednode(c)
+				return cmdEncrypt(c)
 			},
 		},
 		{
@@ -428,24 +428,12 @@ func cmdHelloPython(c *cli.Context) error {
 	return nil
 }
 
-func cmdFednode(c *cli.Context) error {
-	args := "fednode " + strings.Join(c.Args(), " ")
-	fmt.Println(args)
-	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('"+args+"')")
-	cmd.Dir = "./lib/pkg/python/"
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
-	err := cmd.Run()
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-	// printResponse(c, response{
-	// 	Result: string(out),
-	// })
+func cmdEncrypt(c *cli.Context) error {
+	// Sign BF_TX
+	bftx := crypto.CryptoTransaction("test")
+	bftx = bftx
 	return nil
+
 }
 
 // Get some info from the application

@@ -49,19 +49,28 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa"    // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/elliptic" // Implements several standard elliptic curves over prime fields.
-	"crypto/md5"      // Implements the MD5 hash algorithm as defined in RFC 1321.
-	"crypto/rand"     // Implements a cryptographically secure pseudorandom number generator.
-	"hash"            // Provides interfaces for hash functions.
-	"io"              // Provides basic interfaces to I/O primitives.
-	"math/big"        // Implements arbitrary-precision arithmetic (big numbers).
-	"strconv"         // Implements conversions to and from string representations of basic data types.
+	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/md5" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	// Implements several standard elliptic curves over prime fields.
+	// Implements the MD5 hash algorithm as defined in RFC 1321.
+	"crypto/rand" // Implements a cryptographically secure pseudorandom number generator.
+	"hash"        // Provides interfaces for hash functions.
+	"io"          // Provides basic interfaces to I/O primitives.
+	"log"
+	"math/big" // Implements arbitrary-precision arithmetic (big numbers).
+	"strconv"  // Implements conversions to and from string representations of basic data types.
 
 	// ======================
 	// Blockfreight™ packages
 	// ======================
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"google.golang.org/grpc"
+)
+
+const (
+	address = "localhost:22222"
 )
 
 // SignBFTX has the whole process of signing each BF_TX.
@@ -116,7 +125,41 @@ func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 }
 
 func CryptoTransaction(content string) []byte {
-	return []byte(content)
+	// Set up a connection to the server.
+	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+	defer conn.Close()
+	c := NewEncryptionClient(conn)
+
+	bftxtrans := BFTX_transaction{
+		BFTX_Payload{
+			Shipper: "test",
+		},
+	}
+
+	bftxconfig := BFTX_encryptionConfig{
+		EncryptionFields: EncryptionField{
+			FieldName:      "test",
+			AuthorizedUser: "Carol",
+		},
+		group: "1",
+		Publickeys: Publickeys{
+			UserID:  "UserID",
+			keyfile: "keyfile",
+		},
+		Recipients: "Recipients test",
+		Version:    "version",
+	}
+
+	r := c.BFTX_Encode(context.Background(), &BFTX_Encode_request{bftxtrans, bftxconfig})
+	if err != nil {
+		log.Fatalf("could not greet: %v", err)
+	}
+	log.Printf("The result is: %+v\n", r)
+
+	return []byte("")
 }
 
 // =================================================

@@ -31,10 +31,7 @@ func LeftPadString(s string, totalLength int) string {
 func IsHex(s string) bool {
 	if len(s) > 2 && s[:2] == "0x" {
 		_, err := hex.DecodeString(s[2:])
-		if err != nil {
-			return false
-		}
-		return true
+		return err == nil
 	}
 	return false
 }
@@ -45,4 +42,14 @@ func StripHex(s string) string {
 		return s[2:]
 	}
 	return s
+}
+
+// StringInSlice returns true if a is found the list.
+func StringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
 }
