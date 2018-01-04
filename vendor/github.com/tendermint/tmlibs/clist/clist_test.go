@@ -55,6 +55,7 @@ func TestSmall(t *testing.T) {
 This test is quite hacky because it relies on SetFinalizer
 which isn't guaranteed to run at all.
 */
+// nolint: megacheck
 func _TestGCFifo(t *testing.T) {
 
 	const numElements = 1000000
@@ -102,6 +103,7 @@ func _TestGCFifo(t *testing.T) {
 This test is quite hacky because it relies on SetFinalizer
 which isn't guaranteed to run at all.
 */
+// nolint: megacheck
 func _TestGCRandom(t *testing.T) {
 
 	const numElements = 1000000
@@ -132,7 +134,7 @@ func _TestGCRandom(t *testing.T) {
 	for _, i := range rand.Perm(numElements) {
 		el := els[i]
 		l.Remove(el)
-		el = el.Next()
+		_ = el.Next()
 	}
 
 	runtime.GC()
@@ -147,13 +149,13 @@ func _TestGCRandom(t *testing.T) {
 func TestScanRightDeleteRandom(t *testing.T) {
 
 	const numElements = 10000
-	const numTimes = 100000
+	const numTimes = 1000
 	const numScanners = 10
 
 	l := New()
 	stop := make(chan struct{})
 
-	els := make([]*CElement, numElements, numElements)
+	els := make([]*CElement, numElements)
 	for i := 0; i < numElements; i++ {
 		el := l.PushBack(i)
 		els[i] = el

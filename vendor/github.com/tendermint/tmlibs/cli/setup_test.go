@@ -14,8 +14,6 @@ import (
 )
 
 func TestSetupEnv(t *testing.T) {
-	assert, require := assert.New(t), require.New(t)
-
 	cases := []struct {
 		args     []string
 		env      map[string]string
@@ -51,22 +49,17 @@ func TestSetupEnv(t *testing.T) {
 		viper.Reset()
 		args := append([]string{cmd.Use}, tc.args...)
 		err := RunWithArgs(cmd, args, tc.env)
-		require.Nil(err, i)
-		assert.Equal(tc.expected, foo, i)
+		require.Nil(t, err, i)
+		assert.Equal(t, tc.expected, foo, i)
 	}
 }
 
 func TestSetupConfig(t *testing.T) {
-	assert, require := assert.New(t), require.New(t)
-
 	// we pre-create two config files we can refer to in the rest of
 	// the test cases.
-	cval1, cval2 := "fubble", "wubble"
+	cval1 := "fubble"
 	conf1, err := WriteDemoConfig(map[string]string{"boo": cval1})
-	require.Nil(err)
-	// make sure it handles dashed-words in the config, and ignores random info
-	conf2, err := WriteDemoConfig(map[string]string{"boo": cval2, "foo": "bar", "two-words": "WORD"})
-	require.Nil(err)
+	require.Nil(t, err)
 
 	cases := []struct {
 		args        []string
@@ -78,16 +71,13 @@ func TestSetupConfig(t *testing.T) {
 		// setting on the command line
 		{[]string{"--boo", "haha"}, nil, "haha", ""},
 		{[]string{"--two-words", "rocks"}, nil, "", "rocks"},
-		{[]string{"--root", conf1}, nil, cval1, ""},
+		{[]string{"--home", conf1}, nil, cval1, ""},
 		// test both variants of the prefix
 		{nil, map[string]string{"RD_BOO": "bang"}, "bang", ""},
 		{nil, map[string]string{"RD_TWO_WORDS": "fly"}, "", "fly"},
 		{nil, map[string]string{"RDTWO_WORDS": "fly"}, "", "fly"},
-		{nil, map[string]string{"RD_ROOT": conf1}, cval1, ""},
-		{nil, map[string]string{"RDROOT": conf2}, cval2, "WORD"},
+		{nil, map[string]string{"RD_HOME": conf1}, cval1, ""},
 		{nil, map[string]string{"RDHOME": conf1}, cval1, ""},
-		// and when both are set??? HOME wins every time!
-		{[]string{"--root", conf1}, map[string]string{"RDHOME": conf2}, cval2, "WORD"},
 	}
 
 	for idx, tc := range cases {
@@ -110,9 +100,9 @@ func TestSetupConfig(t *testing.T) {
 		viper.Reset()
 		args := append([]string{cmd.Use}, tc.args...)
 		err := RunWithArgs(cmd, args, tc.env)
-		require.Nil(err, i)
-		assert.Equal(tc.expected, foo, i)
-		assert.Equal(tc.expectedTwo, two, i)
+		require.Nil(t, err, i)
+		assert.Equal(t, tc.expected, foo, i)
+		assert.Equal(t, tc.expectedTwo, two, i)
 	}
 }
 
@@ -123,16 +113,14 @@ type DemoConfig struct {
 }
 
 func TestSetupUnmarshal(t *testing.T) {
-	assert, require := assert.New(t), require.New(t)
-
 	// we pre-create two config files we can refer to in the rest of
 	// the test cases.
 	cval1, cval2 := "someone", "else"
 	conf1, err := WriteDemoConfig(map[string]string{"name": cval1})
-	require.Nil(err)
+	require.Nil(t, err)
 	// even with some ignored fields, should be no problem
 	conf2, err := WriteDemoConfig(map[string]string{"name": cval2, "foo": "bar"})
-	require.Nil(err)
+	require.Nil(t, err)
 
 	// unused is not declared on a flag and remains from base
 	base := DemoConfig{
@@ -162,10 +150,10 @@ func TestSetupUnmarshal(t *testing.T) {
 		{nil, nil, c("", 0)},
 		// setting on the command line
 		{[]string{"--name", "haha"}, nil, c("haha", 0)},
-		{[]string{"--root", conf1}, nil, c(cval1, 0)},
+		{[]string{"--home", conf1}, nil, c(cval1, 0)},
 		// test both variants of the prefix
 		{nil, map[string]string{"MR_AGE": "56"}, c("", 56)},
-		{nil, map[string]string{"MR_ROOT": conf1}, c(cval1, 0)},
+		{nil, map[string]string{"MR_HOME": conf1}, c(cval1, 0)},
 		{[]string{"--age", "17"}, map[string]string{"MRHOME": conf2}, c(cval2, 17)},
 	}
 
@@ -189,14 +177,12 @@ func TestSetupUnmarshal(t *testing.T) {
 		viper.Reset()
 		args := append([]string{cmd.Use}, tc.args...)
 		err := RunWithArgs(cmd, args, tc.env)
-		require.Nil(err, i)
-		assert.Equal(tc.expected, cfg, i)
+		require.Nil(t, err, i)
+		assert.Equal(t, tc.expected, cfg, i)
 	}
 }
 
 func TestSetupTrace(t *testing.T) {
-	assert, require := assert.New(t), require.New(t)
-
 	cases := []struct {
 		args     []string
 		env      map[string]string
@@ -224,16 +210,16 @@ func TestSetupTrace(t *testing.T) {
 		viper.Reset()
 		args := append([]string{cmd.Use}, tc.args...)
 		stdout, stderr, err := RunCaptureWithArgs(cmd, args, tc.env)
-		require.NotNil(err, i)
-		require.Equal("", stdout, i)
-		require.NotEqual("", stderr, i)
+		require.NotNil(t, err, i)
+		require.Equal(t, "", stdout, i)
+		require.NotEqual(t, "", stderr, i)
 		msg := strings.Split(stderr, "\n")
 		desired := fmt.Sprintf("ERROR: %s", tc.expected)
-		assert.Equal(desired, msg[0], i)
-		if tc.long && assert.True(len(msg) > 2, i) {
+		assert.Equal(t, desired, msg[0], i)
+		if tc.long && assert.True(t, len(msg) > 2, i) {
 			// the next line starts the stack trace...
-			assert.Contains(msg[1], "TestSetupTrace", i)
-			assert.Contains(msg[2], "setup_test.go", i)
+			assert.Contains(t, msg[1], "TestSetupTrace", i)
+			assert.Contains(t, msg[2], "setup_test.go", i)
 		}
 	}
 }

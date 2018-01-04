@@ -56,19 +56,21 @@ import (
 	// ===============
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
+	wire "github.com/tendermint/go-wire"
+	"github.com/tendermint/iavl"
+	dbm "github.com/tendermint/tmlibs/db"
 )
 
 // BftApplication struct
 type BftApplication struct {
 	types.BaseApplication
 
-	state merkle.Tree
+	state *iavl.VersionedTree
 }
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	state := merkle.NewIAVLTree(0, nil)
+	state := iavl.NewVersionedTree(0, dbm.NewMemDB())
 	return &BftApplication{state: state}
 }
 
@@ -95,37 +97,51 @@ func (app *BftApplication) CheckTx(tx []byte) types.Result {
 
 // Commit commits transactions
 func (app *BftApplication) Commit() types.Result {
-	newTree := app.state.Copy()
-	hash := newTree.Save()
+	// Save a new version
+	var hash []byte
+	var err error
+
+	if app.state.Size() > 0 {
+		// just add one more to height (kind of arbitrarily stupid)
+		height := app.state.LatestVersion() + 1
+		hash, err = app.state.SaveVersion(height)
+		if err != nil {
+			// if this wasn't a dummy app, we'd do something smarter
+			panic(err)
+		}
+	}
+
 	return types.NewResultOK(hash, "")
 }
 
-// Query executes queries and returns the result
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
-		value, proof, exists := app.state.Proof(reqQuery.Data)
+		value, proof, err := app.state.GetWithProof(reqQuery.Data)
+		// if this wasn't a dummy app, we'd do something smarter
+		if err != nil {
+			panic(err)
+		}
 		resQuery.Index = -1 // TODO make Proof return index
 		resQuery.Key = reqQuery.Data
 		resQuery.Value = value
-		resQuery.Proof = proof
-		if exists {
+		resQuery.Proof = wire.BinaryBytes(proof)
+		if value != nil {
+			resQuery.Log = "exists"
+		} else {
+			resQuery.Log = "does not exist"
+		}
+		return
+	} else {
+		index, value := app.state.Get(reqQuery.Data)
+		resQuery.Index = int64(index)
+		resQuery.Value = value
+		if value != nil {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	}
-
-	index, value, exists := app.state.Get(reqQuery.Data)
-	resQuery.Index = int64(index)
-	resQuery.Value = value
-	if exists {
-		resQuery.Log = "exists"
-	} else {
-		resQuery.Log = "does not exist"
-	}
-	return
-
 }
 
 // =================================================

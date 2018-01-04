@@ -10,7 +10,7 @@ type CMap struct {
 
 func NewCMap() *CMap {
 	return &CMap{
-		m: make(map[string]interface{}, 0),
+		m: make(map[string]interface{}),
 	}
 }
 
@@ -48,7 +48,18 @@ func (cm *CMap) Size() int {
 func (cm *CMap) Clear() {
 	cm.l.Lock()
 	defer cm.l.Unlock()
-	cm.m = make(map[string]interface{}, 0)
+	cm.m = make(map[string]interface{})
+}
+
+func (cm *CMap) Keys() []string {
+	cm.l.Lock()
+	defer cm.l.Unlock()
+
+	keys := []string{}
+	for k := range cm.m {
+		keys = append(keys, k)
+	}
+	return keys
 }
 
 func (cm *CMap) Values() []interface{} {

@@ -1,5 +1,5 @@
-hash: 0abbfa07cc8b988e2d21e7468a276c7a6bf6def2a94f471558ddae151f80f06a
-updated: 2017-12-11T16:53:54.780964+11:00
+hash: 02dca52c6af4d5601d5107777fbbfe0c3a037bd5cd37a4ddd98f61286e3f0cf2
+updated: 2018-01-04T13:53:28.935603+11:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
@@ -27,8 +27,6 @@ imports:
   - proto
 - name: github.com/golang/snappy
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
 - name: github.com/gorilla/mux
   version: c572efe4294d5a0e354e01f2ddaa8b1f0c3cb3dd
 - name: github.com/graphql-go/graphql
@@ -83,22 +81,25 @@ imports:
   version: f9e3db037330c8a8d61d3966de8473eaf01154fa
 - name: github.com/tendermint/go-crypto
   version: 95b7c9e09c49b91bfbb71bb63dd514eb55450f16
-- name: github.com/tendermint/go-db
-  version: 9643f60bc2578693844aacf380a7c32e4c029fee
 - name: github.com/tendermint/go-logger
   version: cefb3a45c0bf3c493a04e9bcd9b1540528be59f2
 - name: github.com/tendermint/go-merkle
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
-  version: 5f88da3dbc1a72844e6dfaf274ce87f851d488eb
+  version: 27be46e25124ddf775e23317a83647ce62a93f6b
+  subpackages:
+  - data
+- name: github.com/tendermint/iavl
+  version: 595f3dcd5b6cd4a292e90757ae6d367fd7a6e653
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:
   - term
 - name: github.com/tendermint/tmlibs
-  version: 096dcb90e60aa00b748b3fe49a4b95e48ebf1e13
+  version: c8ddf156a7ded132708ff6e435e19ac1852822d7
   subpackages:
   - common
+  - db
   - log
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
