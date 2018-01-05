@@ -73,7 +73,7 @@ type BftApplication struct {
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	name := "dummy"
+	name := "bftx"
 	db, err := dbm.NewGoLevelDB(name, "../../../bft-db/")
 	if err != nil {
 		panic(err)
@@ -101,12 +101,12 @@ func (app *BftApplication) DeliverTx(tx []byte) types.Result {
 	}
 	app.state.Set(key, value)
 
-	return types.NewResult(0, []byte(""), "")
+	return types.NewResult(0, nil, "")
 }
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return app.CheckTx(tx)
+	return types.NewResultOK(nil, "")
 }
 
 // Commit commits transactions

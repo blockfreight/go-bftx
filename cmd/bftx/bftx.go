@@ -440,6 +440,7 @@ func cmdEncrypt(c *cli.Context) error {
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
 	resInfo, err := client.InfoSync()
+
 	if err != nil {
 		return err
 	}
@@ -859,9 +860,7 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
 
-	if !rsp.Code.IsOK() {
-		fmt.Printf("-> code: %s\n", rsp.Code.String())
-	}
+	fmt.Printf("-> code: %s\n", rsp.Code.String())
 
 	if rsp.Result != "" {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
