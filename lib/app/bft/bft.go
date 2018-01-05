@@ -75,20 +75,21 @@ type BftApplication struct {
 	db dbm.DB
 
 	blockHeader *types.Header
+
+	// validator set
+	changes []*types.Validator
 }
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	name := "bftx"
-	db, err := dbm.NewGoLevelDB(name, "../../../bft-db/")
-	if err != nil {
-		panic(err)
-	}
+	db := dbm.NewDB("bftx", "leveldb", "../../../bft-db/")
 
 	lastBlock := LoadLastBlock(db)
 
 	stateTree := merkle.NewIAVLTree(0, db)
 	stateTree.Load(lastBlock.AppHash)
+
+	fmt.Println("Loaded state", "block", lastBlock.Height, "root", stateTree.Hash())
 
 	return &BftApplication{
 		state: stateTree,
@@ -195,6 +196,22 @@ func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
 		panic(err)
 	}
 	db.Set(lastBlockKey, buf.Bytes())
+}
+
+// Track the block hash and header information
+func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
+	// update latest block info
+	fmt.Println("Begining block...")
+	app.blockHeader = header
+
+	// reset valset changes
+	app.changes = make([]*types.Validator, 0)
+}
+
+// Update the validator set
+func (app *BftApplication) EndBlock(height uint64) (resEndBlock types.ResponseEndBlock) {
+	fmt.Println("Ending block...")
+	return types.ResponseEndBlock{Diffs: app.changes}
 }
 
 // =================================================
