@@ -124,7 +124,6 @@ func (app *BftApplication) CheckTx(tx []byte) types.Result {
 func (app *BftApplication) Commit() types.Result {
 	// Save
 	appHash := app.state.Save()
-	fmt.Println("Saved state", "root", appHash)
 
 	lastBlock := LastBlockInfo{
 		Height:  uint64(app.state.Height()),
@@ -202,6 +201,7 @@ func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
 func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
 	// update latest block info
 	fmt.Println("Begining block...")
+	fmt.Printf("%+v\n", header)
 	app.blockHeader = header
 
 	// reset valset changes
