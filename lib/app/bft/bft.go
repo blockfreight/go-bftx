@@ -73,13 +73,21 @@ type BftApplication struct {
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	state := iavl.NewVersionedTree(0, dbm.NewMemDB())
-	return &BftApplication{state: state}
+	name := "dummy"
+	db, err := dbm.NewGoLevelDB(name, "../../../bft-db/")
+	if err != nil {
+		panic(err)
+	}
+
+	stateTree := iavl.NewVersionedTree(500, db)
+	stateTree.Load()
+
+	return &BftApplication{state: stateTree}
 }
 
 // Info returns information
 func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size())}
+	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: app.state.Hash(), LastBlockHeight: app.state.LatestVersion()}
 }
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
