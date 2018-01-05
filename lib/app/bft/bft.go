@@ -56,19 +56,25 @@ import (
 	// ===============
 
 	"bytes"
+	"fmt"
+	"strings"
 
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
+	dbm "github.com/tendermint/go-db"
+	merkle "github.com/tendermint/go-merkle"
 	wire "github.com/tendermint/go-wire"
-	"github.com/tendermint/iavl"
-	dbm "github.com/tendermint/tmlibs/db"
 )
 
 // BftApplication struct
 type BftApplication struct {
 	types.BaseApplication
 
-	state *iavl.VersionedTree
+	state merkle.Tree
+
+	db dbm.DB
+
+	blockHeader *types.Header
 }
 
 // NewBftApplication creates a new application
@@ -79,56 +85,55 @@ func NewBftApplication() *BftApplication {
 		panic(err)
 	}
 
-	stateTree := iavl.NewVersionedTree(500, db)
-	stateTree.Load()
+	lastBlock := LoadLastBlock(db)
 
-	return &BftApplication{state: stateTree}
+	stateTree := merkle.NewIAVLTree(0, db)
+	stateTree.Load(lastBlock.AppHash)
+
+	return &BftApplication{
+		state: stateTree,
+		db:    db,
+	}
 }
 
 // Info returns information
 func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: app.state.Hash(), LastBlockHeight: app.state.LatestVersion()}
+	lastBlock := LoadLastBlock(app.db)
+
+	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: lastBlock.AppHash, LastBlockHeight: lastBlock.Height}
 }
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
 func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	var key, value []byte
-	parts := bytes.Split(tx, []byte("="))
+	parts := strings.Split(string(tx), "=")
 	if len(parts) == 2 {
-		key, value = parts[0], parts[1]
+		app.state.Set([]byte(parts[0]), []byte(parts[1]))
 	} else {
-		key, value = tx, tx
+		app.state.Set(tx, tx)
 	}
-	app.state.Set(key, value)
-
-	return types.NewResult(0, nil, "")
+	return types.OK
 }
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return types.NewResultOK(nil, "")
+	return types.OK
 }
 
 // Commit commits transactions
 func (app *BftApplication) Commit() types.Result {
-	// Save a new version
-	var hash []byte
-	var err error
+	// Save
+	appHash := app.state.Save()
+	fmt.Println("Saved state", "root", appHash)
 
-	if app.state.Size() > 0 {
-		// just add one more to height (kind of arbitrarily stupid)
-		height := app.state.LatestVersion() + 1
-		hash, err = app.state.SaveVersion(height)
-		if err != nil {
-			// if this wasn't a dummy app, we'd do something smarter
-			panic(err)
-		}
+	lastBlock := LastBlockInfo{
+		Height:  uint64(app.state.Height()),
+		AppHash: appHash, // this hash will be in the next block header
 	}
-
-	return types.NewResult(0, hash, "")
+	SaveLastBlock(app.db, lastBlock)
+	return types.NewResultOK(appHash, "")
 }
 
-func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
+/* func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
 		value, proof, err := app.state.GetWithProof(reqQuery.Data)
 		// if this wasn't a dummy app, we'd do something smarter
@@ -156,6 +161,40 @@ func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.Re
 		}
 		return
 	}
+} */
+
+var lastBlockKey = []byte("lastblock")
+
+type LastBlockInfo struct {
+	Height  uint64
+	AppHash []byte
+}
+
+// Get the last block from the db
+func LoadLastBlock(db dbm.DB) (lastBlock LastBlockInfo) {
+	buf := db.Get(lastBlockKey)
+	if len(buf) != 0 {
+		r, n, err := bytes.NewReader(buf), new(int), new(error)
+		wire.ReadBinaryPtr(&lastBlock, r, 0, n, err)
+		if *err != nil {
+			// DATA HAS BEEN CORRUPTED OR THE SPEC HAS CHANGED
+			panic(err)
+		}
+		// TODO: ensure that buf is completely read.
+	}
+
+	return lastBlock
+}
+
+func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
+	fmt.Print("Saving block")
+	buf, n, err := new(bytes.Buffer), new(int), new(error)
+	wire.WriteBinary(lastBlock, buf, n, err)
+	if *err != nil {
+		// TODO
+		panic(err)
+	}
+	db.Set(lastBlockKey, buf.Bytes())
 }
 
 // =================================================
