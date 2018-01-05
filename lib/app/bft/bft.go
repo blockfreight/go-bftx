@@ -56,7 +56,6 @@ import (
 	// ===============
 
 	"bytes"
-	"fmt"
 	"strings"
 
 	"github.com/tendermint/abci/types"
@@ -83,13 +82,10 @@ type BftApplication struct {
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
 	db := dbm.NewDB("bftx", "leveldb", "../../../bft-db/")
-
 	lastBlock := LoadLastBlock(db)
 
 	stateTree := merkle.NewIAVLTree(0, db)
 	stateTree.Load(lastBlock.AppHash)
-
-	fmt.Println("Loaded state", "block", lastBlock.Height, "root", stateTree.Hash())
 
 	return &BftApplication{
 		state: stateTree,
@@ -187,7 +183,6 @@ func LoadLastBlock(db dbm.DB) (lastBlock LastBlockInfo) {
 }
 
 func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
-	fmt.Print("Saving block")
 	buf, n, err := new(bytes.Buffer), new(int), new(error)
 	wire.WriteBinary(lastBlock, buf, n, err)
 	if *err != nil {
@@ -200,9 +195,7 @@ func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
 // Track the block hash and header information
 func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
 	// update latest block info
-	fmt.Println("Begining block...")
-	fmt.Printf("%+v\n", header)
-	app.blockHeader = header
+	//app.blockHeader = header
 
 	// reset valset changes
 	app.changes = make([]*types.Validator, 0)
@@ -210,7 +203,6 @@ func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
 
 // Update the validator set
 func (app *BftApplication) EndBlock(height uint64) (resEndBlock types.ResponseEndBlock) {
-	fmt.Println("Ending block...")
 	return types.ResponseEndBlock{Diffs: app.changes}
 }
 
