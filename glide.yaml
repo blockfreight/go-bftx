@@ -25,6 +25,7 @@ import:
 - package: github.com/tendermint/iavl
 - package: github.com/tendermint/tmlibs
 - package: github.com/gorilla/mux
+- package: github.com/tendermint/go-db
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
 - package: github.com/graphql-go/handler
