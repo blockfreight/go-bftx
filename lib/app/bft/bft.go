@@ -129,35 +129,31 @@ func (app *BftApplication) Commit() types.Result {
 	return types.NewResultOK(appHash, "")
 }
 
-/* func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
+func (app *DummyApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
-		value, proof, err := app.state.GetWithProof(reqQuery.Data)
-		// if this wasn't a dummy app, we'd do something smarter
-		if err != nil {
-			panic(err)
-		}
+		value, proof, exists := app.state.Proof(reqQuery.Data)
 		resQuery.Index = -1 // TODO make Proof return index
 		resQuery.Key = reqQuery.Data
 		resQuery.Value = value
-		resQuery.Proof = wire.BinaryBytes(proof)
-		if value != nil {
+		resQuery.Proof = proof
+		if exists {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	} else {
-		index, value := app.state.Get(reqQuery.Data)
+		index, value, exists := app.state.Get(reqQuery.Data)
 		resQuery.Index = int64(index)
 		resQuery.Value = value
-		if value != nil {
+		if exists {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	}
-} */
+}
 
 var lastBlockKey = []byte("lastblock")
 
@@ -195,7 +191,7 @@ func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
 // Track the block hash and header information
 func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
 	// update latest block info
-	//app.blockHeader = header
+	app.blockHeader = header
 
 	// reset valset changes
 	app.changes = make([]*types.Validator, 0)
