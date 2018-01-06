@@ -129,7 +129,7 @@ func (app *BftApplication) Commit() types.Result {
 	return types.NewResultOK(appHash, "")
 }
 
-func (app *DummyApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
+func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
 		value, proof, exists := app.state.Proof(reqQuery.Data)
 		resQuery.Index = -1 // TODO make Proof return index
