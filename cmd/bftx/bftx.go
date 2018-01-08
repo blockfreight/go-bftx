@@ -51,16 +51,17 @@ import (
 	// =======================
 	"bufio"        // Implements buffered I/O.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
-	"errors"       // Implements functions to manipulate errors.
-	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"io"           // Provides basic interfaces to I/O primitives.
-	"log"          // Implements a simple logging package.
-	"os"           // Provides a platform-independent interface to operating system functionality.
+	"encoding/json"
+	"errors" // Implements functions to manipulate errors.
+	"fmt"    // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io"     // Provides basic interfaces to I/O primitives.
+	"io/ioutil"
+	"log" // Implements a simple logging package.
+	"net/http"
+	"os" // Provides a platform-independent interface to operating system functionality.
 	"os/exec"
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
-	"net/http"
-	"io/ioutil"
 
 	// ====================
 	// Third-party packages
@@ -73,6 +74,7 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	data "github.com/tendermint/go-wire/data"
 
 	// ======================
 	// Blockfreight™ packages
@@ -95,6 +97,21 @@ type response struct {
 	Result string //Blockfreight Purposes
 
 	Query *queryResponse
+}
+
+type responseBroadcast struct {
+	// generic abci response
+	JsonRPC string `json:"jsonrpc"`
+	id      string `json:"id"`
+	Result  ResultBroadcastTx
+}
+
+type ResultBroadcastTx struct {
+	Code uint32     `json:"code"`
+	Data data.Bytes `json:"data"`
+	Log  string     `json:"log"`
+
+	Hash data.Bytes `json:"hash"`
 }
 
 type queryResponse struct {
@@ -654,8 +671,8 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(content)
-	resp, err := http.Get("localhost:46657/broadcast_tx_sync\\?tx\\" + content)
+
+	resp, err := http.Get("http://localhost:46657/broadcast_tx_sync\\?tx\\" + content)
 	if err != nil {
 		return err
 	}
@@ -664,15 +681,15 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("%s", body)
+	var broadcastResp responseBroadcast
+	err = json.Unmarshal(body, &broadcastResp)
+	fmt.Printf("%+v\n", broadcastResp)
 
 	//Result
-	/* printResponse(c, response{
-		Code: res.Code,
-		//Result: "BF_TX transmitted"
-		Data: res.Data,
-		Log:  res.Log,
-	}) */
+	printResponse(c, response{
+		Data: broadcastResp.Result.Hash,
+		Log:  broadcastResp.Result.Log,
+	})
 	return nil
 }
 

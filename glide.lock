@@ -1,5 +1,5 @@
-hash: 9a5f2271a5335764f1e2080e7a11f4e16a921c7e82c32c09a3aa0f9fd4f76df1
-updated: 2018-01-05T13:29:25.224786+11:00
+hash: a552e68213f3b7c0c6abac760b42b375d41792be058ec8c728cd75c9eb173184
+updated: 2018-01-08T12:30:47.740329+11:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
@@ -89,6 +89,8 @@ imports:
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
   version: 27be46e25124ddf775e23317a83647ce62a93f6b
+  subpackages:
+  - data
 - name: github.com/tendermint/iavl
   version: 595f3dcd5b6cd4a292e90757ae6d367fd7a6e653
 - name: github.com/tendermint/log15
@@ -99,7 +101,6 @@ imports:
   version: c8ddf156a7ded132708ff6e435e19ac1852822d7
   subpackages:
   - common
-  - db
   - log
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
