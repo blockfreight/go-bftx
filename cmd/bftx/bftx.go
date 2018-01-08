@@ -59,6 +59,8 @@ import (
 	"os/exec"
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	"net/http"
+	"io/ioutil"
 
 	// ====================
 	// Third-party packages
@@ -652,17 +654,25 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	// Deliver / Publish a BF_TX
-	res := client.DeliverTxSync([]byte(content))
+	fmt.Println(content)
+	resp, err := http.Get("localhost:46657/broadcast_tx_sync\\?tx\\" + content)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("%s", body)
 
 	//Result
-	printResponse(c, response{
+	/* printResponse(c, response{
 		Code: res.Code,
 		//Result: "BF_TX transmitted"
 		Data: res.Data,
 		Log:  res.Log,
-	})
+	}) */
 	return nil
 }
 
