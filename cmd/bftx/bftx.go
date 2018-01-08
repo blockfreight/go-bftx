@@ -673,22 +673,20 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 
 	src := []byte(content)
 	encodedStr := hex.EncodeToString(src)
-	url := "http://localhost:46657/broadcast_tx_sync\\?tx=%22$" + encodedStr + "%22"
-
-	fmt.Println(url)
+	url := "http://localhost:46657/broadcast_tx_sync\\?tx=%22" + encodedStr + "%22"
 
 	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
+	fmt.Printf("%+v\n", resp)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 	var broadcastResp responseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
-	fmt.Printf("%+v\n", broadcastResp)
 
 	//Result
 	printResponse(c, response{
