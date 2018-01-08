@@ -673,8 +673,11 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 
 	src := []byte(content)
 	encodedStr := hex.EncodeToString(src)
+	url := "http://localhost:46657/broadcast_tx_sync\\?tx=%22$" + encodedStr + "%22"
 
-	resp, err := http.Get("http://localhost:46657/broadcast_tx_sync\\?tx=%22$" + encodedStr + "%22")
+	fmt.Println(url)
+
+	resp, err := http.Get(url)
 	if err != nil {
 		return err
 	}
