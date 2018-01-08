@@ -62,7 +62,6 @@ import (
 	"os/exec"
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
-
 	// ====================
 	// Third-party packages
 	// ====================
@@ -672,7 +671,10 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := http.Get("http://localhost:46657/broadcast_tx_sync\\?tx\\" + content)
+	src := []byte(content)
+	encodedStr := hex.EncodeToString(src)
+
+	resp, err := http.Get("http://localhost:46657/broadcast_tx_sync\\?tx=%22$" + encodedStr + "%22")
 	if err != nil {
 		return err
 	}
