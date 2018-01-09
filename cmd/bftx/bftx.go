@@ -646,9 +646,6 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	var broadcastResp responseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
 
-	// Deliver / Publish a BF_TX
-	client.DeliverTxSync([]byte(content))
-
 	printResponse(c, response{
 		Data: broadcastResp.Result.Hash,
 		Log:  broadcastResp.Result.Log,
