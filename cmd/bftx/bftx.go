@@ -688,11 +688,14 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	var broadcastResp responseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
 
-	result := client.CommitSync()
+	// Deliver / Publish a BF_TX
+	res := client.DeliverTxSync([]byte(content))
+
+	res = client.CommitSync()
 	printResponse(c, response{
-		Code: result.Code,
-		Data: result.Data,
-		Log:  result.Log,
+		Code: res.Code,
+		Data: res.Data,
+		Log:  res.Log,
 	})
 	return nil
 }
