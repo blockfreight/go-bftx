@@ -58,8 +58,7 @@ import (
 	"io/ioutil"
 	"log" // Implements a simple logging package.
 	"net/http"
-	"os" // Provides a platform-independent interface to operating system functionality.
-	"os/exec"
+	"os"      // Provides a platform-independent interface to operating system functionality.
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
 	// ====================
@@ -78,7 +77,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/go-bftx/api/api"
+
 	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
@@ -286,13 +285,6 @@ func main() {
 			},
 		},
 		{
-			Name:  "API",
-			Usage: "Start BFTX API",
-			Action: func(c *cli.Context) error {
-				return cmdStartAPI(c)
-			},
-		},
-		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -365,23 +357,6 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	return bftxID, nil
 }
 
-func cmdStartAPI(c *cli.Context) error {
-	err := api.Start()
-
-	fmt.Println("err")
-	fmt.Println(err)
-
-	if err != nil {
-		return err
-	}
-
-	printResponse(c, response{
-		Result: "Running API on: http://localhost:12345",
-	})
-
-	return nil
-}
-
 func getBlockAppHash() ([]byte, error) {
 	resInfo, err := client.InfoSync()
 	if err != nil {
@@ -428,23 +403,6 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 		args := persistentArgs(line)
 		app.Run(args) //cli prints error within its func call
 	}
-}
-
-func cmdHelloPython(c *cli.Context) error {
-
-	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('fednode ps')")
-	cmd.Dir = "./lib/pkg/python/"
-	out, err := cmd.Output()
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	printResponse(c, response{
-		Result: string(out),
-	})
-	return nil
 }
 
 func cmdEncrypt(c *cli.Context) error {
@@ -689,13 +647,11 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	err = json.Unmarshal(body, &broadcastResp)
 
 	// Deliver / Publish a BF_TX
-	res := client.DeliverTxSync([]byte(content))
+	client.DeliverTxSync([]byte(content))
 
-	res = client.CommitSync()
 	printResponse(c, response{
-		Code: res.Code,
-		Data: res.Data,
-		Log:  res.Log,
+		Data: broadcastResp.Result.Hash,
+		Log:  broadcastResp.Result.Log,
 	})
 	return nil
 }
