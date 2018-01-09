@@ -891,7 +891,9 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
 
-	fmt.Printf("-> code: %s\n", rsp.Code.String())
+	if !rsp.Code.IsOK() {
+		fmt.Printf("-> code: %s\n", rsp.Code.String())
+	}
 
 	if rsp.Result != "" {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
