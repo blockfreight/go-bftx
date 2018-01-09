@@ -680,21 +680,19 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 	defer resp.Body.Close()
-	fmt.Printf("%+v\n", resp)
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("%s", body)
-
 	var broadcastResp responseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
 
-	//Result
+	result := client.CommitSync()
 	printResponse(c, response{
-		Data: broadcastResp.Result.Hash,
-		Log:  broadcastResp.Result.Log,
+		Code: result.Code,
+		Data: result.Data,
+		Log:  result.Log,
 	})
 	return nil
 }
