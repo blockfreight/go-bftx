@@ -1,5 +1,5 @@
-hash: a552e68213f3b7c0c6abac760b42b375d41792be058ec8c728cd75c9eb173184
-updated: 2018-01-08T12:30:47.740329+11:00
+hash: 510844be9ffda1a15f245970289db3d51ca0c82beb0214ba8879995b6c6ef1c9
+updated: 2018-01-09T13:55:22.846792+11:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
@@ -27,8 +27,6 @@ imports:
   - proto
 - name: github.com/golang/snappy
   version: d9eb7a3d35ec988b8585d4a0068e462c27d28380
-- name: github.com/gorilla/mux
-  version: c572efe4294d5a0e354e01f2ddaa8b1f0c3cb3dd
 - name: github.com/graphql-go/graphql
   version: 7731016ba482d3741eea075d23dc6366b932f8f4
   subpackages:
@@ -91,8 +89,6 @@ imports:
   version: 27be46e25124ddf775e23317a83647ce62a93f6b
   subpackages:
   - data
-- name: github.com/tendermint/iavl
-  version: 595f3dcd5b6cd4a292e90757ae6d367fd7a6e653
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:
