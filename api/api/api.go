@@ -24,7 +24,7 @@ var queryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"transaction": &graphql.Field{
+			"unbroadcast_transaction": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -37,7 +37,24 @@ var queryType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return apiHandler.GetTransaction(bftxID)
+					return apiHandler.GetLocalTransaction(bftxID)
+				},
+			},
+			"broadcasted_transaction": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["id"].(string)
+					bftxID = bftxID
+					if !isOK {
+						return nil, nil
+					}
+
+					return nil, nil
 				},
 			},
 		},

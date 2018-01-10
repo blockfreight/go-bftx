@@ -72,7 +72,6 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
-	data "github.com/tendermint/go-wire/data"
 
 	// ======================
 	// Blockfreight™ packages
@@ -80,10 +79,11 @@ import (
 
 	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	bftx_types "github.com/blockfreight/go-bftx/lib/app/types" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/go-bftx/lib/app/validator"        // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"           // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"          // Provides some useful functions to work with LevelDB.
 )
 
 // Structure for data passed to print response.
@@ -95,21 +95,6 @@ type response struct {
 	Result string //Blockfreight Purposes
 
 	Query *queryResponse
-}
-
-type responseBroadcast struct {
-	// generic abci response
-	JsonRPC string `json:"jsonrpc"`
-	id      string `json:"id"`
-	Result  ResultBroadcastTx
-}
-
-type ResultBroadcastTx struct {
-	Code uint32     `json:"code"`
-	Data data.Bytes `json:"data"`
-	Log  string     `json:"log"`
-
-	Hash data.Bytes `json:"hash"`
 }
 
 type queryResponse struct {
@@ -643,7 +628,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	var broadcastResp responseBroadcast
+	var broadcastResp bftx_types.ResponseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
 
 	printResponse(c, response{
