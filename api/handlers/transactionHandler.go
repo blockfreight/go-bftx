@@ -38,12 +38,12 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	// Generate BF_TX id
 	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
 
-	jsonContent, err := json.Marshal(transaction)
+	/*jsonContent, err := json.Marshal(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -81,12 +81,12 @@ func SignBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	jsonContent, err := json.Marshal(transaction)
+	/*jsonContent, err := json.Marshal(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -125,12 +125,12 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	// Change the boolean valud for Transmitted attribute
 	transaction.Transmitted = true
 
-	jsonContent, err := json.Marshal(transaction)
+	/*jsonContent, err := json.Marshal(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
