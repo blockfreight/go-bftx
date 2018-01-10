@@ -1,9 +1,13 @@
 package handlers
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"strconv"
+
+	"github.com/blockfreight/go-bftx/lib/app/types"
 
 	"net/http" // Provides HTTP client and server implementations.
 
@@ -140,15 +144,27 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	}
 
 	// Deliver / Publish a BF_TX
-	TendermintClient.DeliverTxSync([]byte(content))
+	src := []byte(content)
+	encodedStr := hex.EncodeToString(src)
+	url := "http://localhost:46657/broadcast_tx_sync?tx=%22" + encodedStr + "%22"
 
-	// Check the BF_TX hash
-	TendermintClient.CommitSync()
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var broadcastResp types.ResponseBroadcast
+	err = json.Unmarshal(body, &broadcastResp)
 
 	return transaction, nil
 }
 
-func GetTransaction(idBftx string) (interface{}, error) {
+func GetLocalTransaction(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
@@ -160,4 +176,8 @@ func GetTransaction(idBftx string) (interface{}, error) {
 	/* TODO: DECRYPT TRANSACTION */
 
 	return transaction, nil
+}
+
+func GetBlockchainTransaction(idBftx string) {
+
 }
