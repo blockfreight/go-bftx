@@ -235,6 +235,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "get_broadcasted_tx",
+			Usage: "Retrieve a [BF_TX] from Blockchain by its ID (Parameters: BF_TX id)",
+			Action: func(c *cli.Context) error {
+				return cmdGetBroadcastedBfTx(c)
+			},
+		},
+		{
 			Name:  "append",
 			Usage: "Append a new BF_TX to an existing BF_TX (Parameters: JSON Filepath, BF_TX id)",
 			Action: func(c *cli.Context) error {
@@ -696,6 +703,39 @@ func cmdGetBfTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
+
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(bftx)
+	if err != nil {
+		return err
+	}
+
+	// Result
+	printResponse(c, response{
+		Result: content,
+	})
+	return nil
+}
+
+// Return the output JSON
+func cmdGetBroadcastedBfTx(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command get takes 1 argument")
+	}
+
+	var reqQuery types.RequestQuery
+
+	reqQuery.Data = []byte(args[0])
+
+	result, err := client.QuerySync(reqQuery)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("%+v\n", result)
+
+	bftx := bf_tx.ByteArrayToBFTX(result.GetValue())
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
