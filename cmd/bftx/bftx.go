@@ -727,7 +727,8 @@ func cmdGetBroadcastedBfTx(c *cli.Context) error {
 
 	var reqQuery types.RequestQuery
 
-	reqQuery.Data = []byte(args[0])
+	reqQuery.Data = []byte("Id")
+	reqQuery.Path = "/tx"
 
 	result, err := client.QuerySync(reqQuery)
 	if err != nil {
