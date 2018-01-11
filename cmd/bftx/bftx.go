@@ -82,6 +82,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides some useful functions to work with LevelDB.
 )
 
 // Structure for data passed to print response.
@@ -281,6 +282,13 @@ func main() {
 				os.Exit(0)
 			},
 		},
+		{
+			Name:  "saberenc",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEnc(c)
+			},
+		},
 	}
 	app.Before = before
 	err := app.Run(os.Args)
@@ -435,6 +443,15 @@ func cmdEncrypt(c *cli.Context) error {
 	bftx = bftx
 	return nil
 
+}
+
+func cmdSaberEnc(c *cli.Context) error {
+	bftx, err := saberservice.SaberEncoding("test")
+	if err != nil {
+		return err
+	}
+	bftx = bftx
+	return nil
 }
 
 // Get some info from the application

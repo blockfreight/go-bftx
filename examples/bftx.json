@@ -1,0 +1,50 @@
+{
+    "properties": {
+      "Shipper":"VLX454323F" ,
+      "BolNum": 15554 ,
+      "RefNum": 154532165,
+      "Consignee": null,
+      "Vessel": 132153456,
+      "PortOfLoading": "CNSHA",
+      "PortOfDischarge": "AUADL",
+      "NotifyAddress": "345 Bourke Street 4th floor, Melbourne VIC 3000, Australia",
+      "DescOfGoods": "This is the goods description.",
+      "GrossWeight" :15523,
+      "FreightPayableAmt": 354534,
+      "FreightAdvAmt":35448552,
+      "GeneralInstructions":"There are many general instructions.",
+      "DateShipped":"20161128",
+  
+      "IssueDetails": {
+            "PlaceOfIssue":"Melbourne, Australia",
+            "DateOfIssue": "20161128"
+      },
+  
+      "NumBol":54684010805,
+  
+      "MasterInfo": {
+       
+          "FirstName": "Master First Name" ,
+          "LastName": "Master Last Name" ,
+          "Sig":null
+      },
+      
+  
+      "AgentForMaster": {
+          "FirstName": "Agent First Name" ,
+          "LastName":"Agent Last Name" ,
+          "Sig":null
+      },
+  
+  
+      "AgentForOwner": {
+          "FirstName": "Owner First Name" ,
+          "LastName": "Owner Last Name" ,
+          "Sig":null,
+          "ConditionsForCarriage":"There are the carriage conditions."
+        
+      }
+  
+  }
+
+}
