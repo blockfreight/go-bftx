@@ -621,7 +621,10 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	url := "http://localhost:46657/broadcast_tx_commit?tx=" + content
+	src := []byte(content)
+	encodedStr := hex.EncodeToString(src)
+
+	url := "http://localhost:46657/broadcast_tx_commit?tx=%22" + encodedStr + "%22"
 
 	resp, err := http.Get(url)
 	if err != nil {
