@@ -659,38 +659,39 @@ func cmdCommit(c *cli.Context) error {
 
 // Query application state
 // TODO JCNM: Make request and response support all fields.
-/*func cmdQuery(c *cli.Context) error {
-    args := c.Args()
-    if len(args) != 1 {
-        return errors.New("Command query takes 1 argument")
-    }
+func cmdQuery(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command query takes 1 argument")
+	}
 
-    // TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
-    // TODO JCNM: Query from blockchain
-    bft_tx := bf_tx.SetBFTX(c.GlobalString("json_path")+string(args[0]))
-    queryBytes := []byte(bf_tx.BFTXContent(bft_tx))
+	queryBytes, err := stringOrHexToBytes(args[0])
+	if err != nil {
+		return err
+	}
 
-    resQuery, err := client.QuerySync(types.RequestQuery{
-        Data:   queryBytes,
-        Path:   "/block", // TODO expose
-        Height: 0,        // TODO expose
-        //Prove:  true,     // TODO expose
-    })
-    if err != nil {
-        return err
-    }
-    printResponse(c, response{
-        Code: resQuery.Code,
-        Log:  resQuery.Log,
-        Query: &queryResponse{
-            Key:    resQuery.Key,
-            Value:  resQuery.Value,
-            Height: resQuery.Height,
-            Proof:  resQuery.Proof,
-        },
-    })
-    return nil
-}*/
+	resQuery, err := client.QuerySync(types.RequestQuery{
+		Data:   queryBytes,
+		Path:   "/store",
+		Height: 0,
+		Prove:  false,
+	})
+	if err != nil {
+		return err
+	}
+
+	printResponse(c, response{
+		Code: resQuery.Code,
+		Log:  resQuery.Log,
+		Query: &queryResponse{
+			Key:    resQuery.Key,
+			Value:  resQuery.Value,
+			Height: resQuery.Height,
+			Proof:  resQuery.Proof,
+		},
+	})
+	return nil
+}
 
 // Return the output JSON
 func cmdGetBfTx(c *cli.Context) error {
