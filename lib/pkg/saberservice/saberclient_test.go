@@ -75,26 +75,31 @@ func TestSaberinputcli(t *testing.T) {
 
 }
 
-// func TestSaberEncoding(t *testing.T) {
-// 	const address = "localhost:22222"
+func TestSaberEncoding(t *testing.T) {
+	var st saberinput
+	st.mode = "test"
+	st.address = "localhost:22222"
+	st.txpath = "../../../examples/bftx.json"
+	st.txconfigpath = "../../../examples/config.yaml"
 
-// 	tx := loadtransaction("../../../examples/bftx.json")
-// 	txconfig := loadconfiguration("../../../examples/config.yaml")
+	encr, err := SaberEncoding(st)
+	if err != nil {
+		t.Errorf("error: %v", err)
+		t.Errorf("Returned message: %v", encr)
+	}
+}
 
-// 	bfencreq := BFTX_EncodeRequest{
-// 		Bftxtrans:  tx,
-// 		Bftxconfig: txconfig,
-// 	}
+func TestSaberDecoding(t *testing.T) {
+	var st saberinput
+	st.mode = "test"
+	st.address = "localhost:22222"
+	st.txpath = "../../../examples/bftx.json"
+	st.txconfigpath = "../../../examples/config.yaml"
+	st.KeyName = "../../../examples/carol_pri_key.json"
 
-// 	conn, err := grpc.Dial(address, grpc.WithInsecure())
-// 	if err != nil {
-// 		log.Fatalf("%s cannot connected by testing program: %v", address, err)
-// 	}
-// 	defer conn.Close()
-// 	c := NewBFSaberServiceClient(conn)
-
-// 	encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
-// 	check(err)
-// 	_, err = fmt.Print(encr)
-// 	check(err)
-// }
+	encr, err := SaberEncoding(st)
+	if err != nil {
+		t.Errorf("error: %v", err)
+		t.Errorf("Returned message: %v", encr)
+	}
+}
