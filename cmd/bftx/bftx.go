@@ -82,7 +82,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -289,6 +289,13 @@ func main() {
 				return cmdSaberEnc(c)
 			},
 		},
+		{
+			Name:  "saberdcp",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcp(c)
+			},
+		},
 	}
 	app.Before = before
 	err := app.Run(os.Args)
@@ -446,11 +453,23 @@ func cmdEncrypt(c *cli.Context) error {
 }
 
 func cmdSaberEnc(c *cli.Context) error {
-	bftx, err := saberservice.SaberEncoding("test")
+	st := saberservice.Saberinputcli(nil)
+	bftx, err := saberservice.SaberEncoding(st)
 	if err != nil {
 		return err
 	}
-	bftx = bftx
+	fmt.Print(bftx)
+	return nil
+}
+
+func cmdSaberDcp(c *cli.Context) error {
+	st := saberservice.Saberinputcli(nil)
+	bfenc, err := saberservice.SaberEncoding(st)
+	bftx, err := saberservice.SaberDecoding(st, bfenc)
+	if err != nil {
+		return err
+	}
+	fmt.Print(bftx)
 	return nil
 }
 

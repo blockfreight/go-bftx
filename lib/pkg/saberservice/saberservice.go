@@ -14,7 +14,8 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-type saberinput struct {
+// Saberinput structure for go-bftx use and test
+type Saberinput struct {
 	mode         string
 	address      string
 	txpath       string
@@ -50,7 +51,8 @@ func loadconfiguration(s string) *BFTXEncryptionConfig {
 	return bfconfig
 }
 
-func saberinputcli(in *os.File) (st saberinput) {
+// Saberinputcli provides interactive interaction for user to use bftx interface
+func Saberinputcli(in *os.File) (st Saberinput) {
 	fmt.Println("Please type your mode: 't' for test mode, otherwise type your mode")
 	if in == nil {
 		in = os.Stdin
@@ -58,11 +60,14 @@ func saberinputcli(in *os.File) (st saberinput) {
 	reader := bufio.NewReader(in)
 	txt, _ := reader.ReadString('\n')
 	txt = strings.Replace(txt, "\n", "", -1)
+	_gopath := os.Getenv("GOPATH")
+	_bftxpath := "/src/github.com/blockfreight/go-bftx"
 	if txt == "t" {
 		st.mode = "test"
 		st.address = "localhost:22222"
-		st.txpath = "../../../examples/bftx.json"
-		st.txconfigpath = "../../../examples/config.yaml"
+		st.txpath = _gopath + _bftxpath + "/examples/bftx.json"
+		st.txconfigpath = _gopath + _bftxpath + "/examples/config.yaml"
+		st.KeyName = _gopath + _bftxpath + "/examples/carol_pri_key.json"
 	} else {
 		st.mode = txt
 		fmt.Println("Please type your service host address:")
@@ -74,14 +79,16 @@ func saberinputcli(in *os.File) (st saberinput) {
 		fmt.Println("Please type your transaction configuration file path:")
 		txt, _ = reader.ReadString('\n')
 		st.txconfigpath = strings.Replace(txt, "\n", "", -1)
+		fmt.Println("Please type your decryption key path:")
+		txt, _ = reader.ReadString('\n')
+		st.KeyName = strings.Replace(txt, "\n", "", -1)
 	}
 	return st
 }
 
 // SaberEncoding is the function that enable it to connect to a container which realizing the
 // saber encoding service
-func SaberEncoding(st saberinput) (*BFTXTransaction, error) {
-
+func SaberEncoding(st Saberinput) (*BFTXTransaction, error) {
 	tx := loadtransaction(st.txpath)
 	txconfig := loadconfiguration(st.txconfigpath)
 
@@ -105,7 +112,7 @@ func SaberEncoding(st saberinput) (*BFTXTransaction, error) {
 
 // SaberDecoding is the function that enable it to connect to a container which realizing the
 // saber decoding service
-func SaberDecoding(st saberinput, tx *BFTXTransaction) (*BFTXTransaction, error) {
+func SaberDecoding(st Saberinput, tx *BFTXTransaction) (*BFTXTransaction, error) {
 
 	bfdcpreq := BFTX_DecodeRequest{}
 
