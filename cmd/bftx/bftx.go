@@ -634,6 +634,8 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
+	fmt.Println(string(body[:]))
+
 	var broadcastResp bftx_types.ResponseBroadcast
 	err = json.Unmarshal(body, &broadcastResp)
 
