@@ -49,7 +49,8 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio"        // Implements buffered I/O.
+	"bufio" // Implements buffered I/O.
+	"bytes"
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"encoding/json"
 	"errors" // Implements functions to manipulate errors.
@@ -621,23 +622,23 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	url := "http://localhost:46657/broadcast_tx_commit?tx=\"" + strings.Replace(content, "\"", "\\'", -1) + "\""
-	fmt.Println(url)
+	url := "http://localhost:46657/broadcast_tx_commit"
+	body := "tx=\"" + strings.Replace(content, "\"", "\\'", -1) + "\""
 
-	resp, err := http.Get(url)
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(body)))
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(string(body[:]))
+	fmt.Println(string(respBody[:]))
 
 	var broadcastResp bftx_types.ResponseBroadcast
-	err = json.Unmarshal(body, &broadcastResp)
+	err = json.Unmarshal(respBody, &broadcastResp)
 
 	printResponse(c, response{
 		Data: broadcastResp.Result.Hash,
