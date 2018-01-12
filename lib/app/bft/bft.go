@@ -97,7 +97,7 @@ func NewBftApplication() *BftApplication {
 func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
 	lastBlock := LoadLastBlock(app.db)
 
-	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: lastBlock.AppHash, LastBlockHeight: lastBlock.Height}
+	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v, {\"hash\":%v,  {\"height\":%v}", app.state.Size(), string(lastBlock.AppHash), lastBlock.Height), LastBlockAppHash: lastBlock.AppHash, LastBlockHeight: lastBlock.Height}
 }
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
