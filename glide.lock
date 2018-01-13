@@ -1,5 +1,5 @@
 hash: 4f933466f53272eb95f2c9d3acb3ca7945febcc5c34bc1031042da531bb4c569
-updated: 2018-01-13T14:58:07.747313+11:00
+updated: 2018-01-13T17:40:32.894344+11:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -109,8 +109,6 @@ imports:
   version: f9e3db037330c8a8d61d3966de8473eaf01154fa
 - name: github.com/tendermint/go-crypto
   version: dd20358a264c772b4a83e477b0cfce4c88a7001d
-- name: github.com/tendermint/go-db
-  version: 9643f60bc2578693844aacf380a7c32e4c029fee
 - name: github.com/tendermint/go-merkle
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
