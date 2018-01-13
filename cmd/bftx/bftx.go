@@ -51,14 +51,13 @@ import (
 	// =======================
 	"bufio"        // Implements buffered I/O.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
-	"encoding/json"
-	"errors"  // Implements functions to manipulate errors.
-	"fmt"     // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"io"      // Provides basic interfaces to I/O primitives.
-	"log"     // Implements a simple logging package.
-	"os"      // Provides a platform-independent interface to operating system functionality.
-	"strconv" // Implements conversions to and from string representations of basic data types.
-	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	"errors"       // Implements functions to manipulate errors.
+	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io"           // Provides basic interfaces to I/O primitives.
+	"log"          // Implements a simple logging package.
+	"os"           // Provides a platform-independent interface to operating system functionality.
+	"strconv"      // Implements conversions to and from string representations of basic data types.
+	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
 	// ====================
 	// Third-party packages
 	// ====================
@@ -78,18 +77,17 @@ import (
 
 	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	bftx_types "github.com/blockfreight/go-bftx/lib/app/types" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/validator"        // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"           // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"          // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 )
 
 // Structure for data passed to print response.
 type response struct {
 	// generic abci response
 	Data   []byte
-	Code   types.CodeType
+	Code   uint32
 	Log    string
 	Result string //Blockfreight Purposes
 
@@ -99,13 +97,13 @@ type response struct {
 type queryResponse struct {
 	Key    []byte
 	Value  []byte
-	Height uint64
+	Height int64
 	Proof  []byte
 }
 
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
-var rpcClient rpc.HTTP
+var rpcClient *rpc.HTTP
 
 func main() {
 
@@ -119,7 +117,7 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "address",
-			Value: "tcp://127.0.0.1:46658",
+			Value: "localhost:46658",
 			Usage: "address of application socket",
 		},
 		cli.StringFlag{
@@ -235,13 +233,6 @@ func main() {
 			},
 		},
 		{
-			Name:  "get_broadcasted_tx",
-			Usage: "Retrieve a [BF_TX] from Blockchain by its ID (Parameters: BF_TX id)",
-			Action: func(c *cli.Context) error {
-				return cmdGetBroadcastedBfTx(c)
-			},
-		},
-		{
 			Name:  "append",
 			Usage: "Append a new BF_TX to an existing BF_TX (Parameters: JSON Filepath, BF_TX id)",
 			Action: func(c *cli.Context) error {
@@ -296,12 +287,22 @@ func before(c *cli.Context) error {
 	introduction(c)
 	if client == nil {
 		var err error
-		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), false)
-		rpcClient, err = rpc.NewHTTP("tcp://localhost:46657", "/websocket")
+		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), true)
+		client.Start()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
 		handlers.TendermintClient = client
+	}
+
+	if rpcClient == nil {
+		rpcClient = rpc.NewHTTP("tcp://0.0.0.0:46657", "/websocket")
+		err := rpcClient.Start()
+		if err != nil {
+			fmt.Println("Error when initializing rpcClient")
+			log.Fatal(err.Error())
+		}
 	}
 
 	return nil
@@ -351,7 +352,7 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 }
 
 func getBlockAppHash() ([]byte, error) {
-	resInfo, err := client.InfoSync()
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
 		return nil, err
 	}
@@ -408,8 +409,8 @@ func cmdEncrypt(c *cli.Context) error {
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	resInfo, err := client.InfoSync()
-
+	fmt.Print("test")
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
 		return err
 	}
@@ -426,7 +427,14 @@ func cmdSetOption(c *cli.Context) error {
 	if len(args) != 2 {
 		return errors.New("Command set_option takes 2 arguments (key, value)")
 	}
-	resSetOption := client.SetOptionSync(args[0], args[1])
+	resSetOption, err := client.SetOptionSync(types.RequestSetOption{
+		Key:   args[0],
+		Value: args[1],
+	})
+	if err != nil {
+		return err
+	}
+
 	printResponse(c, response{
 		Log: resSetOption.Log,
 	})
@@ -622,25 +630,29 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	resp = rpcClient.BroadcastTxSync([]byte(content))
+	if err != nil {
+		return err
+	}
+
+	resp, err := rpcClient.BroadcastTxSync([]byte(content))
 
 	fmt.Printf("%+v\n", resp)
 
-	var broadcastResp bftx_types.ResponseBroadcast
-	err = json.Unmarshal(respBody, &broadcastResp)
-
 	printResponse(c, response{
-		Data: broadcastResp.Result.Hash,
-		Log:  broadcastResp.Result.Log,
+		Data: resp.Data,
+		Log:  resp.Log,
 	})
 	return nil
 }
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
-	result := client.CommitSync()
+	result, err := client.CommitSync()
+	if err != nil {
+		return err
+	}
+
 	printResponse(c, response{
-		Code: result.Code,
 		Data: result.Data,
 		Log:  result.Log,
 	})
@@ -695,40 +707,6 @@ func cmdGetBfTx(c *cli.Context) error {
 	if err != nil {
 		return err
 	}
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Result
-	printResponse(c, response{
-		Result: content,
-	})
-	return nil
-}
-
-// Return the output JSON
-func cmdGetBroadcastedBfTx(c *cli.Context) error {
-	args := c.Args()
-	if len(args) != 1 {
-		return errors.New("Command get takes 1 argument")
-	}
-
-	var reqQuery types.RequestQuery
-
-	reqQuery.Data = []byte("Id")
-	reqQuery.Path = "/tx"
-
-	result, err := client.QuerySync(reqQuery)
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("%+v\n", result)
-
-	bftx := bf_tx.ByteArrayToBFTX(result.GetValue())
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
@@ -863,10 +841,6 @@ func printResponse(c *cli.Context, rsp response) {
 
 	if verbose {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
-	}
-
-	if !rsp.Code.IsOK() {
-		fmt.Printf("-> code: %s\n", rsp.Code.String())
 	}
 
 	if rsp.Result != "" {
