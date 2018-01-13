@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"strconv"
 
+	"github.com/tendermint/abci/client"
+
 	"github.com/blockfreight/go-bftx/lib/app/types"
 
 	"net/http" // Provides HTTP client and server implementations.
@@ -19,13 +21,14 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
+	tendermintTypes "github.com/tendermint/abci/types"
 )
 
 var TendermintClient abcicli.Client
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-	resInfo, err := TendermintClient.InfoSync()
+
+	resInfo, err := TendermintClient.InfoSync(tendermintTypes.RequestInfo{})
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}

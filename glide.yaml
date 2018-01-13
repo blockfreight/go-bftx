@@ -41,3 +41,7 @@ import:
 - package: github.com/graphql-go/handler
 - package: github.com/urfave/cli
   version: ~1.19.1
+- package: github.com/tendermint/iavl
+  version: ~0.2.0
+  subpackages:
+  - iavl

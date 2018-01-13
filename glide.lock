@@ -1,5 +1,5 @@
-hash: 9803336754aa5df3ec5fb9b02cc2830551d6fed6be154234f9ef96043701493e
-updated: 2018-01-13T13:52:20.039157+11:00
+hash: 4f933466f53272eb95f2c9d3acb3ca7945febcc5c34bc1031042da531bb4c569
+updated: 2018-01-13T14:58:07.747313+11:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -119,7 +119,9 @@ imports:
   - data
   - nowriter/tmlegacy
 - name: github.com/tendermint/iavl
-  version: 595f3dcd5b6cd4a292e90757ae6d367fd7a6e653
+  version: 594cc0c062a7174475f0ab654384038d77067917
+  subpackages:
+  - iavl
 - name: github.com/tendermint/log15
   version: 9545b249b3aacafa97f79e0838b02b274adc6f5f
   subpackages:

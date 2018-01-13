@@ -56,12 +56,13 @@ import (
 	// ===============
 
 	"bytes"
-	"strings"
+	"fmt"
 
+	"github.com/tendermint/abci/example/code"
 	"github.com/tendermint/abci/types"
-	tendermint "github.com/tendermint/go-common"
-	dbm "github.com/tendermint/go-db"
-	merkle "github.com/tendermint/go-merkle"
+	"github.com/tendermint/iavl"
+	dbm "github.com/tendermint/tmlibs/db"
+
 	wire "github.com/tendermint/go-wire"
 )
 
@@ -69,9 +70,7 @@ import (
 type BftApplication struct {
 	types.BaseApplication
 
-	state merkle.Tree
-
-	db dbm.DB
+	state *iavl.VersionedTree
 
 	blockHeader *types.Header
 
@@ -81,125 +80,88 @@ type BftApplication struct {
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	db := dbm.NewDB("bftx", "leveldb", "../../../bft-db/")
-	lastBlock := LoadLastBlock(db)
-
-	stateTree := merkle.NewIAVLTree(0, db)
-	stateTree.Load(lastBlock.AppHash)
+	stateTree := iavl.NewVersionedTree(0, dbm.NewMemDB())
 
 	return &BftApplication{
 		state: stateTree,
-		db:    db,
 	}
 }
 
 // Info returns information
-func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-	lastBlock := LoadLastBlock(app.db)
-
-	return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}"), LastBlockAppHash: lastBlock.AppHash, LastBlockHeight: lastBlock.Height}
+func (app *BftApplication) Info(req types.RequestInfo) (resInfo types.ResponseInfo) {
+	return types.ResponseInfo{Data: fmt.Sprintf("{\"size\":%v}", app.state.Size())}
 }
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
-func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	parts := strings.Split(string(tx), "=")
+func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
+	var key, value []byte
+	parts := bytes.Split(tx, []byte("="))
 	if len(parts) == 2 {
-		app.state.Set([]byte(parts[0]), []byte(parts[1]))
+		key, value = parts[0], parts[1]
 	} else {
-		app.state.Set(tx, tx)
+		key, value = tx, tx
 	}
-	return types.OK
+	app.state.Set(key, value)
+
+	tags := []*types.KVPair{
+		{Key: "app.creator", ValueType: types.KVPair_STRING, ValueString: "jae"},
+		{Key: "app.key", ValueType: types.KVPair_STRING, ValueString: string(key)},
+	}
+	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
 }
 
 // CheckTx checks a transaction
-func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return types.OK
+func (app *BftApplication) CheckTx(tx []byte) types.ResponseCheckTx {
+	return types.ResponseCheckTx{Code: code.CodeTypeOK}
 }
 
 // Commit commits transactions
-func (app *BftApplication) Commit() types.Result {
-	// Save
-	appHash := app.state.Save()
+func (app *BftApplication) Commit() types.ResponseCommit {
+	// Save a new version
+	var hash []byte
+	var err error
 
-	lastBlock := LastBlockInfo{
-		Height:  uint64(app.state.Height()),
-		AppHash: appHash, // this hash will be in the next block header
+	if app.state.Size() > 0 {
+		// just add one more to height (kind of arbitrarily stupid)
+		height := app.state.LatestVersion() + 1
+		hash, err = app.state.SaveVersion(height)
+		if err != nil {
+			// if this wasn't a dummy app, we'd do something smarter
+			panic(err)
+		}
 	}
-	SaveLastBlock(app.db, lastBlock)
-	return types.NewResultOK(appHash, "")
+
+	return types.ResponseCommit{Code: code.CodeTypeOK, Data: hash}
 }
 
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
-		value, proof, exists := app.state.Proof(reqQuery.Data)
+		value, proof, err := app.state.GetWithProof(reqQuery.Data)
+		// if this wasn't a dummy app, we'd do something smarter
+		if err != nil {
+			panic(err)
+		}
 		resQuery.Index = -1 // TODO make Proof return index
 		resQuery.Key = reqQuery.Data
 		resQuery.Value = value
-		resQuery.Proof = proof
-		if exists {
+		resQuery.Proof = wire.BinaryBytes(proof)
+		if value != nil {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	} else {
-		index, value, exists := app.state.Get(reqQuery.Data)
+		index, value := app.state.Get(reqQuery.Data)
 		resQuery.Index = int64(index)
 		resQuery.Value = value
-		if exists {
+		if value != nil {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	}
-}
-
-var lastBlockKey = []byte("lastblock")
-
-type LastBlockInfo struct {
-	Height  uint64
-	AppHash []byte
-}
-
-// Get the last block from the db
-func LoadLastBlock(db dbm.DB) (lastBlock LastBlockInfo) {
-	buf := db.Get(lastBlockKey)
-	if len(buf) != 0 {
-		r, n, err := bytes.NewReader(buf), new(int), new(error)
-		wire.ReadBinaryPtr(&lastBlock, r, 0, n, err)
-		if *err != nil {
-			// DATA HAS BEEN CORRUPTED OR THE SPEC HAS CHANGED
-			panic(err)
-		}
-		// TODO: ensure that buf is completely read.
-	}
-
-	return lastBlock
-}
-
-func SaveLastBlock(db dbm.DB, lastBlock LastBlockInfo) {
-	buf, n, err := new(bytes.Buffer), new(int), new(error)
-	wire.WriteBinary(lastBlock, buf, n, err)
-	if *err != nil {
-		// TODO
-		panic(err)
-	}
-	db.Set(lastBlockKey, buf.Bytes())
-}
-
-// Track the block hash and header information
-func (app *BftApplication) BeginBlock(hash []byte, header *types.Header) {
-	// update latest block info
-	app.blockHeader = header
-
-	// reset valset changes
-	app.changes = make([]*types.Validator, 0)
-}
-
-// Update the validator set
-func (app *BftApplication) EndBlock(height uint64) (resEndBlock types.ResponseEndBlock) {
-	return types.ResponseEndBlock{Diffs: app.changes}
 }
 
 // =================================================
