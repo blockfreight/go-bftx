@@ -2,14 +2,10 @@ package handlers
 
 import (
 	"encoding/hex"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"strconv"
 
 	"github.com/tendermint/abci/client"
-
-	"github.com/blockfreight/go-bftx/lib/app/types"
 
 	"net/http" // Provides HTTP client and server implementations.
 
@@ -156,13 +152,10 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+
 	if err != nil {
 		return nil, err
 	}
-
-	var broadcastResp types.ResponseBroadcast
-	err = json.Unmarshal(body, &broadcastResp)
 
 	return transaction, nil
 }
