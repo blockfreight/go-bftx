@@ -20,7 +20,7 @@
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// FITNESS FOR A PARTICULAR PURFdeliveE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -49,16 +49,13 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio" // Implements buffered I/O.
-	"bytes"
+	"bufio"        // Implements buffered I/O.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"encoding/json"
-	"errors" // Implements functions to manipulate errors.
-	"fmt"    // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"io"     // Provides basic interfaces to I/O primitives.
-	"io/ioutil"
-	"log" // Implements a simple logging package.
-	"net/http"
+	"errors"  // Implements functions to manipulate errors.
+	"fmt"     // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io"      // Provides basic interfaces to I/O primitives.
+	"log"     // Implements a simple logging package.
 	"os"      // Provides a platform-independent interface to operating system functionality.
 	"strconv" // Implements conversions to and from string representations of basic data types.
 	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
@@ -73,6 +70,7 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 
 	// ======================
 	// Blockfreight™ packages
@@ -107,6 +105,7 @@ type queryResponse struct {
 
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
+var rpcClient rpc.HTTP
 
 func main() {
 
@@ -298,6 +297,7 @@ func before(c *cli.Context) error {
 	if client == nil {
 		var err error
 		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), false)
+		rpcClient, err = rpc.NewHTTP("tcp://localhost:46657", "/websocket")
 		if err != nil {
 			log.Fatal(err.Error())
 		}
@@ -622,18 +622,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	url := "http://localhost:46657/broadcast_tx_commit"
-	body := "tx=\"" + strings.Replace(content, "\"", "\\'", -1) + "\""
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer([]byte(body)))
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return err
-	}
+	resp = rpcClient.BroadcastTxSync([]byte(content))
 
 	fmt.Printf("%+v\n", resp)
 

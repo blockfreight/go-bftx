@@ -7,25 +7,37 @@ owners:
   homepage: https://blockfreight.com
 import:
 - package: github.com/davecgh/go-spew
-  version: v1.1.0
+  version: ~1.1.0
   subpackages:
   - spew
 - package: github.com/syndtr/goleveldb
   subpackages:
   - leveldb
 - package: github.com/tendermint/abci
-  version: 0.4.0
+  version: ~0.9.0
   subpackages:
   - client
   - server
   - types
+- package: golang.org/x/net
+  version: d866cfc389cec985d6fda2859936a575a55a3ab6
+  subpackages:
+    - context
+- package: google.golang.org/grpc
+  version: v1.7.3
+- package: github.com/tendermint/tendermint  
+  version: ~0.15.0
+  subpackages:
+  - rpc/client
 - package: github.com/tendermint/go-common
 - package: github.com/tendermint/go-crypto
+  version: ~0.4.1
 - package: github.com/tendermint/go-merkle
 - package: github.com/tendermint/go-wire/data
 - package: github.com/tendermint/tmlibs
+  version: ~0.6.0
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
 - package: github.com/graphql-go/handler
 - package: github.com/urfave/cli
-  version: v1.19.1
+  version: ~1.19.1
