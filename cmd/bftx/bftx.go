@@ -297,7 +297,7 @@ func before(c *cli.Context) error {
 	}
 
 	if rpcClient == nil {
-		rpcClient = rpc.NewHTTP("tcp://0.0.0.0:46657", "/websocket")
+		rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
 		err := rpcClient.Start()
 		if err != nil {
 			fmt.Println("Error when initializing rpcClient")
