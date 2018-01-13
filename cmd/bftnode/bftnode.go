@@ -74,7 +74,7 @@ func main() {
 
 	fmt.Println("Blockfreight™ Node")
 	// Parameters
-	addrPtr := flag.String("addr", "localhost:46658", "Listen address")
+	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
 	abciPtr := flag.String("bft", "socket", "socket | grpc")
 	// persistencePtr := flag.String("persist", "", "directory to use for a database")
 	flag.Parse()
