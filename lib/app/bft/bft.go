@@ -89,7 +89,7 @@ func NewBftApplication() *BftApplication {
 
 // Info returns information
 func (app *BftApplication) Info(req types.RequestInfo) (resInfo types.ResponseInfo) {
-	return types.ResponseInfo{Data: fmt.Sprintf("{\"size\":%v}", app.state.Size())}
+	return types.ResponseInfo{Data: fmt.Sprintf("{\"size\":%v}", app.state.Size()), LastBlockAppHash: app.state.Hash()}
 }
 
 // DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
