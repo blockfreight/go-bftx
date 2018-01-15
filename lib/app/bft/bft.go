@@ -46,6 +46,9 @@
 package bft
 
 import (
+	"encoding/json"
+
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	// =======================
 	// Golang Standard library
 	// =======================
@@ -103,9 +106,15 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 	}
 	app.state.Set(key, value)
 
+	var bftx bf_tx.BF_TX
+	err := json.Unmarshal(tx, &bftx)
+	if err != nil {
+		// if this wasn't a dummy app, we'd do something smarter
+		panic(err)
+	}
+
 	tags := []*types.KVPair{
-		{Key: "app.creator", ValueType: types.KVPair_STRING, ValueString: "jae"},
-		{Key: "app.key", ValueType: types.KVPair_STRING, ValueString: string(key)},
+		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
 	}
 	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
 }
