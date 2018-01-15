@@ -410,7 +410,6 @@ func cmdEncrypt(c *cli.Context) error {
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	fmt.Print("test")
 	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
 		return err
