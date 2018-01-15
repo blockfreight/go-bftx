@@ -46,6 +46,7 @@
 package main
 
 import (
+
 	// =======================
 	// Golang Standard library
 	// =======================
@@ -219,13 +220,13 @@ func main() {
 				return cmdCommit(c)
 			},
 		},
-		/* {
-		    Name:  "query",
-		    Usage: "Query application state",
-		    Action: func(c *cli.Context) error {
-		        return cmdQuery(c)
-		    },
-		},*/
+		{
+			Name:  "query",
+			Usage: "Query application state",
+			Action: func(c *cli.Context) error {
+				return cmdQuery(c)
+			},
+		},
 		{
 			Name:  "get",
 			Usage: "Retrieve a [BF_TX] by its ID (Parameters: BF_TX id)",
@@ -644,7 +645,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	}
 
 	printResponse(c, response{
-		Data: resp.Data,
+		Data: resp.Hash,
 		Log:  resp.Log,
 	})
 
@@ -673,31 +674,18 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	queryBytes, err := stringOrHexToBytes(args[0])
+	query := "bftx.id='" + args[0] + "'"
+
+	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
 		return err
 	}
 
-	resQuery, err := client.QuerySync(types.RequestQuery{
-		Data:   queryBytes,
-		Path:   "/store",
-		Height: 0,
-		Prove:  false,
-	})
-	if err != nil {
-		return err
-	}
-
+	// Result
 	printResponse(c, response{
-		Code: resQuery.Code,
-		Log:  resQuery.Log,
-		Query: &queryResponse{
-			Key:    resQuery.Key,
-			Value:  resQuery.Value,
-			Height: resQuery.Height,
-			Proof:  resQuery.Proof,
-		},
+		Result: string(resQuery[0].Tx),
 	})
+
 	return nil
 }
 
