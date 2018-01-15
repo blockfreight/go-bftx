@@ -70,6 +70,7 @@ import (
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
 	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ======================
 	// Blockfreight™ packages
@@ -634,14 +635,20 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	resp, err := rpcClient.BroadcastTxSync([]byte(content))
+	var tx tmTypes.Tx
+	tx = []byte(content)
 
-	fmt.Printf("%+v\n", resp)
+	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		return rpcErr
+	}
 
 	printResponse(c, response{
 		Data: resp.Data,
 		Log:  resp.Log,
 	})
+
 	return nil
 }
 

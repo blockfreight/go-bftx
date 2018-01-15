@@ -29,6 +29,7 @@ import:
   version: ~0.15.0
   subpackages:
   - rpc/client
+  - types
 - package: github.com/tendermint/go-common
 - package: github.com/tendermint/go-crypto
   version: ~0.4.1
