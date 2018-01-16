@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http" // Provides HTTP client and server implementations.
 	"strconv"
@@ -24,7 +25,7 @@ var queryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"unbroadcast_transaction": &graphql.Field{
+			"getTransaction": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -34,13 +35,13 @@ var queryType = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
-						return nil, nil
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
-					return apiHandler.GetLocalTransaction(bftxID)
+					return apiHandler.GetTransaction(bftxID)
 				},
 			},
-			"broadcasted_transaction": &graphql.Field{
+			"queryTransaction": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -49,12 +50,11 @@ var queryType = graphql.NewObject(
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
-					bftxID = bftxID
 					if !isOK {
 						return nil, nil
 					}
 
-					return nil, nil
+					return apiHandler.QueryTransaction(bftxID)
 				},
 			},
 		},
@@ -166,9 +166,8 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 		}
 		rw.WriteHeader(httpStatusResponse)
 
-		if httpStatusResponse == 200 {
-			rw.Write(js)
-		}
+		rw.Write(js)
+
 	}
 
 }

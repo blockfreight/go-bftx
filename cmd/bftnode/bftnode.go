@@ -65,6 +65,8 @@ import (
 	// Blockfreight™ packages
 	// ======================
 
+	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 )
 
@@ -99,18 +101,21 @@ func main() {
 	fmt.Println("Service created by " + *abciPtr + " server")
 	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
 
-	/*client, err = abcicli.NewClient(*addrPtr, "socket", false)
+	client, err = abcicli.NewClient(*addrPtr, "socket", false)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	err = client.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	handlers.TendermintClient = client
 
 	err = api.Start()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	*/
 
 	// Wait forever
 	tendermint.TrapSignal(func() {

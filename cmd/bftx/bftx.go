@@ -681,12 +681,15 @@ func cmdQuery(c *cli.Context) error {
 		return err
 	}
 
-	// Result
-	printResponse(c, response{
-		Result: string(resQuery[0].Tx),
-	})
+	if len(resQuery) > 0 {
+		printResponse(c, response{
+			Result: string(resQuery[0].Tx),
+		})
 
-	return nil
+		return nil
+	}
+
+	return errors.New("Blockfreight Transaction not found.")
 }
 
 // Return the output JSON
