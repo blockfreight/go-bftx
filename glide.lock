@@ -1,5 +1,5 @@
 hash: 9a5f2271a5335764f1e2080e7a11f4e16a921c7e82c32c09a3aa0f9fd4f76df1
-updated: 2018-01-05T13:29:25.224786+11:00
+updated: 2018-01-16T16:14:16.214785783+11:00
 imports:
 - name: github.com/davecgh/go-spew
   version: 346938d642f2ec3594ed81d874461961cd0faa76
@@ -99,7 +99,6 @@ imports:
   version: c8ddf156a7ded132708ff6e435e19ac1852822d7
   subpackages:
   - common
-  - db
   - log
 - name: github.com/urfave/cli
   version: 0bdeddeeb0f650497d603c4ad7b20cfe685682f6
@@ -135,4 +134,6 @@ imports:
   - transport
 - name: gopkg.in/go-playground/validator.v9
   version: 6d8c18553ea1ac493d049edd6f102f52e618f085
+- name: gopkg.in/yaml.v2
+  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
 testImports: []
