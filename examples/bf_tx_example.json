@@ -9,7 +9,7 @@
       "vessel":{"type":132153456},
       "PortOfLoading":{"type":21514},
       "PortOfDischarge":{"type":51651},
-      "NotifyAddress":{"type":"89-91 City Rd, Southbank 3006, VIC, Australia"},
+      "NotifyAddress":{"type":"345 Bourke Street 4th floor, Melbourne VIC 3000, Australia"},
       "DescOfGoods":{"type":"This is the goods description."},
       "GrossWeight":{"type":15523},
       "FreightPayableAmt":{"type":354534},
