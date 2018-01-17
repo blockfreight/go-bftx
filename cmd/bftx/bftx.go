@@ -298,15 +298,6 @@ func before(c *cli.Context) error {
 		handlers.TendermintClient = client
 	}
 
-	if rpcClient == nil {
-		rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
-		err := rpcClient.Start()
-		if err != nil {
-			fmt.Println("Error when initializing rpcClient")
-			log.Fatal(err.Error())
-		}
-	}
-
 	return nil
 }
 
@@ -635,6 +626,15 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
+	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	defer rpcClient.Stop()
+
 	var tx tmTypes.Tx
 	tx = []byte(content)
 
@@ -674,12 +674,21 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
+	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
 	query := "bftx.id='" + args[0] + "'"
 
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
 		return err
 	}
+
+	defer rpcClient.Stop()
 
 	if len(resQuery) > 0 {
 		printResponse(c, response{
