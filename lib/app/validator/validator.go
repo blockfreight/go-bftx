@@ -90,18 +90,18 @@ func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
 	if reflect.TypeOf(bftx.Properties.Shipper) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.Shipperis not a string."
 	}
-	if (reflect.TypeOf(bftx.Properties.BolNum) != reflect.TypeOf(1)) || bftx.Properties.BolNum == 0 {
-		return false, "bftx.Properties.BolNum is not a number."
-	}
-	if (reflect.TypeOf(bftx.Properties.RefNum) != reflect.TypeOf(1)) || bftx.Properties.RefNum == 0 {
-		return false, "bftx.Properties.RefNum is not a number."
-	}
+	// if (reflect.TypeOf(bftx.Properties.BolNum) != reflect.TypeOf(1)) || bftx.Properties.BolNum == 0 {
+	// 	return false, "bftx.Properties.BolNum is not a number."
+	// }
+	// if (reflect.TypeOf(bftx.Properties.RefNum) != reflect.TypeOf(1)) || bftx.Properties.RefNum == 0 {
+	// 	return false, "bftx.Properties.RefNum is not a number."
+	// }
 	if reflect.TypeOf(bftx.Properties.Consignee) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.Consignee is not a string."
 	}
-	if (reflect.TypeOf(bftx.Properties.Vessel) != reflect.TypeOf(1)) || bftx.Properties.Vessel == 0 {
-		return false, "bftx.Properties.Vessel is not a number."
-	}
+	// if (reflect.TypeOf(bftx.Properties.Vessel) != reflect.TypeOf(1)) || bftx.Properties.Vessel == 0 {
+	// 	return false, "bftx.Properties.Vessel is not a number."
+	// }
 	if reflect.TypeOf(bftx.Properties.PortOfLoading) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.PortOfLoading is not a number."
 	}
@@ -114,15 +114,15 @@ func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
 	if reflect.TypeOf(bftx.Properties.DescOfGoods) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.DescOfGoods is not a string."
 	}
-	if (reflect.TypeOf(bftx.Properties.GrossWeight) != reflect.TypeOf(1.12)) || bftx.Properties.GrossWeight == 0 {
-		return false, "bftx.Properties.GrossWeight is not a number."
-	}
-	if (reflect.TypeOf(bftx.Properties.FreightPayableAmt) != reflect.TypeOf(1)) || bftx.Properties.FreightPayableAmt == 0 {
-		return false, "bftx.Properties.FreightPayableAmt is not a number."
-	}
-	if (reflect.TypeOf(bftx.Properties.FreightAdvAmt) != reflect.TypeOf(1)) || bftx.Properties.FreightAdvAmt == 0 {
-		return false, "bftx.Properties.FreightAdvAmt is not a number."
-	}
+	// if (reflect.TypeOf(bftx.Properties.GrossWeight) != reflect.TypeOf(1.12)) || bftx.Properties.GrossWeight == 0 {
+	// 	return false, "bftx.Properties.GrossWeight is not a number."
+	// }
+	// if (reflect.TypeOf(bftx.Properties.FreightPayableAmt) != reflect.TypeOf(1)) || bftx.Properties.FreightPayableAmt == 0 {
+	// 	return false, "bftx.Properties.FreightPayableAmt is not a number."
+	// }
+	// if (reflect.TypeOf(bftx.Properties.FreightAdvAmt) != reflect.TypeOf(1)) || bftx.Properties.FreightAdvAmt == 0 {
+	// 	return false, "bftx.Properties.FreightAdvAmt is not a number."
+	// }
 	if reflect.TypeOf(bftx.Properties.GeneralInstructions) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.GeneralInstructions is not a string."
 	}
@@ -138,9 +138,9 @@ func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
 	if reflect.TypeOf(bftx.Properties.IssueDetails.DateOfIssue) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.IssueDetails.Properties.PlaceOfIssue is not a date format."
 	}
-	if (reflect.TypeOf(bftx.Properties.NumBol) != reflect.TypeOf(1)) || bftx.Properties.NumBol == 0 {
-		return false, "bftx.Properties.NumBol is not a number."
-	}
+	// if (reflect.TypeOf(bftx.Properties.NumBol) != reflect.TypeOf(1)) || bftx.Properties.NumBol == 0 {
+	// 	return false, "bftx.Properties.NumBol is not a number."
+	// }
 
 	if reflect.TypeOf(bftx.Properties.MasterInfo.FirstName) != reflect.TypeOf("s") {
 		return false, "bftx.Properties.MasterInfo.Properties.FirstName is not a string."
