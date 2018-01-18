@@ -22,17 +22,29 @@ message BFTX_Decode_request{
 }
 
 message BFTX_transaction {
-    BFTX_Payload properties = 1;
+    BFTX_Payload Properties = 1;
+    string Id = 2;
+    SignKey PrivateKey = 3;
+    string Signhash = 4;
+    string Signature = 5;
+    bool Verified = 6;
+}
+
+message SignKey{
+    string Curve = 1;
+    string X = 2;
+    string Y = 3;
+    string D = 4;
 }
 
 message BFTX_Payload{
     string Shipper = 1;
     int32 BolNum = 2;
     int64 RefNum = 3;
-    string Consignee = 4;
-    int64 Vessel = 5;
-    string PortOfLoading = 6;
-    string PortOfDischarge = 7;
+    int64 Vessel = 4;
+    string PortOfLoading = 5;
+    string PortOfDischarge = 6;
+    string UnitOfVolume = 7;
     string NotifyAddress = 8;
     string DescOfGoods = 9;
     int32 GrossWeight = 10;
@@ -40,14 +52,10 @@ message BFTX_Payload{
     int64 FreightAdvAmt = 12;
     string GeneralInstructions = 13;
     string DateShipped = 14;
-    int64 NumBol = 15;
-
-    ISSUEDETAILS IssueDetails = 16;
-
+    ISSUEDETAILS IssueDetails = 15;
+    int64 NumBol = 16;
     MASTERINFO MasterInfo = 17;
-
     AGENTFORMASTER AgentForMaster = 18;
-
     AGENTFOROWNER AgentForOwner = 19;
     string EncryptionMetaData = 20;
 }

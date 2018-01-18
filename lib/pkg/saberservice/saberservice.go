@@ -67,7 +67,10 @@ func Saberinputcli(in *os.File) (st Saberinput) {
 		st.address = "localhost:22222"
 		st.txpath = _gopath + _bftxpath + "/examples/bftx.json"
 		st.txconfigpath = _gopath + _bftxpath + "/examples/config.yaml"
+		// For server run on localhost
 		st.KeyName = _gopath + _bftxpath + "/examples/carol_pri_key.json"
+		// For server run on docker
+		st.KeyName = "./Data/carol_pri_key.json"
 	} else {
 		st.mode = txt
 		fmt.Println("Please type your service host address:")
