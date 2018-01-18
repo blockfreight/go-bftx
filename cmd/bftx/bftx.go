@@ -411,8 +411,6 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		bftx.Id = newId
 
-		fmt.Printf("%+v\n", bftx)
-
 		bftx, err = crypto.SignBFTX(bftx)
 		if err != nil {
 			return err
