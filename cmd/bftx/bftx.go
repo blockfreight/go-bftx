@@ -376,7 +376,14 @@ func ParseDesc(desc string) string {
 }
 
 func cmdMassConstructBfTx(c *cli.Context) error {
-	csvFile, _ := os.Open("Lading.csv")
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	csvFile, err := os.Open(wd + "/examples/Lading.csv")
+	if err != nil {
+		log.Fatal("csv read error:\n", err)
+	}
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 
 	i := 0
