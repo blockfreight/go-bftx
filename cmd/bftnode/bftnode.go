@@ -52,6 +52,7 @@ import (
 	"flag" // Implements command-line flag parsing.
 	"fmt"  // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"log"  // Implements a simple logging package.
+	"strconv"
 
 	// ===============
 	// Tendermint Core
@@ -63,6 +64,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
 	"github.com/blockfreight/go-bftx/api/api"
 	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
@@ -85,17 +87,29 @@ func main() {
 
 	// Start the listener
 	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
-	fmt.Println(srv)
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
+	fmt.Println(srv)
+	fmt.Println(*addrPtr)
+
+	err = srv.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	fmt.Println("Service created by " + *abciPtr + " server")
+	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
 
 	client, err = abcicli.NewClient(*addrPtr, "socket", false)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
+	err = client.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 	handlers.TendermintClient = client
 
 	err = api.Start()

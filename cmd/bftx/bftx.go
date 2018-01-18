@@ -20,7 +20,7 @@
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// FITNESS FOR A PARTICULAR PURFdeliveE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -46,6 +46,7 @@
 package main
 
 import (
+
 	// =======================
 	// Golang Standard library
 	// =======================
@@ -56,10 +57,8 @@ import (
 	"io"           // Provides basic interfaces to I/O primitives.
 	"log"          // Implements a simple logging package.
 	"os"           // Provides a platform-independent interface to operating system functionality.
-	"os/exec"
-	"strconv" // Implements conversions to and from string representations of basic data types.
-	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
-
+	"strconv"      // Implements conversions to and from string representations of basic data types.
+	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
 	// ====================
 	// Third-party packages
 	// ====================
@@ -71,11 +70,13 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/go-bftx/api/api"
+
 	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
@@ -89,7 +90,7 @@ import (
 type response struct {
 	// generic abci response
 	Data   []byte
-	Code   types.CodeType
+	Code   uint32
 	Log    string
 	Result string //Blockfreight Purposes
 
@@ -99,12 +100,13 @@ type response struct {
 type queryResponse struct {
 	Key    []byte
 	Value  []byte
-	Height uint64
+	Height int64
 	Proof  []byte
 }
 
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
+var rpcClient *rpc.HTTP
 
 func main() {
 
@@ -219,13 +221,13 @@ func main() {
 				return cmdCommit(c)
 			},
 		},
-		/* {
-		    Name:  "query",
-		    Usage: "Query application state",
-		    Action: func(c *cli.Context) error {
-		        return cmdQuery(c)
-		    },
-		},*/
+		{
+			Name:  "query",
+			Usage: "Query application state",
+			Action: func(c *cli.Context) error {
+				return cmdQuery(c)
+			},
+		},
 		{
 			Name:  "get",
 			Usage: "Retrieve a [BF_TX] by its ID (Parameters: BF_TX id)",
@@ -269,13 +271,6 @@ func main() {
 			},
 		},
 		{
-			Name:  "API",
-			Usage: "Start BFTX API",
-			Action: func(c *cli.Context) error {
-				return cmdStartAPI(c)
-			},
-		},
-		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -309,10 +304,12 @@ func before(c *cli.Context) error {
 	introduction(c)
 	if client == nil {
 		var err error
-		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), false)
+		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), true)
+		client.Start()
 		if err != nil {
 			log.Fatal(err.Error())
 		}
+
 		handlers.TendermintClient = client
 	}
 
@@ -362,25 +359,8 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	return bftxID, nil
 }
 
-func cmdStartAPI(c *cli.Context) error {
-	err := api.Start()
-
-	fmt.Println("err")
-	fmt.Println(err)
-
-	if err != nil {
-		return err
-	}
-
-	printResponse(c, response{
-		Result: "Running API on: http://localhost:12345",
-	})
-
-	return nil
-}
-
 func getBlockAppHash() ([]byte, error) {
-	resInfo, err := client.InfoSync()
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
 		return nil, err
 	}
@@ -427,23 +407,6 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-func cmdHelloPython(c *cli.Context) error {
-
-	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('fednode ps')")
-	cmd.Dir = "./lib/pkg/python/"
-	out, err := cmd.Output()
-
-	if err != nil {
-		fmt.Println(err)
-		return err
-	}
-
-	printResponse(c, response{
-		Result: string(out),
-	})
-	return nil
-}
-
 func cmdEncrypt(c *cli.Context) error {
 	// Sign BF_TX
 	bftx := crypto.CryptoTransaction("test")
@@ -475,8 +438,7 @@ func cmdSaberDcp(c *cli.Context) error {
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	resInfo, err := client.InfoSync()
-
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
 		return err
 	}
@@ -493,7 +455,14 @@ func cmdSetOption(c *cli.Context) error {
 	if len(args) != 2 {
 		return errors.New("Command set_option takes 2 arguments (key, value)")
 	}
-	resSetOption := client.SetOptionSync(args[0], args[1])
+	resSetOption, err := client.SetOptionSync(types.RequestSetOption{
+		Key:   args[0],
+		Value: args[1],
+	})
+	if err != nil {
+		return err
+	}
+
 	printResponse(c, response{
 		Log: resSetOption.Log,
 	})
@@ -689,24 +658,44 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	// Deliver / Publish a BF_TX
-	res := client.DeliverTxSync([]byte(content))
+	if err != nil {
+		return err
+	}
 
-	//Result
+	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	defer rpcClient.Stop()
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		return rpcErr
+	}
+
 	printResponse(c, response{
-		Code: res.Code,
-		//Result: "BF_TX transmitted"
-		Data: res.Data,
-		Log:  res.Log,
+		Data: resp.Hash,
+		Log:  resp.Log,
 	})
+
 	return nil
 }
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
-	result := client.CommitSync()
+	result, err := client.CommitSync()
+	if err != nil {
+		return err
+	}
+
 	printResponse(c, response{
-		Code: result.Code,
 		Data: result.Data,
 		Log:  result.Log,
 	})
@@ -715,38 +704,38 @@ func cmdCommit(c *cli.Context) error {
 
 // Query application state
 // TODO JCNM: Make request and response support all fields.
-/*func cmdQuery(c *cli.Context) error {
-    args := c.Args()
-    if len(args) != 1 {
-        return errors.New("Command query takes 1 argument")
-    }
+func cmdQuery(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command query takes 1 argument")
+	}
 
-    // TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
-    // TODO JCNM: Query from blockchain
-    bft_tx := bf_tx.SetBFTX(c.GlobalString("json_path")+string(args[0]))
-    queryBytes := []byte(bf_tx.BFTXContent(bft_tx))
+	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
 
-    resQuery, err := client.QuerySync(types.RequestQuery{
-        Data:   queryBytes,
-        Path:   "/block", // TODO expose
-        Height: 0,        // TODO expose
-        //Prove:  true,     // TODO expose
-    })
-    if err != nil {
-        return err
-    }
-    printResponse(c, response{
-        Code: resQuery.Code,
-        Log:  resQuery.Log,
-        Query: &queryResponse{
-            Key:    resQuery.Key,
-            Value:  resQuery.Value,
-            Height: resQuery.Height,
-            Proof:  resQuery.Proof,
-        },
-    })
-    return nil
-}*/
+	query := "bftx.id='" + args[0] + "'"
+
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		return err
+	}
+
+	defer rpcClient.Stop()
+
+	if len(resQuery) > 0 {
+		printResponse(c, response{
+			Result: string(resQuery[0].Tx),
+		})
+
+		return nil
+	}
+
+	return errors.New("Blockfreight Transaction not found.")
+}
 
 // Return the output JSON
 func cmdGetBfTx(c *cli.Context) error {
@@ -895,8 +884,6 @@ func printResponse(c *cli.Context, rsp response) {
 	if verbose {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
 	}
-
-	fmt.Printf("-> code: %s\n", rsp.Code.String())
 
 	if rsp.Result != "" {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)

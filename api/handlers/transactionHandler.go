@@ -3,25 +3,32 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
+
+	"github.com/tendermint/abci/client"
 
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// Provides HTTP client and server implementations.
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
+	abciTypes "github.com/tendermint/abci/types"
 )
 
 var TendermintClient abcicli.Client
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-	resInfo, err := TendermintClient.InfoSync()
+
+	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
@@ -34,12 +41,12 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	// Generate BF_TX id
 	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
 
-	jsonContent, err := json.Marshal(transaction)
+	/*jsonContent, err := json.Marshal(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -77,12 +84,12 @@ func SignBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	jsonContent, err := json.Marshal(transaction)
+	/*jsonContent, err := json.Marshal(transaction)
 	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
+	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
@@ -99,6 +106,14 @@ func SignBfTx(idBftx string) (interface{}, error) {
 }
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
+	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	defer rpcClient.Stop()
 
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(idBftx)
@@ -121,13 +136,6 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	// Change the boolean valud for Transmitted attribute
 	transaction.Transmitted = true
 
-	jsonContent, err := json.Marshal(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))
-
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
@@ -139,11 +147,14 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	// Deliver / Publish a BF_TX
-	TendermintClient.DeliverTxSync([]byte(content))
+	var tx tmTypes.Tx
+	tx = []byte(content)
 
-	// Check the BF_TX hash
-	TendermintClient.CommitSync()
+	_, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		return nil, rpcErr
+	}
 
 	return transaction, nil
 }
@@ -160,4 +171,31 @@ func GetTransaction(idBftx string) (interface{}, error) {
 	/* TODO: DECRYPT TRANSACTION */
 
 	return transaction, nil
+}
+
+func QueryTransaction(idBftx string) (interface{}, error) {
+	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+	defer rpcClient.Stop()
+	query := "bftx.id='" + idBftx + "'"
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resQuery) > 0 {
+		var transaction bf_tx.BF_TX
+		err := json.Unmarshal(resQuery[0].Tx, &transaction)
+		if err != nil {
+			return nil, err
+		}
+
+		return transaction, nil
+	}
+
+	return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 }

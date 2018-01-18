@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http" // Provides HTTP client and server implementations.
 	"strconv"
@@ -24,7 +25,23 @@ var queryType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Query",
 		Fields: graphql.Fields{
-			"transaction": &graphql.Field{
+			"getTransaction": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["id"].(string)
+					if !isOK {
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+					}
+
+					return apiHandler.GetTransaction(bftxID)
+				},
+			},
+			"queryTransaction": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
@@ -37,7 +54,7 @@ var queryType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return apiHandler.GetTransaction(bftxID)
+					return apiHandler.QueryTransaction(bftxID)
 				},
 			},
 		},
@@ -149,9 +166,8 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 		}
 		rw.WriteHeader(httpStatusResponse)
 
-		if httpStatusResponse == 200 {
-			rw.Write(js)
-		}
+		rw.Write(js)
+
 	}
 
 }
