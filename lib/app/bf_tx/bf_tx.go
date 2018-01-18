@@ -147,7 +147,7 @@ type BF_TX struct {
 	// Blockfreight Transaction attributes
 	// ===================================
 	Id          string           `json:"Id,omitempty"`
-	PrivateKey  ecdsa.PrivateKey `json:"PrivateKey,omitempty"`
+	PrivateKey  ecdsa.PrivateKey `json:"-"`
 	Signhash    []uint8          `json:"Signhash,omitempty"`
 	Signature   string           `json:"Signature,omitempty"`
 	Verified    bool             `json:"Verified,omitempty"`

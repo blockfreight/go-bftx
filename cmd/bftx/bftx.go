@@ -50,7 +50,9 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio"        // Implements buffered I/O.
+	"bufio" // Implements buffered I/O.
+	"crypto/ecdsa"
+	"encoding/csv"
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"errors"       // Implements functions to manipulate errors.
 	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
@@ -271,6 +273,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "massconstruct",
+			Usage: "test purpose, load transactions that are in a csv file",
+			Action: func(c *cli.Context) error {
+				return cmdMassConstructBfTx(c)
+			},
+		},
+		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -339,6 +348,137 @@ func persistentArgs(line []byte) []string {
 }
 
 //--------------------------------------------------------------------------------
+
+// ParseAsFloat provides error handling necessary for bf_tx.Properties single-value context
+func ParseAsFloat(num string) float64 {
+	c, err := strconv.ParseFloat(num, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+// ParseAsInt provides error handling necessary for bf_tx.Properties single-value context
+func ParseAsInt(num string) int {
+	c, err := strconv.Atoi(num)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+func ParseDesc(desc string) string {
+	item := desc
+	item = strings.Replace(item, "\n", " ", -1)
+	item = strings.Replace(item, "\t", " ", -1)
+	item = strings.Replace(item, "\r", " ", -1)
+	return item
+}
+
+func cmdMassConstructBfTx(c *cli.Context) error {
+	csvFile, _ := os.Open("Lading.csv")
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+
+	i := 0
+
+	for {
+
+		line, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		bftx := bf_tx.BF_TX{
+			PrivateKey: ecdsa.PrivateKey{},
+			Properties: bf_tx.Properties{
+				Shipper:         line[0],
+				Consignee:       line[1],
+				ReceiveAgent:    line[2],
+				HouseBill:       line[3],
+				PortOfLoading:   line[4],
+				PortOfDischarge: line[5],
+				Destination:     line[6],
+				MarksAndNumbers: line[7],
+				// DescOfGoods:     strings.Replace(line[8], "\r\n", " ", -1), // this field still has issues
+				DescOfGoods:   ParseDesc(line[8]),
+				GrossWeight:   ParseAsFloat(line[9]),
+				UnitOfWeight:  line[10],
+				Volume:        ParseAsFloat(line[11]),
+				UnitOfVolume:  line[12],
+				Container:     line[13],
+				ContainerSeal: line[14],
+				ContainerMode: line[15],
+				ContainerType: line[16],
+				Packages:      ParseAsInt(line[17]),
+				PackType:      line[18],
+				INCOTerms:     line[19],
+				DeliverAgent:  line[20],
+			},
+		}
+
+		newId, err := cmdGenerateBftxID(bftx)
+		if err != nil {
+			return err
+		}
+
+		bftx.Id = newId
+
+		bftx, err = crypto.SignBFTX(bftx)
+		if err != nil {
+			return err
+		}
+
+		// Change the boolean valud for Transmitted attribute
+		bftx.Transmitted = true
+
+		// Get the BF_TX content in string format
+		content, err := bf_tx.BFTXContent(bftx)
+		if err != nil {
+			return err
+		}
+		//fmt.Printf("%+v\n", bftx.PrivateKey)
+
+		// Update on DB
+		err = leveldb.RecordOnDB(string(bftx.Id), content)
+		if err != nil {
+			return err
+		}
+
+		rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+		err = rpcClient.Start()
+		if err != nil {
+			fmt.Println("Error when initializing rpcClient")
+			log.Fatal(err.Error())
+		}
+
+		defer rpcClient.Stop()
+
+		resp, err := rpcClient.BroadcastTxSync([]byte(content))
+
+		// added for flow control
+		i++
+		if i%500 == 0 {
+			fmt.Println(i, "%+v\n", resp)
+			printResponse(c, response{
+				Data: resp.Data,
+				Log:  resp.Log,
+			})
+		}
+		// fmt.Printf(i, "%+v\n", resp)
+
+		// printResponse(c, response{
+		//     Data: resp.Data,
+		//     Log:  resp.Log,
+		// })
+
+	}
+
+	return nil
+
+}
 
 func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
