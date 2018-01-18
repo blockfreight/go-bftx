@@ -50,7 +50,7 @@ func TestSaberinputcli(t *testing.T) {
 	st.address = "localhost:22222"
 	st.txpath = _gopath + _bftxpath + "/examples/bftx.json"
 	st.txconfigpath = _gopath + _bftxpath + "/examples/config.yaml"
-	st.KeyName = _gopath + _bftxpath + "/examples/carol_pri_key.json"
+	st.KeyName = "./Data/carol_pri_key.json"
 
 	st2.mode = "mm"
 	st2.address = "add"
