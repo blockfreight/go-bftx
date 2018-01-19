@@ -363,6 +363,14 @@ func ParseDesc(desc string) string {
 func cmdMassConstructBfTx(c *cli.Context) error {
 	csvFile, _ := os.Open("Lading.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
+	rpcClient = rpc.NewHTTP("tcp://blockfreight:46657", "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	defer rpcClient.Stop()
 
 	i := 0
 
@@ -432,21 +440,12 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 			return err
 		}
 
-		rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
-		err = rpcClient.Start()
-		if err != nil {
-			fmt.Println("Error when initializing rpcClient")
-			log.Fatal(err.Error())
-		}
-
-		defer rpcClient.Stop()
-
 		resp, err := rpcClient.BroadcastTxSync([]byte(content))
 
 		// added for flow control
 		i++
 		if i%500 == 0 {
-			fmt.Println(i, "%+v\n", resp)
+			fmt.Printf("%+v\n", resp)
 			printResponse(c, response{
 				Data: resp.Data,
 				Log:  resp.Log,
