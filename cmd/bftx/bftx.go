@@ -380,10 +380,19 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 	if err != nil {
 		panic(err)
 	}
+	// fmt.Printf(wd + "/examples/Lading.csv")
 	csvFile, err := os.Open(wd + "/examples/Lading.csv")
 	if err != nil {
 		log.Fatal("csv read error:\n", err)
 	}
+
+	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 
 	i := 0
@@ -392,12 +401,18 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		line, err := reader.Read()
 		if err == io.EOF {
-			break
+			log.Fatal("io read error", err)
 		}
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		if len(line) != 22 {
+			fmt.Printf("breaking line number: %d\n", i)
+			fmt.Printf("Line has wrong length:%d \n", len(line))
+			fmt.Printf("Line: %+v", line)
+			continue
+		}
 		bftx := bf_tx.BF_TX{
 			PrivateKey: ecdsa.PrivateKey{},
 			Properties: bf_tx.Properties{
@@ -409,20 +424,19 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 				PortOfDischarge: line[5],
 				Destination:     line[6],
 				MarksAndNumbers: line[7],
-				// DescOfGoods:     strings.Replace(line[8], "\r\n", " ", -1), // this field still has issues
-				DescOfGoods:   ParseDesc(line[8]),
-				GrossWeight:   ParseAsFloat(line[9]),
-				UnitOfWeight:  line[10],
-				Volume:        ParseAsFloat(line[11]),
-				UnitOfVolume:  line[12],
-				Container:     line[13],
-				ContainerSeal: line[14],
-				ContainerMode: line[15],
-				ContainerType: line[16],
-				Packages:      ParseAsInt(line[17]),
-				PackType:      line[18],
-				INCOTerms:     line[19],
-				DeliverAgent:  line[20],
+				DescOfGoods:     ParseDesc(line[8]),
+				GrossWeight:     ParseAsFloat(line[9]),
+				UnitOfWeight:    line[10],
+				Volume:          ParseAsFloat(line[11]),
+				UnitOfVolume:    line[12],
+				Container:       line[13],
+				ContainerSeal:   line[14],
+				ContainerMode:   line[15],
+				ContainerType:   line[16],
+				Packages:        ParseAsInt(line[17]),
+				PackType:        line[18],
+				INCOTerms:       line[19],
+				DeliverAgent:    line[20],
 			},
 		}
 
@@ -444,6 +458,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		// Get the BF_TX content in string format
 		content, err := bf_tx.BFTXContent(bftx)
 		if err != nil {
+			log.Fatal("BFTXContent error", err)
 			return err
 		}
 		//fmt.Printf("%+v\n", bftx.PrivateKey)
@@ -451,38 +466,30 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		// Update on DB
 		err = leveldb.RecordOnDB(string(bftx.Id), content)
 		if err != nil {
+			log.Fatal("BFTXContent error", err)
 			return err
 		}
 
-		rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
-		err = rpcClient.Start()
-		if err != nil {
-			fmt.Println("Error when initializing rpcClient")
-			log.Fatal(err.Error())
-		}
-
-		defer rpcClient.Stop()
-
 		resp, err := rpcClient.BroadcastTxSync([]byte(content))
 
+		if err != nil {
+			log.Fatal("rpcclient err:", err)
+		}
 		// added for flow control
 		i++
-		if i%500 == 0 {
-			fmt.Println(i, "%+v\n", resp)
+		if i%100 == 0 {
+			fmt.Print(i)
+			fmt.Printf(": %+v\n", resp)
 			printResponse(c, response{
 				Data: resp.Data,
 				Log:  resp.Log,
 			})
 		}
-		// fmt.Printf(i, "%+v\n", resp)
-
-		// printResponse(c, response{
-		//     Data: resp.Data,
-		//     Log:  resp.Log,
-		// })
+		fmt.Print(i)
 
 	}
 
+	defer rpcClient.Stop()
 	return nil
 
 }
