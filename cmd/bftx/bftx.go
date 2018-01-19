@@ -46,6 +46,7 @@
 package main
 
 import (
+	"time"
 
 	// =======================
 	// Golang Standard library
@@ -363,7 +364,7 @@ func ParseDesc(desc string) string {
 func cmdMassConstructBfTx(c *cli.Context) error {
 	csvFile, _ := os.Open("Lading.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	rpcClient = rpc.NewHTTP("tcp://blockfreight:46657", "/websocket")
+	rpcClient = rpc.NewHTTP("tcp://localhost:46657", "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -373,6 +374,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 	defer rpcClient.Stop()
 
 	i := 0
+	t0 := time.Now()
 
 	for {
 
@@ -444,13 +446,29 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		// added for flow control
 		i++
-		if i%500 == 0 {
-			fmt.Printf("%+v\n", resp)
+		if i%100 == 0 {
+			t1 := time.Now()
+			fmt.Printf("%+v - Time: %+s\n", resp, t1.Sub(t0))
+			t0 = t1
 			printResponse(c, response{
 				Data: resp.Data,
 				Log:  resp.Log,
 			})
 		}
+		if i%100 == 0 {
+			// If the file doesn't exist, create it, or append to the file
+			f, err := os.OpenFile("mass.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if _, err := f.Write([]byte(content + "\n")); err != nil {
+				log.Fatal(err)
+			}
+			if err := f.Close(); err != nil {
+				log.Fatal(err)
+			}
+		}
+
 		// fmt.Printf(i, "%+v\n", resp)
 
 		// printResponse(c, response{
