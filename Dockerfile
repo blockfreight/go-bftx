@@ -2,6 +2,8 @@ FROM alpine:3.5
 
 # BFTXHOME is where your genesis.json, key.json and other files including state are stored.
 ENV BFTXHOME /go/src/github.com/blockfreight/go-bftx
+ENV LOCAL_RPC_CLIENT_ADDRESS tcp://localhost:46657
+ENV DOCKER_RPC_CLIENT_ADDRESS tcp://blockfreight:46657
 
 # Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
