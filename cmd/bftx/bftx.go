@@ -364,7 +364,7 @@ func ParseDesc(desc string) string {
 func cmdMassConstructBfTx(c *cli.Context) error {
 	csvFile, _ := os.Open("Lading.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	rpcClient = rpc.NewHTTP("tcp://blockfreight:46657", "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
