@@ -14,6 +14,8 @@ import (
 	"strings"
 
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
@@ -298,7 +300,7 @@ func massSaberEncoding(st Saberinput) error {
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 
 	for {
-
+		i++
 		line, err := reader.Read()
 		if err == io.EOF {
 			log.Fatal("io read error", err)
@@ -320,30 +322,48 @@ func massSaberEncoding(st Saberinput) error {
 			Bftxconfig: txconfig,
 		}
 		bfencr, err := bfsaberclient.BFTX_Encode(context.Background(), &bfencreq)
+		if err != nil {
+			log.Printf("Line %d, BFTX_Encode error: %v", i, err)
+			continue
+		}
 
-		// bfencr = btx.Properties(*bfencr.GetProperties())
-		// newID, err := cmdGenerateBftxID()
-		// if err != nil {
-		// 	return err
-		// }
+		// do the bftx sign--------------------------------------
+		oldbf, err := BftxStructConverstionNO(bfencr)
+		if err != nil {
+			log.Fatalf("Cannot do the conversion: %v", err)
+		}
 
-		// bftx.Id = newId
+		salt, err := th.GetBlockAppHash()
+		if err != nil {
+			log.Fatalf("GetBlockAppHash error: %v", err)
+		}
 
-		// bftx, err = crypto.SignBFTX(bfencr)
-		// if err != nil {
-		// 	return err
-		// }
+		// Hash BF_TX Object
+		hash, err := btx.HashBFTX(*oldbf)
+		if err != nil {
+			log.Fatalf("HashBFTX error: %v", err)
+		}
 
-		// // // Change the boolean valud for Transmitted attribute
-		// // bftx.Transmitted = true
+		// Generate BF_TX id
+		bftxID := btx.GenerateBFTXUID(hash, salt)
+		oldbf.Id = bftxID
+		// do the bftx sign--------------------------------------
 
-		// // Get the BF_TX content in string format
-		// content, err := btx.BFTXContent(bftx)
-		// if err != nil {
-		// 	log.Fatal("BFTXContent error", err)
-		// 	return err
-		// }
-		// //fmt.Printf("%+v\n", bftx.PrivateKey)
+		*oldbf, err = crypto.SignBFTX(*oldbf)
+		if err != nil {
+			return err
+		}
+
+		// Change the boolean valud for Transmitted attribute
+		oldbf.Transmitted = true
+
+		// Get the BF_TX content in string format
+		content, err := btx.BFTXContent(*oldbf)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+		//fmt.Printf("%+v\n", bftx.PrivateKey)
 
 		// // // Update on DB
 		// // err = leveldb.RecordOnDB(string(bftx.Id), content)
@@ -352,16 +372,16 @@ func massSaberEncoding(st Saberinput) error {
 		// // 	return err
 		// // }
 
-		// resp, err := rpcClient.BroadcastTxSync([]byte(content))
+		resp, err := rpcClient.BroadcastTxSync([]byte(content))
 
-		// if err != nil {
-		// 	log.Fatal("rpcclient err:", err)
-		// }
-		// // added for flow control
-		i++
+		if err != nil {
+			log.Fatal("rpcclient err:", err)
+		}
+		// added for flow control
+
 		if i%100 == 0 {
 			fmt.Print(i)
-			fmt.Printf(": %+v\n", bfencr.GetProperties())
+			fmt.Printf(": %+v\n", resp)
 		}
 		fmt.Print(i)
 

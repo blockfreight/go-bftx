@@ -20,19 +20,19 @@ encryptionfields:
   # ===========================  
   # the RECIPIENTS of the FIELD could see the information of 
   # the particular field
-  - fieldname : AgentForMaster 
+  - fieldname : Shipper 
   # For example, AgentForMaster can be revealed by both Alice and Bob
     authorizeduser:
       - Alice
       - Bob
-  - fieldname : AgentForOwner
-  # all means all the recipients can see this part of information
-    authorizeduser:
-      - all 
-  - fieldname : MasterInfo
-  # Only Alice can reveal the MasterInfo section
-    authorizeduser:
-      - Alice
+  # - fieldname : AgentForOwner
+  # # all means all the recipients can see this part of information
+  #   authorizeduser:
+  #     - all 
+  # - fieldname : MasterInfo
+  # # Only Alice can reveal the MasterInfo section
+  #   authorizeduser:
+  #     - Alice
 publickeys:
   # Link each recipient to their public key file
   - userid : Alice
