@@ -392,6 +392,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
 	}
+	defer rpcClient.Stop()
 
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 
@@ -489,7 +490,6 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 	}
 
-	defer rpcClient.Stop()
 	return nil
 
 }
