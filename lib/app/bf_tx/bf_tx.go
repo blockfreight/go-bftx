@@ -50,10 +50,9 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256"
-	"encoding/json" // Implements the SHA256 Algorithm for Hash.
-	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
+	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
 
 	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
 

@@ -51,7 +51,6 @@ import (
 	// Golang Standard library
 	// =======================
 	"bufio" // Implements buffered I/O.
-	"crypto/ecdsa"
 	"encoding/csv"
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"errors"       // Implements functions to manipulate errors.
@@ -347,34 +346,6 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-//--------------------------------------------------------------------------------
-
-// ParseAsFloat provides error handling necessary for bf_tx.Properties single-value context
-func ParseAsFloat(num string) float64 {
-	c, err := strconv.ParseFloat(num, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return c
-}
-
-// ParseAsInt provides error handling necessary for bf_tx.Properties single-value context
-func ParseAsInt(num string) int {
-	c, err := strconv.Atoi(num)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return c
-}
-
-func ParseDesc(desc string) string {
-	item := desc
-	item = strings.Replace(item, "\n", " ", -1)
-	item = strings.Replace(item, "\t", " ", -1)
-	item = strings.Replace(item, "\r", " ", -1)
-	return item
-}
-
 func cmdMassConstructBfTx(c *cli.Context) error {
 	wd, err := os.Getwd()
 	if err != nil {
@@ -414,39 +385,14 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 			fmt.Printf("Line: %+v", line)
 			continue
 		}
-		bftx := bf_tx.BF_TX{
-			PrivateKey: ecdsa.PrivateKey{},
-			Properties: bf_tx.Properties{
-				Shipper:         line[0],
-				Consignee:       line[1],
-				ReceiveAgent:    line[2],
-				HouseBill:       line[3],
-				PortOfLoading:   line[4],
-				PortOfDischarge: line[5],
-				Destination:     line[6],
-				MarksAndNumbers: line[7],
-				DescOfGoods:     ParseDesc(line[8]),
-				GrossWeight:     ParseAsFloat(line[9]),
-				UnitOfWeight:    line[10],
-				Volume:          ParseAsFloat(line[11]),
-				UnitOfVolume:    line[12],
-				Container:       line[13],
-				ContainerSeal:   line[14],
-				ContainerMode:   line[15],
-				ContainerType:   line[16],
-				Packages:        ParseAsInt(line[17]),
-				PackType:        line[18],
-				INCOTerms:       line[19],
-				DeliverAgent:    line[20],
-			},
-		}
+		bftx := NVCsvConverter(line)
 
-		newId, err := cmdGenerateBftxID(bftx)
+		newID, err := cmdGenerateBftxID(bftx)
 		if err != nil {
 			return err
 		}
 
-		bftx.Id = newId
+		bftx.Id = newID
 
 		bftx, err = crypto.SignBFTX(bftx)
 		if err != nil {
@@ -487,9 +433,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 			})
 		}
 		fmt.Print(i)
-
 	}
-
 	return nil
 
 }

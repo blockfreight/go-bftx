@@ -3,13 +3,20 @@ package saberservice
 import (
 	"bufio"
 	"context"
+	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
+	bftx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -51,9 +58,72 @@ func loadconfiguration(s string) *BFTXEncryptionConfig {
 	return bfconfig
 }
 
+// NVCsvConverter is a function that
+// convert an array of bftx parameters to bftx transaction structure.
+// This is used for the converting the Lading.csv to bftx.BFTX
+func NVCsvConverter(line []string) *BFTXTransaction {
+	msg := BFTXTransaction{
+		Properties: BFTX_Payload{
+			Shipper:         line[0],
+			Consignee:       line[1],
+			ReceiveAgent:    line[2],
+			HouseBill:       line[3],
+			PortOfLoading:   line[4],
+			PortOfDischarge: line[5],
+			Destination:     line[6],
+			MarksAndNumbers: line[7],
+			DescOfGoods:     nvparsedesc(line[8]),
+			GrossWeight:     nvparseasfloat(line[9]),
+			UnitOfWeight:    line[10],
+			Volume:          nvparseasfloat(line[11]),
+			UnitOfVolume:    line[12],
+			Container:       line[13],
+			ContainerSeal:   line[14],
+			ContainerMode:   line[15],
+			ContainerType:   line[16],
+			Packages:        nvparseasint(line[17]),
+			PackType:        line[18],
+			INCOTerms:       line[19],
+			DeliverAgent:    line[20],
+		},
+	}
+	return &msg
+}
+
+//--------------------------------------------------------------------------------
+// NVCsvConverter helper functions
+// nvparseasfloat provides error handling necessary for bf_tx.Properties single-value float context
+func nvparseasfloat(num string) float64 {
+	c, err := strconv.ParseFloat(num, 64)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+// nvparseasint provides error handling necessary for bf_tx.Properties single-value int context
+func nvparseasint(num string) int {
+	c, err := strconv.Atoi(num)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return c
+}
+
+// nvparseasint provides error handling necessary for bf_tx.Properties single-value string context
+func nvparsedesc(desc string) string {
+	item := desc
+	item = strings.Replace(item, "\n", " ", -1)
+	item = strings.Replace(item, "\t", " ", -1)
+	item = strings.Replace(item, "\r", " ", -1)
+	return item
+}
+
+//--------------------------------------------------------------------------------
+
 // Saberinputcli provides interactive interaction for user to use bftx interface
 func Saberinputcli(in *os.File) (st Saberinput) {
-	fmt.Println("Please type your mode: 't' for test mode, otherwise type your mode")
+	fmt.Println("Please type your mode: 't' for test mode, 'm' for massconstruct, otherwise type your settings")
 	if in == nil {
 		in = os.Stdin
 	}
@@ -71,6 +141,9 @@ func Saberinputcli(in *os.File) (st Saberinput) {
 		st.KeyName = _gopath + _bftxpath + "/examples/carol_pri_key.json"
 		// For server run on docker
 		st.KeyName = "./Data/carol_pri_key.json"
+	} else if txt == "m" {
+		st.mode = "massconstruct"
+		st.address = "localhost:22222"
 	} else {
 		st.mode = txt
 		fmt.Println("Please type your service host address:")
@@ -92,14 +165,58 @@ func Saberinputcli(in *os.File) (st Saberinput) {
 // SaberEncoding is the function that enable it to connect to a container which realizing the
 // saber encoding service
 func SaberEncoding(st Saberinput) (*BFTXTransaction, error) {
-	tx := loadtransaction(st.txpath)
-	txconfig := loadconfiguration(st.txconfigpath)
+	switch st.mode {
+	case "massconstruct":
+		err := massSaberEncoding(st)
+		return nil, err
+	default:
+		tx := loadtransaction(st.txpath)
+		txconfig := loadconfiguration(st.txconfigpath)
 
-	bfencreq := BFTX_EncodeRequest{
-		Bftxtrans:  tx,
-		Bftxconfig: txconfig,
+		bfencreq := BFTX_EncodeRequest{
+			Bftxtrans:  tx,
+			Bftxconfig: txconfig,
+		}
+
+		conn, err := grpc.Dial(st.address, grpc.WithInsecure())
+		if err != nil {
+			log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		}
+		defer conn.Close()
+		c := NewBFSaberServiceClient(conn)
+
+		encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
+		check(err)
+
+		return encr, err
+	}
+}
+
+// massSaberEncoding is used for massively load the transaction from the lading.csv file
+func massSaberEncoding(st Saberinput) error {
+	// define the index i
+	i := 0
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Printf(wd + "/examples/Lading.csv")
+	csvFile, err := os.Open(wd + "/examples/Lading.csv")
+	if err != nil {
+		log.Fatal("csv read error:\n", err)
 	}
 
+	// Define the rpc client
+	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+	defer rpcClient.Stop()
+
+	// define the grpc client for saber service
 	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("%s cannot connected by program: %v", st.address, err)
@@ -107,10 +224,84 @@ func SaberEncoding(st Saberinput) (*BFTXTransaction, error) {
 	defer conn.Close()
 	c := NewBFSaberServiceClient(conn)
 
-	encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
-	check(err)
+	txconfig := loadconfiguration(st.txconfigpath)
 
-	return encr, err
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+
+	for {
+
+		line, err := reader.Read()
+		if err == io.EOF {
+			log.Fatal("io read error", err)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if len(line) != 22 {
+			fmt.Printf("breaking line number: %d\n", i)
+			fmt.Printf("Line has wrong length:%d \n", len(line))
+			fmt.Printf("Line: %+v", line)
+			continue
+		}
+		tx := bftx.NVCsvConverter(line)
+
+		bfencreq := BFTX_EncodeRequest{
+			Bftxtrans:  tx,
+			Bftxconfig: txconfig,
+		}
+
+		newId, err := cmdGenerateBftxID(bfmsg)
+		if err != nil {
+			return err
+		}
+
+		bftx.Id = newId
+
+		bftx, err = crypto.SignBFTX(bftx)
+		if err != nil {
+			return err
+		}
+
+		// Change the boolean valud for Transmitted attribute
+		bftx.Transmitted = true
+
+		// Get the BF_TX content in string format
+		content, err := bf_tx.BFTXContent(bftx)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+		//fmt.Printf("%+v\n", bftx.PrivateKey)
+
+		// Update on DB
+		err = leveldb.RecordOnDB(string(bftx.Id), content)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+
+		resp, err := rpcClient.BroadcastTxSync([]byte(content))
+
+		if err != nil {
+			log.Fatal("rpcclient err:", err)
+		}
+		// added for flow control
+		i++
+		if i%100 == 0 {
+			fmt.Print(i)
+			fmt.Printf(": %+v\n", resp)
+			printResponse(c, response{
+				Data: resp.Data,
+				Log:  resp.Log,
+			})
+		}
+		fmt.Print(i)
+
+	}
+
+	return err
+
 }
 
 // SaberDecoding is the function that enable it to connect to a container which realizing the

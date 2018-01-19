@@ -28,6 +28,9 @@ message BFTX_transaction {
     string Signhash = 4;
     string Signature = 5;
     bool Verified = 6;
+    bool Transmitted = 7;
+    string Amendment = 8;
+    string Private = 9;
 }
 
 message SignKey{
@@ -47,7 +50,7 @@ message BFTX_Payload{
     string UnitOfVolume = 7;
     string NotifyAddress = 8;
     string DescOfGoods = 9;
-    int32 GrossWeight = 10;
+    float64 GrossWeight = 10;
     int32 FreightPayableAmt = 11;
     int64 FreightAdvAmt = 12;
     string GeneralInstructions = 13;
@@ -58,6 +61,21 @@ message BFTX_Payload{
     AGENTFORMASTER AgentForMaster = 18;
     AGENTFOROWNER AgentForOwner = 19;
     string EncryptionMetaData = 20;
+    string Consignee = 21;
+    string HouseBill = 22;
+    string ReceiveAgent = 23;
+    string Destination = 24;
+    string MarksAndNumbers = 25;
+    string UnitOfWeight = 26;
+    float64 Volume =27;
+    string Container =28;
+    string ContainerSeal =29;
+    int64 Packages = 30;
+    string PackType = 31;
+    string INCOTerms = 32;
+    string DeliverAgent = 33; 
+    string ContainerMode = 34;
+    string ContainerType = 35;
 }
 
 message ISSUEDETAILS{
