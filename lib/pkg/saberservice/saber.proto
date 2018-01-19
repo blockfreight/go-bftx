@@ -50,7 +50,7 @@ message BFTX_Payload{
     string UnitOfVolume = 7;
     string NotifyAddress = 8;
     string DescOfGoods = 9;
-    float64 GrossWeight = 10;
+    float GrossWeight = 10;
     int32 FreightPayableAmt = 11;
     int64 FreightAdvAmt = 12;
     string GeneralInstructions = 13;
@@ -67,7 +67,7 @@ message BFTX_Payload{
     string Destination = 24;
     string MarksAndNumbers = 25;
     string UnitOfWeight = 26;
-    float64 Volume =27;
+    float Volume =27;
     string Container =28;
     string ContainerSeal =29;
     int64 Packages = 30;

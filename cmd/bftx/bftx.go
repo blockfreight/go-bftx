@@ -385,7 +385,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 			fmt.Printf("Line: %+v", line)
 			continue
 		}
-		bftx := NVCsvConverter(line)
+		bftx := saberservice.NVCsvConverterOld(line)
 
 		newID, err := cmdGenerateBftxID(bftx)
 		if err != nil {
@@ -599,11 +599,6 @@ func cmdVerifyBfTx(c *cli.Context) error {
 		Result: "The BF_TX associated to JSON content is " + string(result),
 	})
 
-	/*printResponse(c, response{
-	    Code: res.Code,
-	    Data: res.Data,
-	    Log:  res.Log,
-	})*/
 	return nil
 }
 

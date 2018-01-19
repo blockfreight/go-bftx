@@ -13,9 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	bftx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
@@ -58,12 +56,13 @@ func loadconfiguration(s string) *BFTXEncryptionConfig {
 	return bfconfig
 }
 
-// NVCsvConverter is a function that
-// convert an array of bftx parameters to bftx transaction structure.
+// NVCsvConverterNew is a function that
+// convert an array of bftx parameters to BFTXTransaction structure.
 // This is used for the converting the Lading.csv to bftx.BFTX
-func NVCsvConverter(line []string) *BFTXTransaction {
+//--------------------------------------------------------------------------------
+func NVCsvConverterNew(line []string) *BFTXTransaction {
 	msg := BFTXTransaction{
-		Properties: BFTX_Payload{
+		Properties: &BFTX_Payload{
 			Shipper:         line[0],
 			Consignee:       line[1],
 			ReceiveAgent:    line[2],
@@ -90,24 +89,56 @@ func NVCsvConverter(line []string) *BFTXTransaction {
 	return &msg
 }
 
+// NVCsvConverterOld is a function that
+// convert an array of bftx parameters to BF_TX structure.
+// This is used for the converting the Lading.csv to bftx.BFTX
 //--------------------------------------------------------------------------------
+func NVCsvConverterOld(line []string) btx.BF_TX {
+	msg := btx.BF_TX{
+		Properties: btx.Properties{
+			Shipper:         line[0],
+			Consignee:       line[1],
+			ReceiveAgent:    line[2],
+			HouseBill:       line[3],
+			PortOfLoading:   line[4],
+			PortOfDischarge: line[5],
+			Destination:     line[6],
+			MarksAndNumbers: line[7],
+			DescOfGoods:     nvparsedesc(line[8]),
+			GrossWeight:     float64(nvparseasfloat(line[9])),
+			UnitOfWeight:    line[10],
+			Volume:          float64(nvparseasfloat(line[11])),
+			UnitOfVolume:    line[12],
+			Container:       line[13],
+			ContainerSeal:   line[14],
+			ContainerMode:   line[15],
+			ContainerType:   line[16],
+			Packages:        int(nvparseasint(line[17])),
+			PackType:        line[18],
+			INCOTerms:       line[19],
+			DeliverAgent:    line[20],
+		},
+	}
+	return msg
+}
+
 // NVCsvConverter helper functions
 // nvparseasfloat provides error handling necessary for bf_tx.Properties single-value float context
-func nvparseasfloat(num string) float64 {
-	c, err := strconv.ParseFloat(num, 64)
+func nvparseasfloat(num string) float32 {
+	c, err := strconv.ParseFloat(num, 32)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return c
+	return float32(c)
 }
 
 // nvparseasint provides error handling necessary for bf_tx.Properties single-value int context
-func nvparseasint(num string) int {
+func nvparseasint(num string) int64 {
 	c, err := strconv.Atoi(num)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return c
+	return int64(c)
 }
 
 // nvparseasint provides error handling necessary for bf_tx.Properties single-value string context
@@ -120,6 +151,42 @@ func nvparsedesc(desc string) string {
 }
 
 //--------------------------------------------------------------------------------
+
+// BftxStructConverstionNO (New to Old) is a function that convert the new *BFTXTransaction
+// structure to old struct *BF_TX. These two structure is duplicated somehow. This function is used
+// for temporal conversion.
+// since this is just for temporal usage, I will just use json marshal and unmarshal
+// to convert structures
+func BftxStructConverstionNO(tx *BFTXTransaction) (*btx.BF_TX, error) {
+	var oldbftx *btx.BF_TX
+	bfjs, err := json.Marshal(tx)
+	if err != nil {
+		log.Fatal("\nBftxStructConverstion convertion error\n", err)
+	}
+	err = json.Unmarshal(bfjs, oldbftx)
+	if err != nil {
+		log.Fatal("BftxStructConverstion Converstion failed. Maybe because of different structure", err)
+	}
+	return oldbftx, err
+}
+
+// BftxStructConverstionON (Old to New) is a function that convert the old structure
+// *BF_TX to new structure *BFTXTransaction. These two structure is duplicated somehow. This function is used
+// for temporal conversion.
+// since this is just for temporal usage, I will just use json marshal and unmarshal
+// to convert structures
+func BftxStructConverstionON(tx *btx.BF_TX) (*BFTXTransaction, error) {
+	var newbftx *BFTXTransaction
+	bfjs, err := json.Marshal(tx)
+	if err != nil {
+		log.Fatal("\nBftxStructConverstion convertion error\n", err)
+	}
+	err = json.Unmarshal(bfjs, newbftx)
+	if err != nil {
+		log.Fatal("BftxStructConverstion Converstion failed. Maybe because of different structure", err)
+	}
+	return newbftx, err
+}
 
 // Saberinputcli provides interactive interaction for user to use bftx interface
 func Saberinputcli(in *os.File) (st Saberinput) {
@@ -144,6 +211,8 @@ func Saberinputcli(in *os.File) (st Saberinput) {
 	} else if txt == "m" {
 		st.mode = "massconstruct"
 		st.address = "localhost:22222"
+		st.txconfigpath = _gopath + _bftxpath + "/examples/config.yaml"
+		st.KeyName = "./Data/carol_pri_key.json"
 	} else {
 		st.mode = txt
 		fmt.Println("Please type your service host address:")
@@ -222,7 +291,7 @@ func massSaberEncoding(st Saberinput) error {
 		log.Fatalf("%s cannot connected by program: %v", st.address, err)
 	}
 	defer conn.Close()
-	c := NewBFSaberServiceClient(conn)
+	bfsaberclient := NewBFSaberServiceClient(conn)
 
 	txconfig := loadconfiguration(st.txconfigpath)
 
@@ -244,57 +313,55 @@ func massSaberEncoding(st Saberinput) error {
 			fmt.Printf("Line: %+v", line)
 			continue
 		}
-		tx := bftx.NVCsvConverter(line)
+		tx := NVCsvConverterNew(line)
 
 		bfencreq := BFTX_EncodeRequest{
 			Bftxtrans:  tx,
 			Bftxconfig: txconfig,
 		}
+		bfencr, err := bfsaberclient.BFTX_Encode(context.Background(), &bfencreq)
 
-		newId, err := cmdGenerateBftxID(bfmsg)
-		if err != nil {
-			return err
-		}
+		// bfencr = btx.Properties(*bfencr.GetProperties())
+		// newID, err := cmdGenerateBftxID()
+		// if err != nil {
+		// 	return err
+		// }
 
-		bftx.Id = newId
+		// bftx.Id = newId
 
-		bftx, err = crypto.SignBFTX(bftx)
-		if err != nil {
-			return err
-		}
+		// bftx, err = crypto.SignBFTX(bfencr)
+		// if err != nil {
+		// 	return err
+		// }
 
-		// Change the boolean valud for Transmitted attribute
-		bftx.Transmitted = true
+		// // // Change the boolean valud for Transmitted attribute
+		// // bftx.Transmitted = true
 
-		// Get the BF_TX content in string format
-		content, err := bf_tx.BFTXContent(bftx)
-		if err != nil {
-			log.Fatal("BFTXContent error", err)
-			return err
-		}
-		//fmt.Printf("%+v\n", bftx.PrivateKey)
+		// // Get the BF_TX content in string format
+		// content, err := btx.BFTXContent(bftx)
+		// if err != nil {
+		// 	log.Fatal("BFTXContent error", err)
+		// 	return err
+		// }
+		// //fmt.Printf("%+v\n", bftx.PrivateKey)
 
-		// Update on DB
-		err = leveldb.RecordOnDB(string(bftx.Id), content)
-		if err != nil {
-			log.Fatal("BFTXContent error", err)
-			return err
-		}
+		// // // Update on DB
+		// // err = leveldb.RecordOnDB(string(bftx.Id), content)
+		// // if err != nil {
+		// // 	log.Fatal("BFTXContent error", err)
+		// // 	return err
+		// // }
 
-		resp, err := rpcClient.BroadcastTxSync([]byte(content))
+		// resp, err := rpcClient.BroadcastTxSync([]byte(content))
 
-		if err != nil {
-			log.Fatal("rpcclient err:", err)
-		}
-		// added for flow control
+		// if err != nil {
+		// 	log.Fatal("rpcclient err:", err)
+		// }
+		// // added for flow control
 		i++
 		if i%100 == 0 {
 			fmt.Print(i)
-			fmt.Printf(": %+v\n", resp)
-			printResponse(c, response{
-				Data: resp.Data,
-				Log:  resp.Log,
-			})
+			fmt.Printf(": %+v\n", bfencr.GetProperties())
 		}
 		fmt.Print(i)
 
