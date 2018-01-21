@@ -1,5 +1,5 @@
 hash: aa608cf767df90c95dd0c483de1eb498123ad171d1d63c3bd8736d227e3eb2fb
-updated: 2018-01-18T18:24:05.643941927+11:00
+updated: 2018-01-22T09:11:54.384245588+11:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -153,7 +153,7 @@ imports:
   - types
   - version
 - name: github.com/tendermint/tmlibs
-  version: 91b4b534ad78e442192c8175db92a06a51064064
+  version: 15e51fa76086a3c505f227679c2478043ae7261b
   subpackages:
   - autofile
   - clist

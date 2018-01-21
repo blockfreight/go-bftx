@@ -382,7 +382,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 	reader := csv.NewReader(bufio.NewReader(csvFile))
 	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
+	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
