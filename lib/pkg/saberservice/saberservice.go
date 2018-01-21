@@ -15,6 +15,7 @@ import (
 
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
 	"github.com/tendermint/abci/client"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -372,6 +373,12 @@ func massSaberEncoding(st Saberinput) error {
 
 		// Get the BF_TX content in string format
 		content, err := btx.BFTXContent(bfmsg)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+		// Update on database
+		err = leveldb.RecordOnDB(string(bfmsg.Id), content)
 		if err != nil {
 			log.Fatal("BFTXContent error", err)
 			return err

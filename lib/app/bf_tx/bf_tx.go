@@ -191,6 +191,7 @@ type Properties struct {
 	MasterInfo          MasterInfo   `json:"MasterInfo"`
 	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
 	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
+	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
 // Shipper struct
