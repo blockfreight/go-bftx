@@ -286,6 +286,20 @@ func main() {
 			},
 		},
 		{
+			Name:  "saberenctest",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEncTest(c)
+			},
+		},
+		{
+			Name:  "saberdcptest",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcpTest(c)
+			},
+		},
+		{
 			Name:  "saberenc",
 			Usage: "prototype of saber encoding service.",
 			Action: func(c *cli.Context) error {
@@ -516,8 +530,89 @@ func cmdEncrypt(c *cli.Context) error {
 }
 
 func cmdSaberEnc(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
+
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
+	if err != nil {
+		return err
+	}
+	// In the long term, this conversion is unnecessary, and it makes the program to be less efficient.
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
+	if err != nil {
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		return err
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
+		return err
+	}
+	// fmt.Printf("\nSaber encryption result: \n%+v\n", content)
+	return nil
+}
+
+func cmdSaberDcp(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
+
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
+	if err != nil {
+		return err
+	}
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
+	if err != nil {
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		return err
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
+		return err
+	}
+	// fmt.Printf("\nSaber decryption result: \n%+v\n", content)
+	return nil
+}
+
+func cmdSaberEncTest(c *cli.Context) error {
 	st := saberservice.Saberinputcli(nil)
-	bftx, err := saberservice.SaberEncoding(st)
+	bftx, err := saberservice.SaberEncodingTestCase(st)
 	if err != nil {
 		return err
 	}
@@ -525,10 +620,10 @@ func cmdSaberEnc(c *cli.Context) error {
 	return nil
 }
 
-func cmdSaberDcp(c *cli.Context) error {
+func cmdSaberDcpTest(c *cli.Context) error {
 	st := saberservice.Saberinputcli(nil)
-	bfenc, err := saberservice.SaberEncoding(st)
-	bftx, err := saberservice.SaberDecoding(st, bfenc)
+	bfenc, err := saberservice.SaberEncodingTestCase(st)
+	bftx, err := saberservice.SaberDecoding(bfenc, st)
 	if err != nil {
 		return err
 	}

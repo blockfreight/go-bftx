@@ -192,6 +192,19 @@ func BftxStructConverstionON(tx *btx.BF_TX) (*BFTXTransaction, error) {
 	return &newbftx, err
 }
 
+// SaberDefaultInput provides the saberinput structure with default value
+func SaberDefaultInput() Saberinput {
+	var st Saberinput
+	_gopath := os.Getenv("GOPATH")
+	_bftxpath := "/src/github.com/blockfreight/go-bftx"
+
+	st.address = "localhost:22222"
+	st.txconfigpath = _gopath + _bftxpath + "/examples/config.yaml"
+	st.KeyName = "./Data/carol_pri_key.json"
+
+	return st
+}
+
 // Saberinputcli provides interactive interaction for user to use bftx interface
 func Saberinputcli(in *os.File) (st Saberinput) {
 	fmt.Println("Please type your mode: 't' for test mode, 'm' for massconstruct, otherwise type your settings")
@@ -235,32 +248,54 @@ func Saberinputcli(in *os.File) (st Saberinput) {
 	return st
 }
 
-// SaberEncoding is the function that enable it to connect to a container which realizing the
+// SaberEncoding takes an Bftx transaction and returns the saber encoded messages
+func SaberEncoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error) {
+	txconfig := loadconfiguration(st.txconfigpath)
+
+	bfencreq := BFTX_EncodeRequest{
+		Bftxtrans:  tx,
+		Bftxconfig: txconfig,
+	}
+
+	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("%s cannot connected by program: %v", st.address, err)
+	}
+	defer conn.Close()
+	c := NewBFSaberServiceClient(conn)
+
+	encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
+	check(err)
+
+	return encr, err
+}
+
+// SaberEncodingTestCase is the function that enable it to connect to a container which realizing the
 // saber encoding service
-func SaberEncoding(st Saberinput) (*BFTXTransaction, error) {
+func SaberEncodingTestCase(st Saberinput) (*BFTXTransaction, error) {
 	switch st.mode {
 	case "massconstruct":
 		err := massSaberEncoding(st)
 		return nil, err
 	default:
 		tx := loadtransaction(st.txpath)
-		txconfig := loadconfiguration(st.txconfigpath)
+		// txconfig := loadconfiguration(st.txconfigpath)
 
-		bfencreq := BFTX_EncodeRequest{
-			Bftxtrans:  tx,
-			Bftxconfig: txconfig,
-		}
+		// bfencreq := BFTX_EncodeRequest{
+		// 	Bftxtrans:  tx,
+		// 	Bftxconfig: txconfig,
+		// }
 
-		conn, err := grpc.Dial(st.address, grpc.WithInsecure())
-		if err != nil {
-			log.Fatalf("%s cannot connected by program: %v", st.address, err)
-		}
-		defer conn.Close()
-		c := NewBFSaberServiceClient(conn)
+		// conn, err := grpc.Dial(st.address, grpc.WithInsecure())
+		// if err != nil {
+		// 	log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		// }
+		// defer conn.Close()
+		// c := NewBFSaberServiceClient(conn)
 
-		encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
-		check(err)
-
+		// encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
+		// check(err)
+		encr, err := SaberEncoding(tx, st)
 		return encr, err
 	}
 }
@@ -403,9 +438,9 @@ func massSaberEncoding(st Saberinput) error {
 
 }
 
-// SaberDecoding is the function that enable it to connect to a container which realizing the
+// SaberDecodingTestCase is the function that enable it to connect to a container which realizing the
 // saber decoding service
-func SaberDecoding(st Saberinput, tx *BFTXTransaction) (*BFTXTransaction, error) {
+func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error) {
 
 	bfdcpreq := BFTX_DecodeRequest{}
 
