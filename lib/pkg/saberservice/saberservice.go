@@ -16,6 +16,7 @@ import (
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
+	"github.com/tendermint/abci/client"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
@@ -160,16 +161,16 @@ func nvparsedesc(desc string) string {
 // since this is just for temporal usage, I will just use json marshal and unmarshal
 // to convert structures
 func BftxStructConverstionNO(tx *BFTXTransaction) (*btx.BF_TX, error) {
-	var oldbftx *btx.BF_TX
-	bfjs, err := json.Marshal(tx)
+	var oldbftx btx.BF_TX
+	bfjs, err := json.Marshal(*tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstion convertion error\n", err)
+		log.Fatal("\nBftxStructConverstionNO convertion error\n", err)
 	}
-	err = json.Unmarshal(bfjs, oldbftx)
+	err = json.Unmarshal(bfjs, &oldbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstion Converstion failed. Maybe because of different structure", err)
+		log.Fatal("BftxStructConverstionNO Converstion failed. Maybe because of different structure. ", err)
 	}
-	return oldbftx, err
+	return &oldbftx, err
 }
 
 // BftxStructConverstionON (Old to New) is a function that convert the old structure
@@ -178,16 +179,16 @@ func BftxStructConverstionNO(tx *BFTXTransaction) (*btx.BF_TX, error) {
 // since this is just for temporal usage, I will just use json marshal and unmarshal
 // to convert structures
 func BftxStructConverstionON(tx *btx.BF_TX) (*BFTXTransaction, error) {
-	var newbftx *BFTXTransaction
+	var newbftx BFTXTransaction
 	bfjs, err := json.Marshal(tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstion convertion error\n", err)
+		log.Fatal("\nBftxStructConverstionON convertion error\n", err)
 	}
-	err = json.Unmarshal(bfjs, newbftx)
+	err = json.Unmarshal(bfjs, &newbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstion Converstion failed. Maybe because of different structure", err)
+		log.Fatal("BftxStructConverstionON Converstion failed. Maybe because of different structure. ", err)
 	}
-	return newbftx, err
+	return &newbftx, err
 }
 
 // Saberinputcli provides interactive interaction for user to use bftx interface
@@ -277,6 +278,19 @@ func massSaberEncoding(st Saberinput) error {
 		log.Fatal("csv read error:\n", err)
 	}
 
+	// Define the abci client
+	abciClient, err := abcicli.NewClient("tcp://127.0.0.1:46658", "socket", true)
+	if err != nil {
+		fmt.Println("Error when starting abci client")
+		log.Fatalf("\n massSaberEncoding Error: %+v \n", err)
+	}
+	err = abciClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing abciClient")
+		log.Fatal(err.Error())
+	}
+	defer abciClient.Stop()
+
 	// Define the rpc client
 	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
 
@@ -310,7 +324,7 @@ func massSaberEncoding(st Saberinput) error {
 		}
 
 		if len(line) != 22 {
-			fmt.Printf("breaking line number: %d\n", i)
+			fmt.Printf("breaking line number: %d \n", i)
 			fmt.Printf("Line has wrong length:%d \n", len(line))
 			fmt.Printf("Line: %+v", line)
 			continue
@@ -329,64 +343,55 @@ func massSaberEncoding(st Saberinput) error {
 
 		// do the bftx sign--------------------------------------
 		oldbf, err := BftxStructConverstionNO(bfencr)
+		bfmsg := *oldbf
 		if err != nil {
 			log.Fatalf("Cannot do the conversion: %v", err)
 		}
 
-		salt, err := th.GetBlockAppHash()
+		salt, err := th.GetBlockAppHash(abciClient)
 		if err != nil {
 			log.Fatalf("GetBlockAppHash error: %v", err)
 		}
 
 		// Hash BF_TX Object
-		hash, err := btx.HashBFTX(*oldbf)
+		hash, err := btx.HashBFTX(bfmsg)
 		if err != nil {
 			log.Fatalf("HashBFTX error: %v", err)
 		}
-
 		// Generate BF_TX id
 		bftxID := btx.GenerateBFTXUID(hash, salt)
-		oldbf.Id = bftxID
+		bfmsg.Id = bftxID
 		// do the bftx sign--------------------------------------
 
-		*oldbf, err = crypto.SignBFTX(*oldbf)
+		bfmsg, err = crypto.SignBFTX(bfmsg)
 		if err != nil {
 			return err
 		}
-
 		// Change the boolean valud for Transmitted attribute
-		oldbf.Transmitted = true
+		bfmsg.Transmitted = true
 
 		// Get the BF_TX content in string format
-		content, err := btx.BFTXContent(*oldbf)
+		content, err := btx.BFTXContent(bfmsg)
 		if err != nil {
 			log.Fatal("BFTXContent error", err)
 			return err
 		}
-		//fmt.Printf("%+v\n", bftx.PrivateKey)
-
-		// // // Update on DB
-		// // err = leveldb.RecordOnDB(string(bftx.Id), content)
-		// // if err != nil {
-		// // 	log.Fatal("BFTXContent error", err)
-		// // 	return err
-		// // }
 
 		resp, err := rpcClient.BroadcastTxSync([]byte(content))
-
 		if err != nil {
 			log.Fatal("rpcclient err:", err)
 		}
 		// added for flow control
 
 		if i%100 == 0 {
-			fmt.Print(i)
+			fmt.Print(i, "\n")
+			fmt.Printf(bfmsg.Id, "\n")
 			fmt.Printf(": %+v\n", resp)
+		} else {
+			fmt.Print(i, ",")
 		}
-		fmt.Print(i)
 
 	}
-
 	return err
 
 }

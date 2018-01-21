@@ -425,14 +425,16 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		// added for flow control
 		i++
 		if i%100 == 0 {
-			fmt.Print(i)
+			fmt.Print(i, "\n")
+			fmt.Printf(bftx.Id, "\n")
 			fmt.Printf(": %+v\n", resp)
 			printResponse(c, response{
 				Data: resp.Data,
 				Log:  resp.Log,
 			})
+		} else {
+			fmt.Print(i, ",")
 		}
-		fmt.Print(i)
 	}
 	return nil
 
