@@ -25,6 +25,7 @@ encryptionfields:
     authorizeduser:
       - Alice
       - Bob
+      - Carol
   # - fieldname : AgentForOwner
   # # all means all the recipients can see this part of information
   #   authorizeduser:
