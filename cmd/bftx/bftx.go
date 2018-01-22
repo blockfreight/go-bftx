@@ -266,13 +266,6 @@ func main() {
 			},
 		},
 		{
-			Name:  "encrypt",
-			Usage: "Test Encryption Integration",
-			Action: func(c *cli.Context) error {
-				return cmdEncrypt(c)
-			},
-		},
-		{
 			Name:  "massconstruct",
 			Usage: "test purpose, load transactions that are in a csv file",
 			Action: func(c *cli.Context) error {
@@ -552,13 +545,7 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-func cmdEncrypt(c *cli.Context) error {
-	// Sign BF_TX
-	bftx := crypto.CryptoTransaction("test")
-	bftx = bftx
-	return nil
 
-}
 
 func cmdSaberEnc(c *cli.Context) error {
 	args := c.Args()
