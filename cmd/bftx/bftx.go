@@ -270,6 +270,13 @@ func main() {
 			},
 		},
 		{
+			Name:  "new_validator",
+			Usage: "Add a new validator to the validator set.",
+			Action: func(c *cli.Context) error {
+				return cmdAddValidator(c)
+			},
+		},
+		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
@@ -324,6 +331,42 @@ func persistentArgs(line []byte) []string {
 }
 
 //--------------------------------------------------------------------------------
+
+func cmdAddValidator(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("This command takes 1 argument")
+	}
+
+	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	content := "val:" + args[0]
+
+	defer rpcClient.Stop()
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		return rpcErr
+	}
+
+	printResponse(c, response{
+		Code: resp.Code,
+		Data: resp.Hash,
+		Log:  resp.Log,
+	})
+
+	return nil
+
+}
 
 func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
@@ -626,7 +669,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
 	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -674,7 +717,7 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
