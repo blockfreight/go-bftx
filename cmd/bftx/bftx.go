@@ -904,11 +904,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-<<<<<<< HEAD
 	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-=======
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
->>>>>>> develop
 	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -956,11 +952,7 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-<<<<<<< HEAD
 	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-=======
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
->>>>>>> develop
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
