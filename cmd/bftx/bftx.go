@@ -365,16 +365,8 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		log.Fatal("csv read error:\n", err)
 	}
 
-	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
-	err = rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-	}
-	defer rpcClient.Stop()
-
 	reader := csv.NewReader(bufio.NewReader(csvFile))
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -545,8 +537,6 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-
-
 func cmdSaberEnc(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
@@ -647,6 +637,7 @@ func cmdSaberDcpTest(c *cli.Context) error {
 	}
 	fmt.Print(bftx)
 	return nil
+
 }
 
 // Get some info from the application
@@ -870,7 +861,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -918,7 +909,7 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	rpcClient = rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
