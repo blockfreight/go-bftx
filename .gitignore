@@ -7,7 +7,6 @@
 *.so
 *.dylib
 *.csv
-*.lock
 
 # Test binary, build with `go test -c`
 *.test
