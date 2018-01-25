@@ -73,10 +73,6 @@ const (
 	address = "localhost:22222"
 )
 
-const (
-	address = "localhost:22222"
-)
-
 // SignBFTX has the whole process of signing each BF_TX.
 func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
 
