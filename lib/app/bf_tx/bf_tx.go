@@ -50,10 +50,9 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256"
-	"encoding/json" // Implements the SHA256 Algorithm for Hash.
-	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
+	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
 
 	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
 
@@ -147,7 +146,7 @@ type BF_TX struct {
 	// Blockfreight Transaction attributes
 	// ===================================
 	Id          string           `json:"Id,omitempty"`
-	PrivateKey  ecdsa.PrivateKey `json:"PrivateKey,omitempty"`
+	PrivateKey  ecdsa.PrivateKey `json:"-"`
 	Signhash    []uint8          `json:"Signhash,omitempty"`
 	Signature   string           `json:"Signature,omitempty"`
 	Verified    bool             `json:"Verified,omitempty"`
@@ -192,6 +191,7 @@ type Properties struct {
 	MasterInfo          MasterInfo   `json:"MasterInfo"`
 	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
 	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
+	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
 // Shipper struct

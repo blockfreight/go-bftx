@@ -37,6 +37,8 @@ import:
 - package: github.com/tendermint/go-wire/data
 - package: github.com/tendermint/tmlibs
   version: ~0.6.0
+  repo: http://github.com/tendermint/tmlibs
+  vcs: git
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
 - package: github.com/graphql-go/handler

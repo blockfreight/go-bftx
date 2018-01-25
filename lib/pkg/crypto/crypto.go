@@ -53,14 +53,14 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/md5" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"log"
 	// Implements several standard elliptic curves over prime fields.
 	// Implements the MD5 hash algorithm as defined in RFC 1321.
 	"crypto/rand" // Implements a cryptographically secure pseudorandom number generator.
 	"hash"        // Provides interfaces for hash functions.
 	"io"          // Provides basic interfaces to I/O primitives.
-	"log"
-	"math/big" // Implements arbitrary-precision arithmetic (big numbers).
-	"strconv"  // Implements conversions to and from string representations of basic data types.
+	"math/big"    // Implements arbitrary-precision arithmetic (big numbers).
+	"strconv"     // Implements conversions to and from string representations of basic data types.
 
 	// ======================
 	// Blockfreight™ packages

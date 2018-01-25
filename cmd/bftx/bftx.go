@@ -46,11 +46,13 @@
 package main
 
 import (
+	"time"
 
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio"        // Implements buffered I/O.
+	"bufio" // Implements buffered I/O.
+	"encoding/csv"
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"errors"       // Implements functions to manipulate errors.
 	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
@@ -83,6 +85,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -263,10 +266,10 @@ func main() {
 			},
 		},
 		{
-			Name:  "encrypt",
-			Usage: "Test Encryption Integration",
+			Name:  "massconstruct",
+			Usage: "test purpose, load transactions that are in a csv file",
 			Action: func(c *cli.Context) error {
-				return cmdEncrypt(c)
+				return cmdMassConstructBfTx(c)
 			},
 		},
 		{
@@ -281,6 +284,34 @@ func main() {
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
 				os.Exit(0)
+			},
+		},
+		{
+			Name:  "saberenctest",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEncTest(c)
+			},
+		},
+		{
+			Name:  "saberdcptest",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcpTest(c)
+			},
+		},
+		{
+			Name:  "saberenc",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEnc(c)
+			},
+		},
+		{
+			Name:  "saberdcp",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcp(c)
 			},
 		},
 	}
@@ -330,7 +361,121 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-//--------------------------------------------------------------------------------
+func cmdMassConstructBfTx(c *cli.Context) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
+	// fmt.Printf(wd + "/examples/Lading.csv")
+	csvFile, err := os.Open(wd + "/examples/Lading.csv")
+	if err != nil {
+		log.Fatal("csv read error:\n", err)
+	}
+
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+	}
+
+	defer rpcClient.Stop()
+
+	i := 0
+	t0 := time.Now()
+
+	for {
+
+		line, err := reader.Read()
+		if err == io.EOF {
+			log.Fatal("io read error", err)
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		if len(line) != 22 {
+			fmt.Printf("breaking line number: %d\n", i)
+			fmt.Printf("Line has wrong length:%d \n", len(line))
+			fmt.Printf("Line: %+v", line)
+			continue
+		}
+		bftx := saberservice.NVCsvConverterOld(line)
+
+		newID, err := cmdGenerateBftxID(bftx)
+		if err != nil {
+			return err
+		}
+
+		bftx.Id = newID
+
+		bftx, err = crypto.SignBFTX(bftx)
+		if err != nil {
+			return err
+		}
+
+		// Change the boolean valud for Transmitted attribute
+		bftx.Transmitted = true
+
+		// Get the BF_TX content in string format
+		content, err := bf_tx.BFTXContent(bftx)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+		//fmt.Printf("%+v\n", bftx.PrivateKey)
+
+		// Update on DB
+		err = leveldb.RecordOnDB(string(bftx.Id), content)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			return err
+		}
+
+		resp, err := rpcClient.BroadcastTxSync([]byte(content))
+
+		if err != nil {
+			log.Fatal("rpcclient err:", err)
+		}
+		// added for flow control
+		i++
+		if i%100 == 0 {
+			t1 := time.Now()
+			fmt.Printf("%+v - Time: %+s\n", resp, t1.Sub(t0))
+			t0 = t1
+
+			// If the file doesn't exist, create it, or append to the file
+			f, err := os.OpenFile("mass.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if _, err := f.Write([]byte(content + "\n")); err != nil {
+				log.Fatal(err)
+			}
+			if err := f.Close(); err != nil {
+				log.Fatal(err)
+			}
+
+			printResponse(c, response{
+				Data: resp.Data,
+				Log:  resp.Log,
+			})
+		} else {
+			fmt.Print(i, ",")
+		}
+
+		// fmt.Printf(i, "%+v\n", resp)
+
+		// printResponse(c, response{
+		//     Data: resp.Data,
+		//     Log:  resp.Log,
+		// })
+
+	}
+	return nil
+
+}
 
 func cmdAddValidator(c *cli.Context) error {
 	args := c.Args()
@@ -435,10 +580,105 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-func cmdEncrypt(c *cli.Context) error {
-	// Sign BF_TX
-	bftx := crypto.CryptoTransaction("test")
-	bftx = bftx
+func cmdSaberEnc(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
+
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
+	if err != nil {
+		return err
+	}
+	// In the long term, this conversion is unnecessary, and it makes the program to be less efficient.
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
+	if err != nil {
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		return err
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
+		return err
+	}
+	// fmt.Printf("\nSaber encryption result: \n%+v\n", content)
+	return nil
+}
+
+func cmdSaberDcp(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
+
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
+	if err != nil {
+		return err
+	}
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
+	if err != nil {
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		return err
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
+		return err
+	}
+	// fmt.Printf("\nSaber decryption result: \n%+v\n", content)
+	return nil
+}
+
+func cmdSaberEncTest(c *cli.Context) error {
+	st := saberservice.Saberinputcli(nil)
+	bftx, err := saberservice.SaberEncodingTestCase(st)
+	if err != nil {
+		return err
+	}
+	fmt.Print(bftx)
+	return nil
+}
+
+func cmdSaberDcpTest(c *cli.Context) error {
+	st := saberservice.Saberinputcli(nil)
+	bfenc, err := saberservice.SaberEncodingTestCase(st)
+	bftx, err := saberservice.SaberDecoding(bfenc, st)
+	if err != nil {
+		return err
+	}
+	fmt.Print(bftx)
 	return nil
 
 }
@@ -508,11 +748,6 @@ func cmdVerifyBfTx(c *cli.Context) error {
 		Result: "The BF_TX associated to JSON content is " + string(result),
 	})
 
-	/*printResponse(c, response{
-	    Code: res.Code,
-	    Data: res.Data,
-	    Log:  res.Log,
-	})*/
 	return nil
 }
 
@@ -669,7 +904,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err = rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -717,7 +952,7 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")

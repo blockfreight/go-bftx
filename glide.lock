@@ -1,5 +1,5 @@
-hash: aa608cf767df90c95dd0c483de1eb498123ad171d1d63c3bd8736d227e3eb2fb
-updated: 2018-01-15T10:29:31.824373+11:00
+hash: e0a077ac162094b719c6555bce9255b1a198f94b16091b80937a9772eb3b09ce
+updated: 2018-01-25T15:26:39.395612+11:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -154,6 +154,8 @@ imports:
   - version
 - name: github.com/tendermint/tmlibs
   version: 91b4b534ad78e442192c8175db92a06a51064064
+  repo: http://github.com/tendermint/tmlibs
+  vcs: git
   subpackages:
   - autofile
   - clist
@@ -223,4 +225,6 @@ imports:
   - transport
 - name: gopkg.in/go-playground/validator.v9
   version: 6d8c18553ea1ac493d049edd6f102f52e618f085
+- name: gopkg.in/yaml.v2
+  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
 testImports: []
