@@ -10,14 +10,13 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
-	"github.com/tendermint/abci/client"
+	abcicli "github.com/tendermint/abci/client"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
@@ -76,15 +75,15 @@ func NVCsvConverterNew(line []string) *BFTXTransaction {
 			Destination:     line[6],
 			MarksAndNumbers: line[7],
 			DescOfGoods:     nvparsedesc(line[8]),
-			GrossWeight:     nvparseasfloat(line[9]),
+			GrossWeight:     line[9],
 			UnitOfWeight:    line[10],
-			Volume:          nvparseasfloat(line[11]),
+			Volume:          line[11],
 			UnitOfVolume:    line[12],
 			Container:       line[13],
 			ContainerSeal:   line[14],
 			ContainerMode:   line[15],
 			ContainerType:   line[16],
-			Packages:        nvparseasint(line[17]),
+			Packages:        line[17],
 			PackType:        line[18],
 			INCOTerms:       line[19],
 			DeliverAgent:    line[20],
@@ -109,15 +108,15 @@ func NVCsvConverterOld(line []string) btx.BF_TX {
 			Destination:     line[6],
 			MarksAndNumbers: line[7],
 			DescOfGoods:     nvparsedesc(line[8]),
-			GrossWeight:     float64(nvparseasfloat(line[9])),
+			GrossWeight:     line[9],
 			UnitOfWeight:    line[10],
-			Volume:          float64(nvparseasfloat(line[11])),
+			Volume:          line[11],
 			UnitOfVolume:    line[12],
 			Container:       line[13],
 			ContainerSeal:   line[14],
 			ContainerMode:   line[15],
 			ContainerType:   line[16],
-			Packages:        int(nvparseasint(line[17])),
+			Packages:        line[17],
 			PackType:        line[18],
 			INCOTerms:       line[19],
 			DeliverAgent:    line[20],
@@ -128,22 +127,22 @@ func NVCsvConverterOld(line []string) btx.BF_TX {
 
 // NVCsvConverter helper functions
 // nvparseasfloat provides error handling necessary for bf_tx.Properties single-value float context
-func nvparseasfloat(num string) float32 {
-	c, err := strconv.ParseFloat(num, 32)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return float32(c)
-}
+// func nvparseasfloat(num string) float32 {
+// 	c, err := strconv.ParseFloat(num, 32)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return float32(c)
+// }
 
 // nvparseasint provides error handling necessary for bf_tx.Properties single-value int context
-func nvparseasint(num string) int64 {
-	c, err := strconv.Atoi(num)
-	if err != nil {
-		log.Fatal(err)
-	}
-	return int64(c)
-}
+// func nvparseasint(num string) int64 {
+// 	c, err := strconv.Atoi(num)
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	return int64(c)
+// }
 
 // nvparseasint provides error handling necessary for bf_tx.Properties single-value string context
 func nvparsedesc(desc string) string {

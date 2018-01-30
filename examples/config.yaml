@@ -9,6 +9,7 @@ recipients:
   - Alice 
   - Bob
   - Carol
+  - Navia
 encryptionfields: 
   # Details of the encryption fields
   # The format of this part is:
@@ -20,20 +21,18 @@ encryptionfields:
   # ===========================  
   # the RECIPIENTS of the FIELD could see the information of 
   # the particular field
-  - fieldname : Shipper 
-  # For example, AgentForMaster can be revealed by both Alice and Bob
+  - fieldname : HouseBill 
     authorizeduser:
       - Alice
-      - Bob
-      - Carol
-  # - fieldname : AgentForOwner
-  # # all means all the recipients can see this part of information
-  #   authorizeduser:
-  #     - all 
-  # - fieldname : MasterInfo
-  # # Only Alice can reveal the MasterInfo section
-  #   authorizeduser:
-  #     - Alice
+      - Navia
+  - fieldname : Packages
+  # all means all the recipients can see this part of information
+    authorizeduser:
+      - all 
+  - fieldname : PortOfLoading
+  # Only Alice can reveal the Packages section
+    authorizeduser:
+      - all
 publickeys:
   # Link each recipient to their public key file
   - userid : Alice
@@ -42,3 +41,5 @@ publickeys:
     keyfile : bob_pri_key.json
   - userid : Carol
     keyfile : carol_pri_key.json
+  - userid : Navia
+    keyfile : Navia_pubkey.yaml

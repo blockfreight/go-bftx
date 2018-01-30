@@ -158,12 +158,12 @@ type BF_TX struct {
 // Properties struct
 type Properties struct {
 	Shipper             string       `protobuf:"bytes,1,opt,name=Shipper" json:"Shipper,omitempty"`
-	BolNum              int          `protobuf:"varint,1,opt,name=BolNum" json:"BolNum,omitempty"`
-	RefNum              int          `protobuf:"varint,2,opt,name=RefNum" json:"RefNum,omitempty"`
+	BolNum              string       `protobuf:"varint,1,opt,name=BolNum" json:"BolNum,omitempty"`
+	RefNum              string       `protobuf:"varint,2,opt,name=RefNum" json:"RefNum,omitempty"`
 	Consignee           string       `protobuf:"bytes,2,opt,name=Consignee" json:"Consignee,omitempty"`
 	HouseBill           string       `protobuf:"bytes,3,opt,name=HouseBill" json:"HouseBill,omitempty"`
-	Vessel              int          `protobuf:"varint,3,opt,name=Vessel" json:"Vessel,omitempty"`
-	Packages            int          `protobuf:"varint,4,opt,name=Packages" json:"Packages,omitempty"`
+	Vessel              string       `protobuf:"varint,3,opt,name=Vessel" json:"Vessel,omitempty"`
+	Packages            string       `protobuf:"varint,4,opt,name=Packages" json:"Packages,omitempty"`
 	PackType            string       `protobuf:"bytes,4,opt,name=PackType" json:"PackType,omitempty"`
 	INCOTerms           string       `protobuf:"bytes,5,opt,name=INCOTerms" json:"INCOTerms,omitempty"`
 	PortOfLoading       string       `protobuf:"bytes,6,opt,name=PortOfLoading" json:"PortOfLoading,omitempty"`
@@ -177,17 +177,17 @@ type Properties struct {
 	ContainerSeal       string       `protobuf:"bytes,14,opt,name=ContainerSeal" json:"ContainerSeal,omitempty"`
 	ContainerMode       string       `protobuf:"bytes,15,opt,name=ContainerMode" json:"ContainerMode,omitempty"`
 	ContainerType       string       `protobuf:"bytes,16,opt,name=ContainerType" json:"ContainerType,omitempty"`
-	Volume              float64      `protobuf:"bytes,17,opt,name=Volume" json:"Volume,omitempty"`
+	Volume              string       `protobuf:"bytes,17,opt,name=Volume" json:"Volume,omitempty"`
 	UnitOfVolume        string       `protobuf:"bytes,18,opt,name=UnitOfVolume" json:"UnitOfVolume,omitempty`
 	NotifyAddress       string       `protobuf:"bytes,19,opt,name=NotifyAddress" json:"NotifyAddress,omitempty"`
 	DescOfGoods         string       `protobuf:"bytes,20,opt,name=DescOfGoods" json:"DescOfGoods,omitempty"`
-	GrossWeight         float64      `protobuf:"varint,5,opt,name=GrossWeight" json:"GrossWeight,omitempty"`
-	FreightPayableAmt   int          `protobuf:"varint,6,opt,name=FreightPayableAmt" json:"FreightPayableAmt,omitempty"`
-	FreightAdvAmt       int          `protobuf:"varint,7,opt,name=FreightAdvAmt" json:"FreightAdvAmt,omitempty"`
+	GrossWeight         string       `protobuf:"varint,5,opt,name=GrossWeight" json:"GrossWeight,omitempty"`
+	FreightPayableAmt   string       `protobuf:"varint,6,opt,name=FreightPayableAmt" json:"FreightPayableAmt,omitempty"`
+	FreightAdvAmt       string       `protobuf:"varint,7,opt,name=FreightAdvAmt" json:"FreightAdvAmt,omitempty"`
 	GeneralInstructions string       `protobuf:"bytes,21,opt,name=GeneralInstructions" json:"GeneralInstructions,omitempty"`
 	DateShipped         string       `protobuf:"bytes,22,opt,name=DateShipped" json:"DateShipped"`
 	IssueDetails        IssueDetails `json:"IssueDetails"`
-	NumBol              int          `protobuf:"varint,8,opt,name=NumBol" json:"NumBol,omitempty"`
+	NumBol              string       `protobuf:"varint,8,opt,name=NumBol" json:"NumBol,omitempty"`
 	MasterInfo          MasterInfo   `json:"MasterInfo"`
 	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
 	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
@@ -201,12 +201,12 @@ type Shipper struct {
 
 // BolNum struct
 type BolNum struct {
-	Type int
+	Type string
 }
 
 // RefNum struct
 type RefNum struct {
-	Type int
+	Type string
 }
 
 // Consignee struct
@@ -216,17 +216,17 @@ type Consignee struct {
 
 // Vessel struct
 type Vessel struct {
-	Type int
+	Type string
 }
 
 // PortLoading struct
 type PortLoading struct {
-	Type int
+	Type string
 }
 
 // PortDischarge struct
 type PortDischarge struct {
-	Type int
+	Type string
 }
 
 // NotifyAddress struct
@@ -241,17 +241,17 @@ type DescGoods struct {
 
 // GrossWeight struct
 type GrossWeight struct {
-	Type int
+	Type string
 }
 
 // FreightPayableAmt struct
 type FreightPayableAmt struct {
-	Type int
+	Type string
 }
 
 // FreightAdvAmt struct
 type FreightAdvAmt struct {
-	Type int
+	Type string
 }
 
 // GeneralInstructions struct
@@ -261,7 +261,7 @@ type GeneralInstructions struct {
 
 // Date struct
 type Date struct {
-	Type   int
+	Type   string
 	Format string
 }
 
@@ -278,7 +278,7 @@ type PlaceIssue struct {
 
 // NumBol struct
 type NumBol struct {
-	Type int
+	Type string
 }
 
 // MasterInfo struct

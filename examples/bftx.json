@@ -1,24 +1,25 @@
 {
     "Properties":{
        "Shipper":"VLX454323F",
-       "BolNum":15554,
-       "RefNum":154532165,
-       "Vessel":132153456,
+       "BolNum":"15554",
+       "RefNum":"154532165",
+       "HouseBill":"testtest",
+       "Vessel":"132153456",
        "PortOfLoading":"CNSHA",
        "PortOfDischarge":"AUADL",
        "UnitOfVolume":"",
        "NotifyAddress":"345 Bourke Street 4th floor, Melbourne VIC 3000, Australia",
        "DescOfGoods":"This is the goods description.",
-       "GrossWeight":15523,
-       "FreightPayableAmt":354534,
-       "FreightAdvAmt":35448552,
+       "GrossWeight":"15523",
+       "FreightPayableAmt":"354534",
+       "FreightAdvAmt":"35448552",
        "GeneralInstructions":"There are many general instructions.",
        "DateShipped":"20161128",
        "IssueDetails":{
           "PlaceOfIssue":"Melbourne, Australia",
           "DateOfIssue":"20161128"
        },
-       "NumBol":54684010805,
+       "NumBol":"54684010805",
        "MasterInfo":{
           "FirstName":"Master First Name",
           "LastName":"Master Last Name",
@@ -45,5 +46,5 @@
     },
     "Signhash":"8LKtwpIt+/Tv6M81t7RUMQ==",
     "Signature":"9624688102519312610719222231218169172091071107314416040170187210184100143100502039818412218826166511951397641918922417134134137112121076513199182152115929160128321",
-    "Verified":true
+    "Verified":"true"
  }
