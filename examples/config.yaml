@@ -21,7 +21,7 @@ encryptionfields:
   # ===========================  
   # the RECIPIENTS of the FIELD could see the information of 
   # the particular field
-  - fieldname : HouseBill 
+  - fieldname : GrossWeight 
     authorizeduser:
       - Alice
       - Navia
