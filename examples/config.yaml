@@ -25,10 +25,6 @@ encryptionfields:
     authorizeduser:
       - Alice
       - Navia
-  - fieldname : Packages
-  # all means all the recipients can see this part of information
-    authorizeduser:
-      - all 
   - fieldname : PortOfLoading
   # Only Alice can reveal the Packages section
     authorizeduser:
