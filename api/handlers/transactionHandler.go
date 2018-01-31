@@ -144,7 +144,7 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	return transaction, nil
+	return bftxold, nil
 }
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
