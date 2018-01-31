@@ -27,8 +27,8 @@ message BFTX_transaction {
     SignKey PrivateKey = 3;
     string Signhash = 4;
     string Signature = 5;
-    string Verified = 6;
-    string Transmitted = 7;
+    bool Verified = 6;
+    bool Transmitted = 7;
     string Amendment = 8;
     string Private = 9;
 }
