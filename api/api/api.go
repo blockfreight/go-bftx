@@ -86,6 +86,22 @@ var mutationType = graphql.NewObject(
 					return apiHandler.ConstructBfTx(bftx)
 				},
 			},
+			"encryptBFTX": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["Id"].(string)
+					if !isOK {
+						return nil, nil
+					}
+
+					return apiHandler.EncryptBfTx(bftxID)
+				},
+			},
 			"signBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{

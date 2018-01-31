@@ -14,6 +14,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	tmTypes "github.com/tendermint/tendermint/types"
 
@@ -99,6 +100,47 @@ func SignBfTx(idBftx string) (interface{}, error) {
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return transaction, nil
+}
+
+func EncryptBfTx(idBftx string) (interface{}, error) {
+	transaction, err := leveldb.GetBfTx(idBftx)
+
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+		}
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if transaction.Verified {
+		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	nwbftx, err := saberservice.BftxStructConverstionON(&transaction)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
