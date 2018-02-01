@@ -42,21 +42,21 @@ message SignKey{
 
 message BFTX_Payload{
     string Shipper = 1;
-    int32 BolNum = 2;
-    int64 RefNum = 3;
-    int64 Vessel = 4;
+    string BolNum = 2;
+    string RefNum = 3;
+    string Vessel = 4;
     string PortOfLoading = 5;
     string PortOfDischarge = 6;
     string UnitOfVolume = 7;
     string NotifyAddress = 8;
     string DescOfGoods = 9;
-    float GrossWeight = 10;
-    int32 FreightPayableAmt = 11;
-    int64 FreightAdvAmt = 12;
+    string GrossWeight = 10;
+    string FreightPayableAmt = 11;
+    string FreightAdvAmt = 12;
     string GeneralInstructions = 13;
     string DateShipped = 14;
     ISSUEDETAILS IssueDetails = 15;
-    int64 NumBol = 16;
+    string NumBol = 16;
     MASTERINFO MasterInfo = 17;
     AGENTFORMASTER AgentForMaster = 18;
     AGENTFOROWNER AgentForOwner = 19;
@@ -67,10 +67,10 @@ message BFTX_Payload{
     string Destination = 24;
     string MarksAndNumbers = 25;
     string UnitOfWeight = 26;
-    float Volume =27;
+    string Volume =27;
     string Container =28;
     string ContainerSeal =29;
-    int64 Packages = 30;
+    string Packages = 30;
     string PackType = 31;
     string INCOTerms = 32;
     string DeliverAgent = 33; 
