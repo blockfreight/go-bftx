@@ -10,16 +10,16 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"BolNum": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"RefNum": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"Consignee": &graphql.Field{
 				Type: graphql.String,
 			},
 			"Vessel": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PortOfLoading": &graphql.Field{
 				Type: graphql.String,
@@ -31,7 +31,7 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"Packages": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PackType": &graphql.Field{
 				Type: graphql.String,
@@ -67,7 +67,7 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"Volume": &graphql.Field{
-				Type: graphql.Float,
+				Type: graphql.String,
 			},
 			"UnitOfVolume": &graphql.Field{
 				Type: graphql.String,
@@ -79,13 +79,13 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"GrossWeight": &graphql.Field{
-				Type: graphql.Float,
+				Type: graphql.String,
 			},
 			"FreightPayableAmt": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"FreightAdvAmt": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"GeneralInstructions": &graphql.Field{
 				Type: graphql.String,
@@ -97,7 +97,7 @@ var PropertiesType = graphql.NewObject(
 				Type: IssueDetails,
 			},
 			"NumBol": &graphql.Field{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"MasterInfo": &graphql.Field{
 				Type: MasterInfo,
@@ -120,16 +120,16 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"BolNum": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"RefNum": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"Consignee": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
 			"Vessel": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PortOfLoading": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
@@ -141,7 +141,7 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"Packages": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"PackType": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
@@ -177,7 +177,7 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"Volume": &graphql.InputObjectFieldConfig{
-				Type: graphql.Float,
+				Type: graphql.String,
 			},
 			"UnitOfVolume": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
@@ -189,13 +189,13 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"GrossWeight": &graphql.InputObjectFieldConfig{
-				Type: graphql.Float,
+				Type: graphql.String,
 			},
 			"FreightPayableAmt": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"FreightAdvAmt": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"GeneralInstructions": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
@@ -207,7 +207,7 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: IssueDetailsInput,
 			},
 			"NumBol": &graphql.InputObjectFieldConfig{
-				Type: graphql.Int,
+				Type: graphql.String,
 			},
 			"MasterInfo": &graphql.InputObjectFieldConfig{
 				Type: MasterInfoInput,

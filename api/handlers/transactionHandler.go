@@ -157,6 +157,10 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
+	if transaction.Verified {
+		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
+	}
+
 	nwbftx, err := saberservice.BftxStructConverstionON(&transaction)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
