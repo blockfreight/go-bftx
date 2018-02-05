@@ -196,8 +196,6 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 		log.Fatal(err.Error())
 	}
 
-	defer rpcClient.Stop()
-
 	// Get a BF_TX by id
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
@@ -238,6 +236,8 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 		fmt.Printf("%+v\n", rpcErr)
 		return nil, rpcErr
 	}
+
+	defer rpcClient.Stop()
 
 	return transaction, nil
 }
