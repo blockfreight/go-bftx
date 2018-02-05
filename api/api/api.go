@@ -155,7 +155,7 @@ var mutationType = graphql.NewObject(
 )
 
 func Start() error {
-	http.HandleFunc("/graphql", httpHandler(&schema))
+	http.HandleFunc("/bftx-api", httpHandler(&schema))
 	fmt.Println("Now server is running on: http://localhost:12345")
 	return http.ListenAndServe(":12345", nil)
 }
