@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 
 	"github.com/tendermint/abci/client"
@@ -189,7 +190,7 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 }
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
-	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
@@ -211,8 +212,6 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	if transaction.Transmitted {
 		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
 	}
-
-	/* TODO: ENCRYPT TRANSACTION */
 
 	// Change the boolean valud for Transmitted attribute
 	transaction.Transmitted = true
@@ -242,6 +241,37 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
+func GetInfo() (interface{}, error) {
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		fmt.Println(err.Error())
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	abciInfo, err := rpcClient.ABCIInfo()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		fmt.Println(err.Error())
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	defer rpcClient.Stop()
+
+	return abciInfo.Response, nil
+}
+
+func GetTotal() (interface{}, error) {
+	// Query the total of BF_TX in DB
+	total, err := leveldb.Total()
+	if err != nil {
+		return nil, err
+	}
+
+	return total, nil
+}
+
 func GetTransaction(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
@@ -257,7 +287,7 @@ func GetTransaction(idBftx string) (interface{}, error) {
 }
 
 func QueryTransaction(idBftx string) (interface{}, error) {
-	rpcClient := rpc.NewHTTP("tcp://127.0.0.1:46657", "/websocket")
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")

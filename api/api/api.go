@@ -57,6 +57,18 @@ var queryType = graphql.NewObject(
 					return apiHandler.QueryTransaction(bftxID)
 				},
 			},
+			"getInfo": &graphql.Field{
+				Type: graphqlObj.InfoType,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return apiHandler.GetInfo()
+				},
+			},
+			"getTotal": &graphql.Field{
+				Type: graphql.String,
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					return apiHandler.GetTotal()
+				},
+			},
 		},
 	})
 
