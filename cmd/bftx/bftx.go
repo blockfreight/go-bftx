@@ -336,7 +336,7 @@ func simpleLogger(i interface{}, currentError error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + "\n")); err != nil {
+	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + "\n\n")); err != nil {
 		log.Fatal(err)
 	}
 	if err := f.Close(); err != nil {
@@ -350,9 +350,9 @@ func transLogger(i interface{}, currentError error, transactionBody bf_tx.BF_TX)
 	if err != nil {
 		log.Fatal(err)
 	}
-	tb, err := bf_tx.BFTXContent(transactionBody)
 
-	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + tb + "\n")); err != nil {
+	tb, err := bf_tx.BFTXContent(transactionBody)
+	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + tb + "\n\n")); err != nil {
 		log.Fatal(err)
 	}
 	if err := f.Close(); err != nil {
