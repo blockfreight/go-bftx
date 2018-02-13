@@ -344,13 +344,15 @@ func simpleLogger(i interface{}, currentError error) {
 	}
 }
 
-func transLogger(i interface{}, currentError error, transactionBody interface{}) {
+func transLogger(i interface{}, currentError error, transactionBody bf_tx.BF_TX) {
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + transactionBody.(string) + "\n")); err != nil {
+	tb, err := bf_tx.BFTXContent(transactionBody)
+
+	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + tb + "\n")); err != nil {
 		log.Fatal(err)
 	}
 	if err := f.Close(); err != nil {
@@ -697,13 +699,13 @@ func cmdSaberDcp(c *cli.Context) error {
 	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
-		transLogger(cmdSaberDcp, err, nwbftx)
+		transLogger(cmdSaberDcp, err, oldbftx)
 		return err
 	}
 	st := saberservice.SaberDefaultInput()
 	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
 	if err != nil {
-		transLogger(cmdSaberDcp, err, nwbftx)
+		transLogger(cmdSaberDcp, err, oldbftx)
 		return err
 	}
 	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
@@ -711,14 +713,14 @@ func cmdSaberDcp(c *cli.Context) error {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(*bftxold)
 	if err != nil {
-		transLogger(cmdSaberDcp, err, nwbftx)
+		transLogger(cmdSaberDcp, err, oldbftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
-		transLogger(cmdSaberDcp, err, nwbftx)
+		transLogger(cmdSaberDcp, err, oldbftx)
 		return err
 	}
 	// fmt.Printf("\nSaber decryption result: \n%+v\n", content)
@@ -741,7 +743,7 @@ func cmdSaberDcpTest(c *cli.Context) error {
 	bfenc, err := saberservice.SaberEncodingTestCase(st)
 	bftx, err := saberservice.SaberDecoding(bfenc, st)
 	if err != nil {
-		transLogger(cmdSaberDcpTest, err, bftx)
+		simpleLogger(cmdSaberDcpTest, err)
 		return err
 	}
 	fmt.Print(bftx)
