@@ -329,7 +329,7 @@ func getFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
-// need to pass the current function name in as i, and currentError in
+// simpleLogger writes errors and the function name that generated the error to bftx.log
 func simpleLogger(i interface{}, currentError error) {
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -344,13 +344,13 @@ func simpleLogger(i interface{}, currentError error) {
 	}
 }
 
+// transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
 func transLogger(i interface{}, currentError error, transactionBody bf_tx.BF_TX) {
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	tb, err := bf_tx.BFTXContent(transactionBody)
 	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + tb + "\n\n")); err != nil {
 		log.Fatal(err)
