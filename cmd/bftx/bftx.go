@@ -20,7 +20,7 @@
 
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 // OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURFdeliveE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -46,21 +46,23 @@
 package main
 
 import (
-	"time"
-
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio" // Implements buffered I/O.
-	"encoding/csv"
+	"bufio"        // Implements buffered I/O.
+	"encoding/csv" // Package csv reads and writes comma-separated values (CSV) files.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"errors"       // Implements functions to manipulate errors.
 	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"io"           // Provides basic interfaces to I/O primitives.
 	"log"          // Implements a simple logging package.
 	"os"           // Provides a platform-independent interface to operating system functionality.
+	"reflect"      // Implements run-time reflection, allowing a program to manipulate objects with arbitrary types.
+	"runtime"      // Contains operations that interact with Go's runtime system.
 	"strconv"      // Implements conversions to and from string representations of basic data types.
 	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
+	"time"         // Provides functionality for measuring and displaying time.
+
 	// ====================
 	// Third-party packages
 	// ====================
@@ -323,6 +325,39 @@ func main() {
 
 }
 
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+// need to pass the current function name in as i, and currentError in
+func simpleLogger(i interface{}, currentError error) {
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + "\n")); err != nil {
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func transLogger(i interface{}, currentError error, transactionBody interface{}) {
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write([]byte(time.Now().Format("2006-01-02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + transactionBody.(string) + "\n")); err != nil {
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func before(c *cli.Context) error {
 	introduction(c)
 	if client == nil {
@@ -331,6 +366,7 @@ func before(c *cli.Context) error {
 		client.Start()
 		if err != nil {
 			log.Fatal(err.Error())
+			simpleLogger(before, err)
 		}
 
 		handlers.TendermintClient = client
@@ -364,12 +400,14 @@ func persistentArgs(line []byte) []string {
 func cmdMassConstructBfTx(c *cli.Context) error {
 	wd, err := os.Getwd()
 	if err != nil {
+		simpleLogger(cmdMassConstructBfTx, err)
 		panic(err)
 	}
 	// fmt.Printf(wd + "/examples/Lading.csv")
 	csvFile, err := os.Open(wd + "/examples/Lading.csv")
 	if err != nil {
 		log.Fatal("csv read error:\n", err)
+		simpleLogger(cmdMassConstructBfTx, err)
 	}
 
 	reader := csv.NewReader(bufio.NewReader(csvFile))
@@ -378,6 +416,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
+		simpleLogger(cmdMassConstructBfTx, err)
 	}
 
 	defer rpcClient.Stop()
@@ -390,9 +429,11 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		line, err := reader.Read()
 		if err == io.EOF {
 			log.Fatal("io read error", err)
+			simpleLogger(cmdMassConstructBfTx, err)
 		}
 		if err != nil {
 			log.Fatal(err)
+			simpleLogger(cmdMassConstructBfTx, err)
 		}
 
 		if len(line) != 22 {
@@ -405,6 +446,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		newID, err := cmdGenerateBftxID(bftx)
 		if err != nil {
+			transLogger(cmdMassConstructBfTx, err, bftx)
 			return err
 		}
 
@@ -412,6 +454,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		bftx, err = crypto.SignBFTX(bftx)
 		if err != nil {
+			transLogger(cmdMassConstructBfTx, err, bftx)
 			return err
 		}
 
@@ -422,6 +465,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		content, err := bf_tx.BFTXContent(bftx)
 		if err != nil {
 			log.Fatal("BFTXContent error", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
 			return err
 		}
 		//fmt.Printf("%+v\n", bftx.PrivateKey)
@@ -430,6 +474,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		err = leveldb.RecordOnDB(string(bftx.Id), content)
 		if err != nil {
 			log.Fatal("BFTXContent error", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
 			return err
 		}
 
@@ -437,6 +482,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 
 		if err != nil {
 			log.Fatal("rpcclient err:", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
 		}
 		// added for flow control
 		i++
@@ -449,12 +495,15 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 			f, err := os.OpenFile("mass.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 			if err != nil {
 				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
 			}
 			if _, err := f.Write([]byte(content + "\n")); err != nil {
 				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
 			}
 			if err := f.Close(); err != nil {
 				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
 			}
 
 			printResponse(c, response{
@@ -473,7 +522,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 		// })
 
 	}
-	return nil
+	// return nil
 
 }
 
@@ -488,6 +537,7 @@ func cmdAddValidator(c *cli.Context) error {
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
+		simpleLogger(cmdAddValidator, err)
 	}
 
 	content := "val:" + args[0]
@@ -500,6 +550,7 @@ func cmdAddValidator(c *cli.Context) error {
 	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
 	if rpcErr != nil {
 		fmt.Printf("%+v\n", rpcErr)
+		simpleLogger(cmdAddValidator, rpcErr)
 		return rpcErr
 	}
 
@@ -517,12 +568,14 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 	salt, err := getBlockAppHash()
 	if err != nil {
+		transLogger(cmdGenerateBftxID, err, bftx)
 		return "", err
 	}
 
 	// Hash BF_TX Object
 	hash, err := bf_tx.HashBFTX(bftx)
 	if err != nil {
+		transLogger(cmdGenerateBftxID, err, bftx)
 		return "", err
 	}
 
@@ -535,6 +588,7 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 func getBlockAppHash() ([]byte, error) {
 	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
+		simpleLogger(getBlockAppHash, err)
 		return nil, err
 	}
 
@@ -591,17 +645,20 @@ func cmdSaberEnc(c *cli.Context) error {
 	// Get a BF_TX by id
 	oldbftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 	// In the long term, this conversion is unnecessary, and it makes the program to be less efficient.
 	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 	st := saberservice.SaberDefaultInput()
 	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
 	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
@@ -609,12 +666,14 @@ func cmdSaberEnc(c *cli.Context) error {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(*bftxold)
 	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 	// fmt.Printf("\nSaber encryption result: \n%+v\n", content)
@@ -632,16 +691,19 @@ func cmdSaberDcp(c *cli.Context) error {
 	// Get a BF_TX by id
 	oldbftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdSaberDcp, err, oldbftx)
 		return err
 	}
 	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		transLogger(cmdSaberDcp, err, nwbftx)
 		return err
 	}
 	st := saberservice.SaberDefaultInput()
 	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
 	if err != nil {
+		transLogger(cmdSaberDcp, err, nwbftx)
 		return err
 	}
 	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
@@ -649,12 +711,14 @@ func cmdSaberDcp(c *cli.Context) error {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(*bftxold)
 	if err != nil {
+		transLogger(cmdSaberDcp, err, nwbftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
+		transLogger(cmdSaberDcp, err, nwbftx)
 		return err
 	}
 	// fmt.Printf("\nSaber decryption result: \n%+v\n", content)
@@ -665,6 +729,7 @@ func cmdSaberEncTest(c *cli.Context) error {
 	st := saberservice.Saberinputcli(nil)
 	bftx, err := saberservice.SaberEncodingTestCase(st)
 	if err != nil {
+		simpleLogger(cmdSaberEncTest, err)
 		return err
 	}
 	fmt.Print(bftx)
@@ -676,6 +741,7 @@ func cmdSaberDcpTest(c *cli.Context) error {
 	bfenc, err := saberservice.SaberEncodingTestCase(st)
 	bftx, err := saberservice.SaberDecoding(bfenc, st)
 	if err != nil {
+		transLogger(cmdSaberDcpTest, err, bftx)
 		return err
 	}
 	fmt.Print(bftx)
@@ -687,6 +753,7 @@ func cmdSaberDcpTest(c *cli.Context) error {
 func cmdInfo(c *cli.Context) error {
 	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
+		simpleLogger(cmdInfo, err)
 		return err
 	}
 	printResponse(c, response{
@@ -707,6 +774,7 @@ func cmdSetOption(c *cli.Context) error {
 		Value: args[1],
 	})
 	if err != nil {
+		simpleLogger(cmdSetOption, err)
 		return err
 	}
 
@@ -726,17 +794,20 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	jbftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 
 	// Get the BF_TX old_content in string format
 	jcontent, err := bf_tx.BFTXContent(jbftx)
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 
 	result, err := leveldb.Verify(jcontent)
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 	if result == nil {
@@ -761,6 +832,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		transLogger(cmdValidateBfTx, err, bftx)
 		return err
 	}
 
@@ -768,6 +840,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
+		transLogger(cmdValidateBfTx, err, bftx)
 		return err
 	}
 
@@ -788,11 +861,13 @@ func cmdConstructBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	newId, err := cmdGenerateBftxID(bftx)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
@@ -802,18 +877,21 @@ func cmdConstructBfTx(c *cli.Context) error {
 	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(bftx.Id, content)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
@@ -835,6 +913,7 @@ func cmdSignBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 	if bftx.Verified {
@@ -844,18 +923,21 @@ func cmdSignBfTx(c *cli.Context) error {
 	// Sign BF_TX
 	bftx, err = crypto.SignBFTX(bftx)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftx.Id), content)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
@@ -876,6 +958,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 	if !bftx.Verified {
@@ -891,16 +974,19 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftx.Id), content)
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 
@@ -909,6 +995,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
+
 	}
 
 	defer rpcClient.Stop()
@@ -919,6 +1006,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
 	if rpcErr != nil {
 		fmt.Printf("%+v\n", rpcErr)
+		transLogger(cmdBroadcastBfTx, rpcErr, bftx)
 		return rpcErr
 	}
 
@@ -934,6 +1022,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 func cmdCommit(c *cli.Context) error {
 	result, err := client.CommitSync()
 	if err != nil {
+		simpleLogger(cmdCommit, err)
 		return err
 	}
 
@@ -957,12 +1046,14 @@ func cmdQuery(c *cli.Context) error {
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
 		log.Fatal(err.Error())
+		simpleLogger(cmdQuery, err)
 	}
 
 	query := "bftx.id='" + args[0] + "'"
 
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
+		simpleLogger(cmdQuery, err)
 		return err
 	}
 
@@ -989,12 +1080,14 @@ func cmdGetBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdGetBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdGetBfTx, err, bftx)
 		return err
 	}
 
@@ -1015,12 +1108,14 @@ func cmdAppendBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	oldBftx, err := leveldb.GetBfTx(args[1])
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, oldBftx)
 		return err
 	}
 
 	// Query the total of BF_TX in DB
 	// n, err := leveldb.Total()
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, oldBftx)
 		return err
 	}
 
@@ -1028,6 +1123,7 @@ func cmdAppendBfTx(c *cli.Context) error {
 	newBftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
+
 	}
 
 	// Set the BF_TX id
@@ -1039,22 +1135,26 @@ func cmdAppendBfTx(c *cli.Context) error {
 	// Get the BF_TX (old and new) content in string format
 	newContent, err := bf_tx.BFTXContent(newBftx)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 	oldContent, err := bf_tx.BFTXContent(oldBftx)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(string(newBftx.Id), newContent)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(oldBftx.Id), oldContent)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
@@ -1076,6 +1176,7 @@ func cmdStateBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdStateBfTx, err, bftx)
 		return err
 	}
 
@@ -1095,6 +1196,7 @@ func cmdPrintBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdPrintBfTx, err, bftx)
 		return err
 	}
 
@@ -1107,6 +1209,7 @@ func cmdTotalBfTx(c *cli.Context) error {
 	// Query the total of BF_TX in DB
 	total, err := leveldb.Total()
 	if err != nil {
+		simpleLogger(cmdTotalBfTx, err)
 		return err
 	}
 
@@ -1165,6 +1268,7 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 		b, err := hex.DecodeString(s[2:])
 		if err != nil {
 			err = fmt.Errorf("Error decoding hex argument: %s", err.Error())
+			simpleLogger(stringOrHexToBytes, err)
 			return nil, err
 		}
 		return b, nil
