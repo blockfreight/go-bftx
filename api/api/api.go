@@ -35,7 +35,7 @@ var queryType = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+						return nil, errors.New(strconv.Itoa(http.StatusBadRequest))
 					}
 
 					return apiHandler.GetTransaction(bftxID)
@@ -51,7 +51,7 @@ var queryType = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
-						return nil, nil
+						return nil, errors.New(strconv.Itoa(http.StatusBadRequest))
 					}
 
 					return apiHandler.QueryTransaction(bftxID)
