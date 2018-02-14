@@ -50,18 +50,14 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-	"errors"        // Implements functions to manipulate errors.
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"errors" // Implements functions to manipulate errors.
 
 	// ====================
 	// Third-party packages
 	// ====================
-	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
 
-	// ======================
-	// Blockfreight™ packages
-	// ======================
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
 )
 
 var dbPath = "bft-db" //Folder name where is going to be the LevelDB
@@ -115,28 +111,27 @@ func RecordOnDB(id string, json string) error {
 }
 
 // GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
-func GetBfTx(id string) (bf_tx.BF_TX, error) {
-	var bftx bf_tx.BF_TX
+func GetBfTx(id string) ([]byte, error) {
+	var data []byte
 	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
 	if err != nil {
-		return bftx, err
+		return data, err
 	}
 
-	data, err := db.Get([]byte(id), nil)
+	data, err = db.Get([]byte(id), nil)
 	if err != nil {
 		if err.Error() == "leveldb: not found" {
-			return bftx, errors.New("LevelDB Get function: BF_TX not found.")
+			return data, errors.New("LevelDB Get function: BF_TX not found.")
 		}
-		return bftx, errors.New("LevelDB Get function: " + err.Error())
+		return data, errors.New("LevelDB Get function: " + err.Error())
 	}
 
-	json.Unmarshal(data, &bftx)
-	return bftx, nil
+	return data, nil
 }
 
 // Verify is a function that receives a content and look for a BF_TX that has the same content.
-func Verify(jcontent string) ([]byte, error) {
+/* func Verify(jcontent string) ([]byte, error) {
 	var bftx bf_tx.BF_TX
 	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
@@ -170,7 +165,7 @@ func Verify(jcontent string) ([]byte, error) {
 	iter.Release()
 
 	return nil, iter.Error()
-}
+} */
 
 // =================================================
 // Blockfreight™ | The blockchain of global freight.

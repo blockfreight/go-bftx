@@ -394,7 +394,7 @@ func massSaberEncoding(st Saberinput) error {
 			log.Fatalf("HashBFTX error: %v", err)
 		}
 		// Generate BF_TX id
-		bftxID := btx.GenerateBFTXUID(hash, salt)
+		bftxID := btx.HashByteArray(hash, salt)
 		bfmsg.Id = bftxID
 		// do the bftx sign--------------------------------------
 

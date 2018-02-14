@@ -50,11 +50,21 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/sha256"
+	"encoding/json"
+	"errors" // Implements the SHA256 Algorithm for Hash.
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"net/http"
+	"strconv"
 
 	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
+
+	// ===============
+	// Tendermint Core
+	// ===============
+	"github.com/tendermint/abci/client"
+	abciTypes "github.com/tendermint/abci/types"
 
 	// ====================
 	// Third-party packages
@@ -66,7 +76,10 @@ import (
 	// ======================
 
 	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 )
+
+var TendermintClient abcicli.Client
 
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
@@ -89,8 +102,8 @@ func HashBFTX(bftx BF_TX) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-//GenerateBFTXUID hashes two byte arrays and returns it.
-func GenerateBFTXUID(hash []byte, salt []byte) string {
+//HashByteArray hashes two byte arrays and returns it.
+func HashByteArray(hash []byte, salt []byte) string {
 	return "BFTX" + fmt.Sprintf("%x", common.HashByteArrays(hash, salt))
 }
 
@@ -120,6 +133,34 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 	var bftx BF_TX
 	json.Unmarshal(obj, &bftx)
 	return bftx
+}
+
+func (bftx *BF_TX) GenerateBFTXUID() error {
+	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
+	if err != nil {
+		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	hash, err := HashBFTX(*bftx)
+	if err != nil {
+		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Generate BF_TX id
+	bftx.Id = HashByteArray(hash, resInfo.LastBlockAppHash)
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Save on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
 }
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX

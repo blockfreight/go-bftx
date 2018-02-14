@@ -8,8 +8,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/tendermint/abci/client"
-
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
@@ -18,48 +16,14 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	tmTypes "github.com/tendermint/tendermint/types"
-
 	// Provides HTTP client and server implementations.
 	// ===============
 	// Tendermint Core
 	// ===============
-	abciTypes "github.com/tendermint/abci/types"
 )
 
-var TendermintClient abcicli.Client
-
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-
-	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	hash, err := bf_tx.HashBFTX(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Generate BF_TX id
-	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
-
-	/*jsonContent, err := json.Marshal(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	/* TODO: ENCRYPT TRANSACTION */
-
-	// Save on DB
-	if err = leveldb.RecordOnDB(transaction.Id, content); err != nil {
+	if err := transaction.GenerateBFTXUID(); err != nil {
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -67,7 +31,13 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 }
 
 func SignBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
 
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
@@ -108,7 +78,13 @@ func SignBfTx(idBftx string) (interface{}, error) {
 }
 
 func EncryptBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
 
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
@@ -149,7 +125,13 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 }
 
 func DecryptBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
 
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
@@ -190,6 +172,7 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 }
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
+	var transaction bf_tx.BF_TX
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
@@ -198,7 +181,13 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	}
 
 	// Get a BF_TX by id
-	transaction, err := leveldb.GetBfTx(idBftx)
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
+
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
 			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
@@ -273,7 +262,13 @@ func GetTotal() (interface{}, error) {
 }
 
 func GetTransaction(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
 			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
@@ -297,14 +292,14 @@ func QueryTransaction(idBftx string) (interface{}, error) {
 	query := "bftx.id='" + idBftx + "'"
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
-		return nil, err
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if len(resQuery) > 0 {
 		var transaction bf_tx.BF_TX
 		err := json.Unmarshal(resQuery[0].Tx, &transaction)
 		if err != nil {
-			return nil, err
+			return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 		}
 
 		return transaction, nil
