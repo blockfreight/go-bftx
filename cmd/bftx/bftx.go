@@ -834,61 +834,12 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	data, err := leveldb.GetBfTx(args[0])
-	if err != nil {
+	if err := bftx.BroadcastBfTx(args[0], common.ORIGIN_CMD); err != nil {
 		return err
-	}
-
-	json.Unmarshal(data, &bftx)
-
-	if !bftx.Verified {
-		return errors.New("BF_TX is not signed yet.")
-	}
-	if bftx.Transmitted {
-		return errors.New("BF_TX already transmitted.")
-	}
-
-	// Change the boolean valud for Transmitted attribute
-	bftx.Transmitted = true
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Update on DB
-	err = leveldb.RecordOnDB(string(bftx.Id), content)
-	if err != nil {
-		return err
-	}
-
-	if err != nil {
-		return err
-	}
-
-	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err = rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-	}
-
-	defer rpcClient.Stop()
-
-	var tx tmTypes.Tx
-	tx = []byte(content)
-
-	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		fmt.Printf("%+v\n", rpcErr)
-		return rpcErr
 	}
 
 	printResponse(c, response{
-		Data: resp.Hash,
-		Log:  resp.Log,
+		Result: "BF_TX broadcasted",
 	})
 
 	return nil

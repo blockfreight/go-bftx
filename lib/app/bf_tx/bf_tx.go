@@ -59,7 +59,9 @@ import (
 	"errors" // Implements the SHA256 Algorithm for Hash.
 	"hash"
 	"io"
+	"log"
 	"math/big"
+	"os"
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"net/http"
 	"strconv"
@@ -71,6 +73,8 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	abciTypes "github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ====================
 	// Third-party packages
@@ -188,18 +192,18 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 
 	// Sign BF_TX
 	if err = bftx.SetSignature(); err != nil {
-		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
-		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	return nil
@@ -252,6 +256,62 @@ func (bftx *BF_TX) SetSignature() error {
 	bftx.Signhash = signhash
 	bftx.Signature = sign
 	bftx.Verified = verifystatus
+
+	return nil
+}
+
+func (bftx *BF_TX) BroadcastBfTx(idBftx, origin string) error {
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Get a BF_TX by id
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if !bftx.Verified {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+	if bftx.Transmitted {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Change the boolean valud for Transmitted attribute
+	bftx.Transmitted = true
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(string(bftx.Id), content); err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	_, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	defer rpcClient.Stop()
 
 	return nil
 }
@@ -336,71 +396,6 @@ type Properties struct {
 	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
-// Shipper struct
-type Shipper struct {
-	Type string
-}
-
-// BolNum struct
-type BolNum struct {
-	Type string
-}
-
-// RefNum struct
-type RefNum struct {
-	Type string
-}
-
-// Consignee struct
-type Consignee struct {
-	Type string //Null
-}
-
-// Vessel struct
-type Vessel struct {
-	Type string
-}
-
-// PortLoading struct
-type PortLoading struct {
-	Type string
-}
-
-// PortDischarge struct
-type PortDischarge struct {
-	Type string
-}
-
-// NotifyAddress struct
-type NotifyAddress struct {
-	Type string
-}
-
-// DescGoods struct
-type DescGoods struct {
-	Type string
-}
-
-// GrossWeight struct
-type GrossWeight struct {
-	Type string
-}
-
-// FreightPayableAmt struct
-type FreightPayableAmt struct {
-	Type string
-}
-
-// FreightAdvAmt struct
-type FreightAdvAmt struct {
-	Type string
-}
-
-// GeneralInstructions struct
-type GeneralInstructions struct {
-	Type string
-}
-
 // Date struct
 type Date struct {
 	Type   string
@@ -411,16 +406,6 @@ type Date struct {
 type IssueDetails struct {
 	PlaceOfIssue string `json:"PlaceOfIssue"`
 	DateOfIssue  string `json:"DateOfIssue"`
-}
-
-// PlaceIssue struct
-type PlaceIssue struct {
-	Type string
-}
-
-// NumBol struct
-type NumBol struct {
-	Type string
 }
 
 // MasterInfo struct
@@ -443,26 +428,6 @@ type AgentOwner struct {
 	LastName              string `json:"LastName"`
 	Sig                   string `json:"Sig"`
 	ConditionsForCarriage string `json:"ConditionsForCarriage"`
-}
-
-// FirstName struct
-type FirstName struct {
-	Type string
-}
-
-// LastName struct
-type LastName struct {
-	Type string
-}
-
-// Sig struct
-type Sig struct {
-	Type string
-}
-
-// ConditionsCarriage struct
-type ConditionsCarriage struct {
-	Type string
 }
 
 // =================================================

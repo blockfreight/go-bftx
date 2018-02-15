@@ -15,7 +15,6 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	tmTypes "github.com/tendermint/tendermint/types"
 	// Provides HTTP client and server implementations.
 	// ===============
 	// Tendermint Core
@@ -135,59 +134,10 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
+
+	if err := transaction.BroadcastBfTx(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
-
-	// Get a BF_TX by id
-	data, err := leveldb.GetBfTx(idBftx)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	json.Unmarshal(data, &transaction)
-
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	if !transaction.Verified {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-	if transaction.Transmitted {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-
-	// Change the boolean valud for Transmitted attribute
-	transaction.Transmitted = true
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Update on DB
-	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	var tx tmTypes.Tx
-	tx = []byte(content)
-
-	_, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		fmt.Printf("%+v\n", rpcErr)
-		return nil, rpcErr
-	}
-
-	defer rpcClient.Stop()
 
 	return transaction, nil
 }
