@@ -69,13 +69,13 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 
 	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
 	if err != nil {
-		transLogger(ConstructBfTx, err, string(transaction.Id))
+		simpleLogger(ConstructBfTx, err)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	hash, err := bf_tx.HashBFTX(transaction)
 	if err != nil {
-		transLogger(ConstructBfTx, err, string(transaction.Id))
+		simpleLogger(ConstructBfTx, err
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -92,7 +92,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(transaction)
 	if err != nil {
-		transLogger(ConstructBfTx, err, string(transaction.Id))
+		transLogger(ConstructBfTx, err, transaction.Id)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -100,7 +100,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 
 	// Save on DB
 	if err = leveldb.RecordOnDB(transaction.Id, content); err != nil {
-		transLogger(ConstructBfTx, err, string(transaction.Id))
+		transLogger(ConstructBfTx, err, transaction.Id)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -213,7 +213,6 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 	}
 
 	if transaction.Verified {
-		transLogger(DecryptBfTx, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
 	}
 
@@ -253,7 +252,7 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	err := rpcClient.Start()
 	if err != nil {
 		fmt.Println("Error when initializing rpcClient")
-		simpleLogger(BroadcastBfTx, err)
+		transLogger(BroadcastBfTx, err, idBftx)
 		log.Fatal(err.Error())
 	}
 

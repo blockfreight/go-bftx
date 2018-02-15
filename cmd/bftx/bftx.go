@@ -742,7 +742,7 @@ func cmdSaberDcpTest(c *cli.Context) error {
 	bfenc, err := saberservice.SaberEncodingTestCase(st)
 	bftx, err := saberservice.SaberDecoding(bfenc, st)
 	if err != nil {
-		simpleLogger(cmdSaberDcpTest, err)
+		transLogger(cmdSaberDcpTest, err, bftx.Id)
 		return err
 	}
 	fmt.Print(bftx)
@@ -795,20 +795,20 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	jbftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
-		transLogger(cmdVerifyBfTx, err, string(jbftx.Id))
+		transLogger(cmdVerifyBfTx, err, jbftx.Id)
 		return err
 	}
 
 	// Get the BF_TX old_content in string format
 	jcontent, err := bf_tx.BFTXContent(jbftx)
 	if err != nil {
-		transLogger(cmdVerifyBfTx, err, string(jbftx.Id))
+		transLogger(cmdVerifyBfTx, err, jbftx.Id)
 		return err
 	}
 
 	result, err := leveldb.Verify(jcontent)
 	if err != nil {
-		transLogger(cmdVerifyBfTx, err, string(jbftx.Id))
+		transLogger(cmdVerifyBfTx, err, jbftx.Id)
 		return err
 	}
 	if result == nil {
@@ -833,7 +833,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
-		transLogger(cmdValidateBfTx, err, string(bftx.Id))
+		transLogger(cmdValidateBfTx, err, bftx.Id)
 		return err
 	}
 
@@ -841,7 +841,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
-		transLogger(cmdValidateBfTx, err, string(bftx.Id))
+		transLogger(cmdValidateBfTx, err, bftx.Id)
 		return err
 	}
 
@@ -1123,6 +1123,7 @@ func cmdAppendBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	newBftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, args[1])
 		return err
 
 	}
