@@ -11,7 +11,7 @@ import (
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
 	rpc "github.com/tendermint/tendermint/rpc/client"
@@ -23,8 +23,8 @@ import (
 )
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-	if err := transaction.GenerateBFTXUID(); err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	if err := transaction.GenerateBFTXUID(common.ORIGIN_API); err != nil {
+		return nil, err
 	}
 
 	return transaction, nil
@@ -32,46 +32,8 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 
 func SignBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
-	data, err := leveldb.GetBfTx(idBftx)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	json.Unmarshal(data, &transaction)
-
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	if transaction.Verified {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-
-	// Sign BF_TX
-	transaction, err = crypto.SignBFTX(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	/*jsonContent, err := json.Marshal(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Update on DB
-	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	if err := transaction.SignBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
 
 	return transaction, nil

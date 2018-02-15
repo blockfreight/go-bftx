@@ -51,9 +51,15 @@ import (
 	// Golang Standard library
 	// =======================
 	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/elliptic"
+	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/json"
 	"errors" // Implements the SHA256 Algorithm for Hash.
+	"hash"
+	"io"
+	"math/big"
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"net/http"
 	"strconv"
@@ -135,15 +141,15 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 	return bftx
 }
 
-func (bftx *BF_TX) GenerateBFTXUID() error {
+func (bftx *BF_TX) GenerateBFTXUID(origin string) error {
 	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
 	if err != nil {
-		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	hash, err := HashBFTX(*bftx)
 	if err != nil {
-		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Generate BF_TX id
@@ -152,15 +158,110 @@ func (bftx *BF_TX) GenerateBFTXUID() error {
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Save on DB
 	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
-		return errors.New(strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	return nil
+}
+
+func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if bftx.Verified {
+		return handleResponse(origin, errors.New("Transaction already signed"), strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Sign BF_TX
+	if err = bftx.SetSignature(); err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	return nil
+
+}
+
+// SignBFTX has the whole process of signing each BF_TX.
+func (bftx *BF_TX) SetSignature() error {
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		return err
+	}
+
+	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+
+	privatekey := new(ecdsa.PrivateKey)
+	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
+	if err != nil {
+		return err
+	}
+	pubkey := privatekey.PublicKey
+
+	// Sign ecdsa style
+	var h hash.Hash
+	h = md5.New()
+	r := big.NewInt(0)
+	s := big.NewInt(0)
+
+	io.WriteString(h, content)
+	signhash := h.Sum(nil)
+
+	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
+	if err != nil {
+		return err
+	}
+
+	signature := r.Bytes()
+	signature = append(signature, s.Bytes()...)
+
+	sign := ""
+	for i, _ := range signature {
+		sign += strconv.Itoa(int(signature[i]))
+	}
+
+	// Verification
+	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
+
+	//Set Private Key and Sign to BF_TX
+	bftx.PrivateKey = *privatekey
+	bftx.Signhash = signhash
+	bftx.Signature = sign
+	bftx.Verified = verifystatus
+
+	return nil
+}
+
+func handleResponse(origin string, err error, httpStatusCode string) error {
+	if origin == common.ORIGIN_API {
+		return errors.New(httpStatusCode)
+	}
+
+	return err
 }
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX

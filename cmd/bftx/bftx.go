@@ -46,13 +46,11 @@
 package main
 
 import (
-	"time"
 
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio" // Implements buffered I/O.
-	"encoding/csv"
+	"bufio"        // Implements buffered I/O.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"encoding/json"
 	"errors"  // Implements functions to manipulate errors.
@@ -83,7 +81,7 @@ import (
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/common"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
 )
@@ -265,13 +263,13 @@ func main() {
 				return cmdPrintBfTx(c)
 			},
 		},
-		{
+		/*	{
 			Name:  "massconstruct",
 			Usage: "test purpose, load transactions that are in a csv file",
 			Action: func(c *cli.Context) error {
 				return cmdMassConstructBfTx(c)
 			},
-		},
+		},*/
 		{
 			Name:  "new_validator",
 			Usage: "Add a new validator to the validator set.",
@@ -361,7 +359,7 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-func cmdMassConstructBfTx(c *cli.Context) error {
+/*func cmdMassConstructBfTx(c *cli.Context) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		panic(err)
@@ -475,7 +473,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 	}
 	return nil
 
-}
+}*/
 
 func cmdAddValidator(c *cli.Context) error {
 	args := c.Args()
@@ -797,7 +795,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 		return err
 	}
 
-	if err = bftx.GenerateBFTXUID(); err != nil {
+	if err = bftx.GenerateBFTXUID(common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
@@ -817,32 +815,7 @@ func cmdSignBfTx(c *cli.Context) error {
 		return errors.New("Command sign takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	data, err := leveldb.GetBfTx(args[0])
-	if err != nil {
-		return err
-	}
-
-	json.Unmarshal(data, &bftx)
-	if bftx.Verified {
-		return errors.New("BF_TX already signed.")
-	}
-
-	// Sign BF_TX
-	bftx, err = crypto.SignBFTX(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		return err
-	}
-
-	// Update on DB
-	err = leveldb.RecordOnDB(string(bftx.Id), content)
-	if err != nil {
+	if err := bftx.SignBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
