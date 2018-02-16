@@ -345,6 +345,21 @@ func simpleLogger(i interface{}, currentError error) {
 }
 
 // transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
+func queryLogger(i interface{}, currentError string, id string) {
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError + ", " + id + "\n\n")); err != nil {
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
 func transLogger(i interface{}, currentError error, id string) {
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -1068,6 +1083,7 @@ func cmdQuery(c *cli.Context) error {
 		return nil
 	}
 
+	queryLogger(cmdQuery, "Blockfreight Transaction not found.", args[0])
 	return errors.New("Blockfreight Transaction not found.")
 }
 
