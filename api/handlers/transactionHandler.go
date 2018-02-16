@@ -183,28 +183,10 @@ func GetTransaction(idBftx string) (interface{}, error) {
 }
 
 func QueryTransaction(idBftx string) (interface{}, error) {
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-	}
-	defer rpcClient.Stop()
-	query := "bftx.id='" + idBftx + "'"
-	resQuery, err := rpcClient.TxSearch(query, true)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	var transaction bf_tx.BF_TX
+	if err := transaction.QueryBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
 
-	if len(resQuery) > 0 {
-		var transaction bf_tx.BF_TX
-		err := json.Unmarshal(resQuery[0].Tx, &transaction)
-		if err != nil {
-			return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-		}
-
-		return transaction, nil
-	}
-
-	return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+	return transaction, nil
 }

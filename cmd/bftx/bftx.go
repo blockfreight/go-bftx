@@ -862,36 +862,26 @@ func cmdCommit(c *cli.Context) error {
 // Query application state
 // TODO JCNM: Make request and response support all fields.
 func cmdQuery(c *cli.Context) error {
+	var bftx bf_tx.BF_TX
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
+	if err := bftx.QueryBFTX(args[0], common.ORIGIN_CMD); err != nil {
+		return err
 	}
 
-	query := "bftx.id='" + args[0] + "'"
-
-	resQuery, err := rpcClient.TxSearch(query, true)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		return err
 	}
 
-	defer rpcClient.Stop()
+	printResponse(c, response{
+		Result: string(content),
+	})
 
-	if len(resQuery) > 0 {
-		printResponse(c, response{
-			Result: string(resQuery[0].Tx),
-		})
-
-		return nil
-	}
-
-	return errors.New("Blockfreight Transaction not found.")
+	return nil
 }
 
 // Return the output JSON

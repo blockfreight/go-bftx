@@ -334,6 +334,31 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 
 }
 
+func (bftx *BF_TX) QueryBFTX(idBftx, origin string) error {
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+	defer rpcClient.Stop()
+	query := "bftx.id='" + idBftx + "'"
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if len(resQuery) > 0 {
+		err := json.Unmarshal(resQuery[0].Tx, &bftx)
+		if err != nil {
+			return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		}
+		return nil
+	}
+
+	return handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
+}
+
 func handleResponse(origin string, err error, httpStatusCode string) error {
 	if origin == common.ORIGIN_API {
 		return errors.New(httpStatusCode)
