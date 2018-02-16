@@ -135,7 +135,7 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 
-	if err := transaction.BroadcastBfTx(idBftx, common.ORIGIN_API); err != nil {
+	if err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API); err != nil {
 		return nil, err
 	}
 
@@ -175,20 +175,9 @@ func GetTotal() (interface{}, error) {
 
 func GetTransaction(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
-	data, err := leveldb.GetBfTx(idBftx)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	if err := transaction.GetBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
-
-	json.Unmarshal(data, &transaction)
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	/* TODO: DECRYPT TRANSACTION */
 
 	return transaction, nil
 }

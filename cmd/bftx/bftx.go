@@ -834,7 +834,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	if err := bftx.BroadcastBfTx(args[0], common.ORIGIN_CMD); err != nil {
+	if err := bftx.BroadcastBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
@@ -902,13 +902,9 @@ func cmdGetBfTx(c *cli.Context) error {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	data, err := leveldb.GetBfTx(args[0])
-	if err != nil {
+	if err := bftx.GetBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
 	}
-
-	json.Unmarshal(data, &bftx)
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)

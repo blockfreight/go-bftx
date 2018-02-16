@@ -191,7 +191,7 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 	}
 
 	// Sign BF_TX
-	if err = bftx.SetSignature(); err != nil {
+	if err = bftx.setSignature(); err != nil {
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -211,7 +211,7 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 }
 
 // SignBFTX has the whole process of signing each BF_TX.
-func (bftx *BF_TX) SetSignature() error {
+func (bftx *BF_TX) setSignature() error {
 	content, err := BFTXContent(*bftx)
 	if err != nil {
 		return err
@@ -260,7 +260,7 @@ func (bftx *BF_TX) SetSignature() error {
 	return nil
 }
 
-func (bftx *BF_TX) BroadcastBfTx(idBftx, origin string) error {
+func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
@@ -314,6 +314,24 @@ func (bftx *BF_TX) BroadcastBfTx(idBftx, origin string) error {
 	defer rpcClient.Stop()
 
 	return nil
+}
+
+func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &bftx)
+	if err != nil {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+
 }
 
 func handleResponse(origin string, err error, httpStatusCode string) error {
