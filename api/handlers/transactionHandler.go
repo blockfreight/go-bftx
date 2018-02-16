@@ -75,7 +75,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 
 	hash, err := bf_tx.HashBFTX(transaction)
 	if err != nil {
-		simpleLogger(ConstructBfTx, err
+		simpleLogger(ConstructBfTx, err)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
