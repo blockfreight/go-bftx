@@ -344,7 +344,7 @@ func simpleLogger(i interface{}, currentError error) {
 	}
 }
 
-// transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
+// queryLogger writes errors, the function name that generated the error, and the transaction body to bftx.log for cmdQuery only
 func queryLogger(i interface{}, currentError string, id string) {
 	// If the file doesn't exist, create it, or append to the file
 	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
