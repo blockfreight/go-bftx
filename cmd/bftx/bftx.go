@@ -80,10 +80,11 @@ import (
 
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/common"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
+	"github.com/blockfreight/go-bftx/lib/app/blockchain"
+	"github.com/blockfreight/go-bftx/lib/app/validator"    // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/common"       // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"      // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice" // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -689,13 +690,15 @@ func cmdSaberDcpTest(c *cli.Context) error {
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	resInfo, err := client.InfoSync(types.RequestInfo{})
+
+	bftxBlockchain, err := blockchain.GetInfo()
 	if err != nil {
 		return err
 	}
+
 	printResponse(c, response{
-		Data:   resInfo.LastBlockAppHash,
-		Result: resInfo.Data,
+		Data:   bftxBlockchain.LastBlockAppHash,
+		Result: bftxBlockchain.Data,
 	})
 	return nil
 }
