@@ -85,8 +85,8 @@ import (
 	// Blockfreight™ packages
 	// ======================
 
-	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Implements common functions for Blockfreight™
 )
 
 var TendermintClient abcicli.Client
@@ -357,6 +357,15 @@ func (bftx *BF_TX) QueryBFTX(idBftx, origin string) error {
 	}
 
 	return handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
+}
+
+func (bftx BF_TX) GetTotal() (int, error) {
+	total, err := leveldb.Total()
+	if err != nil {
+		return 0, err
+	}
+
+	return total, nil
 }
 
 func handleResponse(origin string, err error, httpStatusCode string) error {

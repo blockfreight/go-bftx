@@ -1017,8 +1017,9 @@ func cmdPrintBfTx(c *cli.Context) error {
 }
 
 func cmdTotalBfTx(c *cli.Context) error {
-	// Query the total of BF_TX in DB
-	total, err := leveldb.Total()
+	var bftx bf_tx.BF_TX
+
+	total, err := bftx.GetTotal()
 	if err != nil {
 		return err
 	}

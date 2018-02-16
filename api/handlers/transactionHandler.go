@@ -3,9 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
-	"os"
 	"strconv"
 
 	"net/http" // Provides HTTP client and server implementations.
@@ -14,7 +12,6 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/common"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
-	rpc "github.com/tendermint/tendermint/rpc/client"
 	// Provides HTTP client and server implementations.
 	// ===============
 	// Tendermint Core
@@ -142,30 +139,10 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
-func GetInfo() (interface{}, error) {
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		fmt.Println(err.Error())
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	abciInfo, err := rpcClient.ABCIInfo()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		fmt.Println(err.Error())
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	defer rpcClient.Stop()
-
-	return abciInfo.Response, nil
-}
-
 func GetTotal() (interface{}, error) {
-	// Query the total of BF_TX in DB
-	total, err := leveldb.Total()
+	var bftx bf_tx.BF_TX
+
+	total, err := bftx.GetTotal()
 	if err != nil {
 		return nil, err
 	}
