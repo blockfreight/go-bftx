@@ -26,6 +26,7 @@ import (
 	abciTypes "github.com/tendermint/abci/types"
 )
 
+//TendermintClient object to call function from tendermint
 var TendermintClient abcicli.Client
 
 // ConstructBfTx function to create a BFTX via API

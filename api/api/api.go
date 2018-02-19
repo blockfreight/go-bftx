@@ -166,6 +166,7 @@ var mutationType = graphql.NewObject(
 	},
 )
 
+//Start start the API
 func Start() error {
 	http.HandleFunc("/bftx-api", httpHandler(&schema))
 	fmt.Println("Now server is running on: http://localhost:12345")
