@@ -2,6 +2,7 @@ package graphqlObj
 
 import "github.com/graphql-go/graphql"
 
+// PropertiesType object for GraphQL integration
 var PropertiesType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Properties",
@@ -112,6 +113,7 @@ var PropertiesType = graphql.NewObject(
 	},
 )
 
+// PropertiesInput object for GraphQL integration
 var PropertiesInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "Properties",

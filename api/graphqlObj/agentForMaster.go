@@ -2,6 +2,7 @@ package graphqlObj
 
 import "github.com/graphql-go/graphql"
 
+// AgentForMasterInput object for GraphQL integration
 var AgentForMasterInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "AgentForMaster",
@@ -19,6 +20,7 @@ var AgentForMasterInput = graphql.NewInputObject(
 	},
 )
 
+// AgentForMaster object for GraphQL integration
 var AgentForMaster = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "AgentForMaster",
