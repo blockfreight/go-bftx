@@ -50,19 +50,23 @@ import (
 	// Golang Standard library
 	// =======================
 	"bufio"        // Implements buffered I/O.
+	"encoding/csv" // Package csv reads and writes comma-separated values (CSV) files.
 	"encoding/hex" // Implements hexadecimal encoding and decoding.
 	"errors"       // Implements functions to manipulate errors.
 	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"io"           // Provides basic interfaces to I/O primitives.
 	"log"          // Implements a simple logging package.
 	"os"           // Provides a platform-independent interface to operating system functionality.
-	"os/exec"
-	"strconv" // Implements conversions to and from string representations of basic data types.
-	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	"reflect"      // Implements run-time reflection, allowing a program to manipulate objects with arbitrary types.
+	"runtime"      // Contains operations that interact with Go's runtime system.
+	"strconv"      // Implements conversions to and from string representations of basic data types.
+	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
+	"time"         // Provides functionality for measuring and displaying time.
 
 	// ====================
 	// Third-party packages
 	// ====================
+
 	"github.com/urfave/cli" // Provides structure and function to build command line apps in Go.
 
 	// ===============
@@ -70,22 +74,27 @@ import (
 	// ===============
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
 	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
 type response struct {
 	// generic abci response
 	Data   []byte
-	Code   types.CodeType
+	Code   uint32
 	Log    string
 	Result string //Blockfreight Purposes
 
@@ -95,12 +104,13 @@ type response struct {
 type queryResponse struct {
 	Key    []byte
 	Value  []byte
-	Height uint64
+	Height int64
 	Proof  []byte
 }
 
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
+var rpcClient *rpc.HTTP
 
 func main() {
 
@@ -215,13 +225,13 @@ func main() {
 				return cmdCommit(c)
 			},
 		},
-		/* {
-		    Name:  "query",
-		    Usage: "Query application state",
-		    Action: func(c *cli.Context) error {
-		        return cmdQuery(c)
-		    },
-		},*/
+		{
+			Name:  "query",
+			Usage: "Query application state",
+			Action: func(c *cli.Context) error {
+				return cmdQuery(c)
+			},
+		},
 		{
 			Name:  "get",
 			Usage: "Retrieve a [BF_TX] by its ID (Parameters: BF_TX id)",
@@ -258,10 +268,17 @@ func main() {
 			},
 		},
 		{
-			Name:  "fednode",
-			Usage: "Test Python Hello Function",
+			Name:  "massconstruct",
+			Usage: "test purpose, load transactions that are in a csv file",
 			Action: func(c *cli.Context) error {
-				return cmdFednode(c)
+				return cmdMassConstructBfTx(c)
+			},
+		},
+		{
+			Name:  "new_validator",
+			Usage: "Add a new validator to the validator set.",
+			Action: func(c *cli.Context) error {
+				return cmdAddValidator(c)
 			},
 		},
 		{
@@ -269,6 +286,34 @@ func main() {
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
 				os.Exit(0)
+			},
+		},
+		{
+			Name:  "saberenctest",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEncTest(c)
+			},
+		},
+		{
+			Name:  "saberdcptest",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcpTest(c)
+			},
+		},
+		{
+			Name:  "saberenc",
+			Usage: "prototype of saber encoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberEnc(c)
+			},
+		},
+		{
+			Name:  "saberdcp",
+			Usage: "prototype of saber decoding service.",
+			Action: func(c *cli.Context) error {
+				return cmdSaberDcp(c)
 			},
 		},
 	}
@@ -280,15 +325,55 @@ func main() {
 
 }
 
+func getFunctionName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
+}
+
+// simpleLogger writes errors and the function name that generated the error to bftx.log
+func simpleLogger(i interface{}, currentError error) {
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + "\n\n")); err != nil {
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
+func transLogger(i interface{}, currentError error, transactionBody bf_tx.BF_TX) {
+	// If the file doesn't exist, create it, or append to the file
+	f, err := os.OpenFile("bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	tb, err := bf_tx.BFTXContent(transactionBody)
+	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + getFunctionName(i) + ", " + currentError.Error() + ", " + tb + "\n\n")); err != nil {
+		log.Fatal(err)
+	}
+	if err := f.Close(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func before(c *cli.Context) error {
 	introduction(c)
 	if client == nil {
 		var err error
-		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), false)
+		client, err = abcicli.NewClient(c.GlobalString("address"), c.GlobalString("call"), true)
+		client.Start()
 		if err != nil {
 			log.Fatal(err.Error())
+			simpleLogger(before, err)
 		}
+
+		handlers.TendermintClient = client
 	}
+
 	return nil
 }
 
@@ -314,32 +399,198 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-//--------------------------------------------------------------------------------
+func cmdMassConstructBfTx(c *cli.Context) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		simpleLogger(cmdMassConstructBfTx, err)
+		panic(err)
+	}
+	// fmt.Printf(wd + "/examples/Lading.csv")
+	csvFile, err := os.Open(wd + "/examples/Lading.csv")
+	if err != nil {
+		log.Fatal("csv read error:\n", err)
+		simpleLogger(cmdMassConstructBfTx, err)
+	}
 
-func cmdGenerateBftxID(bftx bf_tx.BF_TX) ([]byte, error) {
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+		simpleLogger(cmdMassConstructBfTx, err)
+	}
+
+	defer rpcClient.Stop()
+
+	i := 0
+	t0 := time.Now()
+
+	for {
+
+		line, err := reader.Read()
+		if err == io.EOF {
+			log.Fatal("io read error", err)
+			simpleLogger(cmdMassConstructBfTx, err)
+		}
+		if err != nil {
+			log.Fatal(err)
+			simpleLogger(cmdMassConstructBfTx, err)
+		}
+
+		if len(line) != 22 {
+			fmt.Printf("breaking line number: %d\n", i)
+			fmt.Printf("Line has wrong length:%d \n", len(line))
+			fmt.Printf("Line: %+v", line)
+			continue
+		}
+		bftx := saberservice.NVCsvConverterOld(line)
+
+		newID, err := cmdGenerateBftxID(bftx)
+		if err != nil {
+			transLogger(cmdMassConstructBfTx, err, bftx)
+			return err
+		}
+
+		bftx.Id = newID
+
+		bftx, err = crypto.SignBFTX(bftx)
+		if err != nil {
+			transLogger(cmdMassConstructBfTx, err, bftx)
+			return err
+		}
+
+		// Change the boolean valud for Transmitted attribute
+		bftx.Transmitted = true
+
+		// Get the BF_TX content in string format
+		content, err := bf_tx.BFTXContent(bftx)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
+			return err
+		}
+		//fmt.Printf("%+v\n", bftx.PrivateKey)
+
+		// Update on DB
+		err = leveldb.RecordOnDB(string(bftx.Id), content)
+		if err != nil {
+			log.Fatal("BFTXContent error", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
+			return err
+		}
+
+		resp, err := rpcClient.BroadcastTxSync([]byte(content))
+
+		if err != nil {
+			log.Fatal("rpcclient err:", err)
+			transLogger(cmdMassConstructBfTx, err, bftx)
+		}
+		// added for flow control
+		i++
+		if i%100 == 0 {
+			t1 := time.Now()
+			fmt.Printf("%+v - Time: %+s\n", resp, t1.Sub(t0))
+			t0 = t1
+
+			// If the file doesn't exist, create it, or append to the file
+			f, err := os.OpenFile("mass.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+			if err != nil {
+				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
+			}
+			if _, err := f.Write([]byte(content + "\n")); err != nil {
+				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
+			}
+			if err := f.Close(); err != nil {
+				log.Fatal(err)
+				transLogger(cmdMassConstructBfTx, err, bftx)
+			}
+
+			printResponse(c, response{
+				Data: resp.Data,
+				Log:  resp.Log,
+			})
+		} else {
+			fmt.Print(i, ",")
+		}
+
+		// fmt.Printf(i, "%+v\n", resp)
+
+		// printResponse(c, response{
+		//     Data: resp.Data,
+		//     Log:  resp.Log,
+		// })
+
+	}
+	// return nil
+
+}
+
+func cmdAddValidator(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("This command takes 1 argument")
+	}
+
+	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+		simpleLogger(cmdAddValidator, err)
+	}
+
+	content := "val:" + args[0]
+
+	defer rpcClient.Stop()
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		simpleLogger(cmdAddValidator, rpcErr)
+		return rpcErr
+	}
+
+	printResponse(c, response{
+		Code: resp.Code,
+		Data: resp.Hash,
+		Log:  resp.Log,
+	})
+
+	return nil
+
+}
+
+func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	// BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 	salt, err := getBlockAppHash()
 	if err != nil {
-		return nil, err
+		transLogger(cmdGenerateBftxID, err, bftx)
+		return "", err
 	}
 
 	// Hash BF_TX Object
 	hash, err := bf_tx.HashBFTX(bftx)
 	if err != nil {
-		return nil, err
+		transLogger(cmdGenerateBftxID, err, bftx)
+		return "", err
 	}
 
 	// Generate BF_TX id
-	bftxID := bf_tx.GenerateBFTXSalt(hash, salt)
-
-	//printResponse (blah blah)
+	bftxID := bf_tx.GenerateBFTXUID(hash, salt)
 
 	return bftxID, nil
 }
 
 func getBlockAppHash() ([]byte, error) {
-	resInfo, err := client.InfoSync()
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
+		simpleLogger(getBlockAppHash, err)
 		return nil, err
 	}
 
@@ -385,48 +636,126 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 	}
 }
 
-func cmdHelloPython(c *cli.Context) error {
+func cmdSaberEnc(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
 
-	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('fednode ps')")
-	cmd.Dir = "./lib/pkg/python/"
-	out, err := cmd.Output()
-
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
-		fmt.Println(err)
+		simpleLogger(cmdSaberEnc, err)
+		return err
+	}
+	// In the long term, this conversion is unnecessary, and it makes the program to be less efficient.
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		simpleLogger(cmdSaberEnc, err)
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
+	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
 
-	printResponse(c, response{
-		Result: string(out),
-	})
-	return nil
-}
-
-func cmdFednode(c *cli.Context) error {
-	args := "fednode "+strings.Join(c.Args(), " ")
-	fmt.Println(args)
-	cmd := exec.Command("python", "-c", "import pyCommand; pyCommand.pyDockerCmd('"+args+"')")
-	cmd.Dir = "./lib/pkg/python/"
-	cmd.Stdout = os.Stdout
-    cmd.Stderr = os.Stderr
-    cmd.Stdin = os.Stdin
-    err := cmd.Run()
-	
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
-		fmt.Println(err)
+		simpleLogger(cmdSaberEnc, err)
 		return err
 	}
-	// printResponse(c, response{
-	// 	Result: string(out),
-	// })
+	// fmt.Printf("\nSaber encryption result: \n%+v\n", content)
 	return nil
 }
 
+func cmdSaberDcp(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command sign takes 1 argument")
+	}
+	// TODO: Change the arguments so it can specify the saber encoding parameters
+	// CUrrent: it only takes the default encoding configuration
+
+	// Get a BF_TX by id
+	oldbftx, err := leveldb.GetBfTx(args[0])
+	if err != nil {
+		transLogger(cmdSaberDcp, err, oldbftx)
+		return err
+	}
+	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
+	if err != nil {
+		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
+		transLogger(cmdSaberDcp, err, oldbftx)
+		return err
+	}
+	st := saberservice.SaberDefaultInput()
+	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
+	if err != nil {
+		transLogger(cmdSaberDcp, err, oldbftx)
+		return err
+	}
+	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
+	//update the encoded transaction to database
+	// Get the BF_TX content in string format
+	content, err := bf_tx.BFTXContent(*bftxold)
+	if err != nil {
+		transLogger(cmdSaberDcp, err, oldbftx)
+		return err
+	}
+
+	// Update on DB
+	err = leveldb.RecordOnDB(string(bftxold.Id), content)
+	if err != nil {
+		transLogger(cmdSaberDcp, err, oldbftx)
+		return err
+	}
+	// fmt.Printf("\nSaber decryption result: \n%+v\n", content)
+	return nil
+}
+
+func cmdSaberEncTest(c *cli.Context) error {
+	st := saberservice.Saberinputcli(nil)
+	bftx, err := saberservice.SaberEncodingTestCase(st)
+	if err != nil {
+		simpleLogger(cmdSaberEncTest, err)
+		return err
+	}
+	fmt.Print(bftx)
+	return nil
+}
+
+func cmdSaberDcpTest(c *cli.Context) error {
+	st := saberservice.Saberinputcli(nil)
+	bfenc, err := saberservice.SaberEncodingTestCase(st)
+	bftx, err := saberservice.SaberDecoding(bfenc, st)
+	if err != nil {
+		simpleLogger(cmdSaberDcpTest, err)
+		return err
+	}
+	fmt.Print(bftx)
+	return nil
+
+}
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	resInfo, err := client.InfoSync()
+	resInfo, err := client.InfoSync(types.RequestInfo{})
 	if err != nil {
+		simpleLogger(cmdInfo, err)
 		return err
 	}
 	printResponse(c, response{
@@ -442,7 +771,15 @@ func cmdSetOption(c *cli.Context) error {
 	if len(args) != 2 {
 		return errors.New("Command set_option takes 2 arguments (key, value)")
 	}
-	resSetOption := client.SetOptionSync(args[0], args[1])
+	resSetOption, err := client.SetOptionSync(types.RequestSetOption{
+		Key:   args[0],
+		Value: args[1],
+	})
+	if err != nil {
+		simpleLogger(cmdSetOption, err)
+		return err
+	}
+
 	printResponse(c, response{
 		Log: resSetOption.Log,
 	})
@@ -459,17 +796,20 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	jbftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 
 	// Get the BF_TX old_content in string format
 	jcontent, err := bf_tx.BFTXContent(jbftx)
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 
 	result, err := leveldb.Verify(jcontent)
 	if err != nil {
+		simpleLogger(cmdVerifyBfTx, err)
 		return err
 	}
 	if result == nil {
@@ -481,11 +821,6 @@ func cmdVerifyBfTx(c *cli.Context) error {
 		Result: "The BF_TX associated to JSON content is " + string(result),
 	})
 
-	/*printResponse(c, response{
-	    Code: res.Code,
-	    Data: res.Data,
-	    Log:  res.Log,
-	})*/
 	return nil
 }
 
@@ -499,6 +834,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		transLogger(cmdValidateBfTx, err, bftx)
 		return err
 	}
 
@@ -506,6 +842,7 @@ func cmdValidateBfTx(c *cli.Context) error {
 	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
+		transLogger(cmdValidateBfTx, err, bftx)
 		return err
 	}
 
@@ -526,32 +863,37 @@ func cmdConstructBfTx(c *cli.Context) error {
 	// Read JSON and instance the BF_TX structure
 	bftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	newId, err := cmdGenerateBftxID(bftx)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
-	bftx.Id = fmt.Sprintf("%x", newId)
+	bftx.Id = newId
 
 	// Re-validate a BF_TX before create a BF_TX
 	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		fmt.Println(result)
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(bftx.Id, content)
 	if err != nil {
+		transLogger(cmdConstructBfTx, err, bftx)
 		return err
 	}
 
@@ -573,6 +915,7 @@ func cmdSignBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 	if bftx.Verified {
@@ -582,18 +925,21 @@ func cmdSignBfTx(c *cli.Context) error {
 	// Sign BF_TX
 	bftx, err = crypto.SignBFTX(bftx)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftx.Id), content)
 	if err != nil {
+		transLogger(cmdSignBfTx, err, bftx)
 		return err
 	}
 
@@ -614,6 +960,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 	if !bftx.Verified {
@@ -629,36 +976,59 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftx.Id), content)
 	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
 		return err
 	}
 
-	// Deliver / Publish a BF_TX
-	res := client.DeliverTxSync([]byte(content))
+	if err != nil {
+		transLogger(cmdBroadcastBfTx, err, bftx)
+		return err
+	}
 
-	// Check the BF_TX hash
-	res = client.CommitSync()
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err = rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
 
-	//Result
+	}
+
+	defer rpcClient.Stop()
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		transLogger(cmdBroadcastBfTx, rpcErr, bftx)
+		return rpcErr
+	}
+
 	printResponse(c, response{
-		Code: res.Code,
-		//Result: "BF_TX transmitted"
-		Data: res.Data,
-		Log:  res.Log,
+		Data: resp.Hash,
+		Log:  resp.Log,
 	})
+
 	return nil
 }
 
 // Get application Merkle root hash
 func cmdCommit(c *cli.Context) error {
-	result := client.CommitSync()
+	result, err := client.CommitSync()
+	if err != nil {
+		simpleLogger(cmdCommit, err)
+		return err
+	}
+
 	printResponse(c, response{
-		Code: result.Code,
 		Data: result.Data,
 		Log:  result.Log,
 	})
@@ -667,38 +1037,40 @@ func cmdCommit(c *cli.Context) error {
 
 // Query application state
 // TODO JCNM: Make request and response support all fields.
-/*func cmdQuery(c *cli.Context) error {
-    args := c.Args()
-    if len(args) != 1 {
-        return errors.New("Command query takes 1 argument")
-    }
+func cmdQuery(c *cli.Context) error {
+	args := c.Args()
+	if len(args) != 1 {
+		return errors.New("Command query takes 1 argument")
+	}
 
-    // TODO JCNM: Check the query because when the bf_tx is added to the blockchain, it is signed. But, in here is not signed. Them, doesn't find match
-    // TODO JCNM: Query from blockchain
-    bft_tx := bf_tx.SetBFTX(c.GlobalString("json_path")+string(args[0]))
-    queryBytes := []byte(bf_tx.BFTXContent(bft_tx))
+	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		fmt.Println("Error when initializing rpcClient")
+		log.Fatal(err.Error())
+		simpleLogger(cmdQuery, err)
+	}
 
-    resQuery, err := client.QuerySync(types.RequestQuery{
-        Data:   queryBytes,
-        Path:   "/block", // TODO expose
-        Height: 0,        // TODO expose
-        //Prove:  true,     // TODO expose
-    })
-    if err != nil {
-        return err
-    }
-    printResponse(c, response{
-        Code: resQuery.Code,
-        Log:  resQuery.Log,
-        Query: &queryResponse{
-            Key:    resQuery.Key,
-            Value:  resQuery.Value,
-            Height: resQuery.Height,
-            Proof:  resQuery.Proof,
-        },
-    })
-    return nil
-}*/
+	query := "bftx.id='" + args[0] + "'"
+
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		simpleLogger(cmdQuery, err)
+		return err
+	}
+
+	defer rpcClient.Stop()
+
+	if len(resQuery) > 0 {
+		printResponse(c, response{
+			Result: string(resQuery[0].Tx),
+		})
+
+		return nil
+	}
+
+	return errors.New("Blockfreight Transaction not found.")
+}
 
 // Return the output JSON
 func cmdGetBfTx(c *cli.Context) error {
@@ -710,12 +1082,14 @@ func cmdGetBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdGetBfTx, err, bftx)
 		return err
 	}
 
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
+		transLogger(cmdGetBfTx, err, bftx)
 		return err
 	}
 
@@ -736,12 +1110,14 @@ func cmdAppendBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	oldBftx, err := leveldb.GetBfTx(args[1])
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, oldBftx)
 		return err
 	}
 
 	// Query the total of BF_TX in DB
 	// n, err := leveldb.Total()
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, oldBftx)
 		return err
 	}
 
@@ -749,6 +1125,7 @@ func cmdAppendBfTx(c *cli.Context) error {
 	newBftx, err := bf_tx.SetBFTX(c.GlobalString("json_path") + args[0])
 	if err != nil {
 		return err
+
 	}
 
 	// Set the BF_TX id
@@ -760,22 +1137,26 @@ func cmdAppendBfTx(c *cli.Context) error {
 	// Get the BF_TX (old and new) content in string format
 	newContent, err := bf_tx.BFTXContent(newBftx)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 	oldContent, err := bf_tx.BFTXContent(oldBftx)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
 	// Save on DB
 	err = leveldb.RecordOnDB(string(newBftx.Id), newContent)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(oldBftx.Id), oldContent)
 	if err != nil {
+		transLogger(cmdAppendBfTx, err, newBftx)
 		return err
 	}
 
@@ -797,6 +1178,7 @@ func cmdStateBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdStateBfTx, err, bftx)
 		return err
 	}
 
@@ -816,6 +1198,7 @@ func cmdPrintBfTx(c *cli.Context) error {
 	// Get a BF_TX by id
 	bftx, err := leveldb.GetBfTx(args[0])
 	if err != nil {
+		transLogger(cmdPrintBfTx, err, bftx)
 		return err
 	}
 
@@ -828,6 +1211,7 @@ func cmdTotalBfTx(c *cli.Context) error {
 	// Query the total of BF_TX in DB
 	total, err := leveldb.Total()
 	if err != nil {
+		simpleLogger(cmdTotalBfTx, err)
 		return err
 	}
 
@@ -846,10 +1230,6 @@ func printResponse(c *cli.Context, rsp response) {
 
 	if verbose {
 		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
-	}
-
-	if !rsp.Code.IsOK() {
-		fmt.Printf("-> code: %s\n", rsp.Code.String())
 	}
 
 	if rsp.Result != "" {
@@ -890,6 +1270,7 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 		b, err := hex.DecodeString(s[2:])
 		if err != nil {
 			err = fmt.Errorf("Error decoding hex argument: %s", err.Error())
+			simpleLogger(stringOrHexToBytes, err)
 			return nil, err
 		}
 		return b, nil
@@ -907,6 +1288,7 @@ func introduction(c *cli.Context) {
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Go App")
 	fmt.Println("Address " + c.GlobalString("address"))
+	fmt.Println("API Address http://localhost:12345")
 	fmt.Println("BFT Implementation:  " + c.GlobalString("call"))
 	fmt.Println("...........................................\n")
 	/*name := "Blockfreight Community"

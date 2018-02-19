@@ -1,61 +1,40 @@
 {
-  "type": "object",
-    "properties": {
-      
-      "shipper": { "type": "VLX454323F" },
-      "BolNum": { "type": 15554 },
-      "RefNum": { "type": 154532165},
-      "consignee":{"type":null},
-      "vessel":{"type":132153456},
-      "PortOfLoading":{"type":21514},
-      "PortOfDischarge":{"type":51651},
-      "NotifyAddress":{"type":"345 Bourke Street 4th floor, Melbourne VIC 3000, Australia"},
-      "DescOfGoods":{"type":"This is the goods description."},
-      "GrossWeight":{"type":15523},
-      "FreightPayableAmt":{"type":354534},
-      "FreightAdvAmt":{"type":35448552},
-      "GeneralInstructions":{"type":"There are many general instructions."},
-      "DateShipped":{"type":20161128, "format":"date-time"},
-  
-      "IssueDetails": {
-          "type": "object",
-          "properties": {
-            "PlaceOfIssue": { "type": "Melbourne, Australia" },
-            "DateOfIssue": { "type": 20161128, "format":"date-time" }
-        }
-      },
-  
-      "NumBol":{"type":54684010805},
-  
-      "MasterInfo": {
-        "type": "object",
-        "properties": {
-          "FirstName": { "type": "Master First Name" },
-          "LastName": { "type": "Master Last Name" },
-          "sig":{"type":null}
-        }
-      },
-      
-  
-      "AgentForMaster": {
-        "type": "object",
-        "properties": {
-          "FirstName": { "type": "Agent First Name" },
-          "LastName": { "type": "Agent Last Name" },
-          "sig":{"type":null}
-        }
-      },
-  
-  
-      "AgentForOwner": {
-        "type": "object",
-        "properties": {
-          "FirstName": { "type": "Owner First Name" },
-          "LastName": { "type": "Owner Last Name" },
-          "sig":{"type":null},
-          "ConditionsForCarriage":{"type":"There are the carriage conditions."}
-        }
-      }
-  
-  }
-}
+    "Properties":{
+       "Shipper":"VLX454323F",
+       "BolNum":"15554",
+       "RefNum":"154532165",
+       "HouseBill":"testtest",
+       "Vessel":"132153456",
+       "PortOfLoading":"CNSHA",
+       "PortOfDischarge":"AUADL",
+       "UnitOfVolume":"",
+       "NotifyAddress":"345 Bourke Street 4th floor, Melbourne VIC 3000, Australia",
+       "DescOfGoods":"This is the goods description.",
+       "GrossWeight":"15523",
+       "FreightPayableAmt":"354534",
+       "FreightAdvAmt":"35448552",
+       "GeneralInstructions":"There are many general instructions.",
+       "DateShipped":"20161128",
+       "IssueDetails":{
+          "PlaceOfIssue":"Melbourne, Australia",
+          "DateOfIssue":"20161128"
+       },
+       "NumBol":"54684010805",
+       "MasterInfo":{
+          "FirstName":"Master First Name",
+          "LastName":"Master Last Name",
+          "Sig":""
+       },
+       "AgentForMaster":{
+          "FirstName":"Agent First Name",
+          "LastName":"Agent Last Name",
+          "Sig":""
+       },
+       "AgentForOwner":{
+          "FirstName":"Owner First Name",
+          "LastName":"Owner Last Name",
+          "Sig":"",
+          "ConditionsForCarriage":"There are the carriage conditions."
+       }
+    }
+ }

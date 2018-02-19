@@ -53,7 +53,8 @@ import (
 	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
 	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
 	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
+
+	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
 
 	// ====================
 	// Third-party packages
@@ -63,6 +64,7 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
 	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
 )
 
@@ -87,9 +89,9 @@ func HashBFTX(bftx BF_TX) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-//GenerateBFTXSalt hashes two byte arrays and returns it.
-func GenerateBFTXSalt(hash []byte, salt []byte) []byte {
-	return common.HashByteArrays(hash, salt)
+//GenerateBFTXUID hashes two byte arrays and returns it.
+func GenerateBFTXUID(hash []byte, salt []byte) string {
+	return "BFTX" + fmt.Sprintf("%x", common.HashByteArrays(hash, salt))
 }
 
 // BFTXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
@@ -114,6 +116,12 @@ func State(bftx BF_TX) string {
 	}
 }
 
+func ByteArrayToBFTX(obj []byte) BF_TX {
+	var bftx BF_TX
+	json.Unmarshal(obj, &bftx)
+	return bftx
+}
+
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
 func Reinitialize(bftx BF_TX) BF_TX {
 	bftx.PrivateKey.Curve = nil
@@ -132,42 +140,58 @@ type BF_TX struct {
 	// =========================
 	// Bill of Lading attributes
 	// =========================
-	Type       string
 	Properties Properties
 
 	// ===================================
 	// Blockfreight Transaction attributes
 	// ===================================
-	Id          string
-	PrivateKey  ecdsa.PrivateKey
-	Signhash    []uint8
-	Signature   string
-	Verified    bool
-	Transmitted bool
-	Amendment   string
+	Id          string           `json:"Id"`
+	PrivateKey  ecdsa.PrivateKey `json:"-"`
+	Signhash    []uint8          `json:"Signhash"`
+	Signature   string           `json:"Signature"`
+	Verified    bool             `json:"Verified"`
+	Transmitted bool             `json:"Transmitted"`
+	Amendment   string           `json:"Amendment"`
+	Private     string           `json:"Private"`
 }
 
 // Properties struct
 type Properties struct {
-	Shipper             Shipper
-	BolNum              BolNum
-	RefNum              RefNum
-	Consignee           Consignee
-	Vessel              Vessel
-	PortOfLoading       PortLoading
-	PortOfDischarge     PortDischarge
-	NotifyAddress       NotifyAddress
-	DescOfGoods         DescGoods
-	GrossWeight         GrossWeight
-	FreightPayableAmt   FreightPayableAmt
-	FreightAdvAmt       FreightAdvAmt
-	GeneralInstructions GeneralInstructions
-	DateShipped         Date
-	IssueDetails        IssueDetails
-	NumBol              NumBol
-	MasterInfo          MasterInfo
-	AgentForMaster      AgentMaster
-	AgentForOwner       AgentOwner
+	Shipper             string       `protobuf:"bytes,1,opt,name=Shipper" json:"Shipper"`
+	BolNum              string       `protobuf:"varint,1,opt,name=BolNum" json:"BolNum"`
+	RefNum              string       `protobuf:"varint,2,opt,name=RefNum" json:"RefNum"`
+	Consignee           string       `protobuf:"bytes,2,opt,name=Consignee" json:"Consignee"`
+	HouseBill           string       `protobuf:"bytes,3,opt,name=HouseBill" json:"HouseBill"`
+	Vessel              string       `protobuf:"varint,3,opt,name=Vessel" json:"Vessel"`
+	Packages            string       `protobuf:"varint,4,opt,name=Packages" json:"Packages"`
+	PackType            string       `protobuf:"bytes,4,opt,name=PackType" json:"PackType"`
+	INCOTerms           string       `protobuf:"bytes,5,opt,name=INCOTerms" json:"INCOTerms"`
+	PortOfLoading       string       `protobuf:"bytes,6,opt,name=PortOfLoading" json:"PortOfLoading"`
+	PortOfDischarge     string       `protobuf:"bytes,7,opt,name=PortOfDischarge" json:"PortOfDischarge"`
+	Destination         string       `protobuf:"bytes,8,opt,name=Destination" json:"Destination"`
+	MarksAndNumbers     string       `protobuf:"bytes,9,opt,name=MarksAndNumbers" json:"MarksAndNumbers"`
+	UnitOfWeight        string       `protobuf:"bytes,10,opt,name=UnitOfWeight" json:"UnitOfWeight"`
+	DeliverAgent        string       `protobuf:"bytes,11,opt,name=DeliverAgent" json:"DeliverAgent"`
+	ReceiveAgent        string       `protobuf:"bytes,12,opt,name=ReceiveAgent" json:"ReceiveAgent"`
+	Container           string       `protobuf:"bytes,13,opt,name=Container" json:"Container"`
+	ContainerSeal       string       `protobuf:"bytes,14,opt,name=ContainerSeal" json:"ContainerSeal"`
+	ContainerMode       string       `protobuf:"bytes,15,opt,name=ContainerMode" json:"ContainerMode"`
+	ContainerType       string       `protobuf:"bytes,16,opt,name=ContainerType" json:"ContainerType"`
+	Volume              string       `protobuf:"bytes,17,opt,name=Volume" json:"Volume"`
+	UnitOfVolume        string       `protobuf:"bytes,18,opt,name=UnitOfVolume" json:"UnitOfVolume"`
+	NotifyAddress       string       `protobuf:"bytes,19,opt,name=NotifyAddress" json:"NotifyAddress"`
+	DescOfGoods         string       `protobuf:"bytes,20,opt,name=DescOfGoods" json:"DescOfGoods"`
+	GrossWeight         string       `protobuf:"varint,5,opt,name=GrossWeight" json:"GrossWeight"`
+	FreightPayableAmt   string       `protobuf:"varint,6,opt,name=FreightPayableAmt" json:"FreightPayableAmt"`
+	FreightAdvAmt       string       `protobuf:"varint,7,opt,name=FreightAdvAmt" json:"FreightAdvAmt"`
+	GeneralInstructions string       `protobuf:"bytes,21,opt,name=GeneralInstructions" json:"GeneralInstructions"`
+	DateShipped         string       `protobuf:"bytes,22,opt,name=DateShipped" json:"DateShipped"`
+	IssueDetails        IssueDetails `json:"IssueDetails"`
+	NumBol              string       `protobuf:"varint,8,opt,name=NumBol" json:"NumBol"`
+	MasterInfo          MasterInfo   `json:"MasterInfo"`
+	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
+	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
+	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
 // Shipper struct
@@ -177,12 +201,12 @@ type Shipper struct {
 
 // BolNum struct
 type BolNum struct {
-	Type int
+	Type string
 }
 
 // RefNum struct
 type RefNum struct {
-	Type int
+	Type string
 }
 
 // Consignee struct
@@ -192,17 +216,17 @@ type Consignee struct {
 
 // Vessel struct
 type Vessel struct {
-	Type int
+	Type string
 }
 
 // PortLoading struct
 type PortLoading struct {
-	Type int
+	Type string
 }
 
 // PortDischarge struct
 type PortDischarge struct {
-	Type int
+	Type string
 }
 
 // NotifyAddress struct
@@ -217,17 +241,17 @@ type DescGoods struct {
 
 // GrossWeight struct
 type GrossWeight struct {
-	Type int
+	Type string
 }
 
 // FreightPayableAmt struct
 type FreightPayableAmt struct {
-	Type int
+	Type string
 }
 
 // FreightAdvAmt struct
 type FreightAdvAmt struct {
-	Type int
+	Type string
 }
 
 // GeneralInstructions struct
@@ -237,20 +261,14 @@ type GeneralInstructions struct {
 
 // Date struct
 type Date struct {
-	Type   int
+	Type   string
 	Format string
 }
 
 // IssueDetails struct
 type IssueDetails struct {
-	Type       string
-	Properties IssueDetailsProperties
-}
-
-// IssueDetailsProperties struct
-type IssueDetailsProperties struct {
-	PlaceOfIssue PlaceIssue
-	DateOfIssue  Date
+	PlaceOfIssue string `json:"PlaceOfIssue"`
+	DateOfIssue  string `json:"DateOfIssue"`
 }
 
 // PlaceIssue struct
@@ -260,47 +278,29 @@ type PlaceIssue struct {
 
 // NumBol struct
 type NumBol struct {
-	Type int
+	Type string
 }
 
 // MasterInfo struct
 type MasterInfo struct {
-	Type       string
-	Properties MasterInfoProperties
-}
-
-// MasterInfoProperties struct
-type MasterInfoProperties struct {
-	FirstName FirstName
-	LastName  LastName
-	Sig       Sig
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentMaster struct
 type AgentMaster struct {
-	Type       string
-	Properties AgentMasterProperties
-}
-
-//AgentMasterProperties struct
-type AgentMasterProperties struct {
-	FirstName FirstName
-	LastName  LastName
-	Sig       Sig
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentOwner struct
 type AgentOwner struct {
-	Type       string
-	Properties AgentOwnerProperties
-}
-
-// AgentOwnerProperties struct
-type AgentOwnerProperties struct {
-	FirstName             FirstName
-	LastName              LastName
-	Sig                   Sig
-	ConditionsForCarriage ConditionsCarriage
+	FirstName             string `json:"FirstName"`
+	LastName              string `json:"LastName"`
+	Sig                   string `json:"Sig"`
+	ConditionsForCarriage string `json:"ConditionsForCarriage"`
 }
 
 // FirstName struct

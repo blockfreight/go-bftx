@@ -52,18 +52,25 @@ import (
 	"flag" // Implements command-line flag parsing.
 	"fmt"  // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"log"  // Implements a simple logging package.
+	"strconv"
 
 	// ===============
 	// Tendermint Core
 	// ===============
+	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
+	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 )
+
+var client abcicli.Client
 
 func main() {
 
@@ -80,11 +87,35 @@ func main() {
 
 	// Start the listener
 	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(srv)
+	fmt.Println(*addrPtr)
+
+	err = srv.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Service created by " + *abciPtr + " server")
+	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
+
+	client, err = abcicli.NewClient(*addrPtr, "socket", false)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Println("Service created by " + *abciPtr + " server")
+
+	err = client.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	handlers.TendermintClient = client
+
+	err = api.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Wait forever
 	tendermint.TrapSignal(func() {

@@ -6,6 +6,8 @@
 *.dll
 *.so
 *.dylib
+*.csv
+*.log
 
 # Test binary, build with `go test -c`
 *.test
@@ -19,3 +21,4 @@
 # Folders
 bft-db/
 vendor/
+/LOG

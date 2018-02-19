@@ -37,24 +37,6 @@ To manage all dependencies for **go-bftx**, it is necessary to have [Glide insta
 $ glide -v
 ```
 
-### Python on OSX
-Python version 2.7+ or above. If you have it installed you can skip this section and go to [BFTX Installation](#installation)
-
-To run Python functions, it is necessary to have it installed. However, before install Python, you should install [Homebrew](https://brew.sh/):
-```
-$ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```
-
-Now you can install Python using the following command:
-```
-$ brew install python
-```
-
-You have to install the dependencies:
-```
-$ easy_install requests 
-```
-
 ## Installation
 
 To install **go-bftx**, you can do it through:
