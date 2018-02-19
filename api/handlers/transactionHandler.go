@@ -28,6 +28,7 @@ import (
 
 var TendermintClient abcicli.Client
 
+// ConstructBfTx function to create a BFTX via API
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 
 	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
@@ -66,6 +67,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	return transaction, nil
 }
 
+// SignBfTx function to sign a BFTX via API
 func SignBfTx(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 
@@ -107,6 +109,7 @@ func SignBfTx(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
+// EncryptBfTx function to encrypt a BFTX via API
 func EncryptBfTx(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 
@@ -148,6 +151,7 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 	return bftxold, nil
 }
 
+// DecryptBfTx function to decrypt a BFTX via API
 func DecryptBfTx(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 
@@ -189,6 +193,7 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 	return bftxold, nil
 }
 
+// BroadcastBfTx function to broadcast a BFTX via API
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
@@ -241,6 +246,7 @@ func BroadcastBfTx(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
+// GetInfo function to get info about the network via API
 func GetInfo() (interface{}, error) {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
@@ -262,6 +268,7 @@ func GetInfo() (interface{}, error) {
 	return abciInfo.Response, nil
 }
 
+// GetTotal function to get the total amount of transactions via API
 func GetTotal() (interface{}, error) {
 	// Query the total of BF_TX in DB
 	total, err := leveldb.Total()
@@ -272,6 +279,7 @@ func GetTotal() (interface{}, error) {
 	return total, nil
 }
 
+// GetTransaction function to get a transaction, from the local database, by id via API
 func GetTransaction(idBftx string) (interface{}, error) {
 	transaction, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
@@ -286,6 +294,7 @@ func GetTransaction(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
+// QueryTransaction function to query a transaction, from the network, by id via API
 func QueryTransaction(idBftx string) (interface{}, error) {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
