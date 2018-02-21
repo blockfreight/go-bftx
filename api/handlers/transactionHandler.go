@@ -22,8 +22,6 @@ import (
 	// ===============
 )
 
-var TendermintClient abcicli.Client
-
 func getFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
