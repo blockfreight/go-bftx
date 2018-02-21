@@ -91,8 +91,7 @@ var mutationType = graphql.NewObject(
 					bftx := bf_tx.BF_TX{}
 					jsonProperties, err := json.Marshal(p.Args)
 					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						fmt.Printf("err")
-						fmt.Print(err)
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
 					return apiHandler.ConstructBfTx(bftx)
