@@ -3,21 +3,14 @@ package saberservice
 import (
 	"bufio"
 	"context"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"os"
 	"strings"
 
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
-	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
-	abcicli "github.com/tendermint/abci/client"
-	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -273,9 +266,9 @@ func SaberEncoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 // saber encoding service
 func SaberEncodingTestCase(st Saberinput) (*BFTXTransaction, error) {
 	switch st.mode {
-	case "massconstruct":
-		err := massSaberEncoding(st)
-		return nil, err
+	//	case "massconstruct":
+	//		err := massSaberEncoding(st)
+	//		return nil, err
 	default:
 		tx := loadtransaction(st.txpath)
 		// txconfig := loadconfiguration(st.txconfigpath)
@@ -300,6 +293,7 @@ func SaberEncodingTestCase(st Saberinput) (*BFTXTransaction, error) {
 }
 
 // massSaberEncoding is used for massively load the transaction from the lading.csv file
+/*
 func massSaberEncoding(st Saberinput) error {
 	// define the index i
 	i := 0
@@ -394,9 +388,14 @@ func massSaberEncoding(st Saberinput) error {
 			log.Fatalf("HashBFTX error: %v", err)
 		}
 		// Generate BF_TX id
-		bftxID := btx.GenerateBFTXUID(hash, salt)
+		bftxID := btx.HashByteArray(hash, salt)
 		bfmsg.Id = bftxID
 		// do the bftx sign--------------------------------------
+
+		if err = crypto.SignBFTX()
+		if err != nil {
+			return err
+		}
 
 		bfmsg, err = crypto.SignBFTX(bfmsg)
 		if err != nil {
@@ -436,7 +435,7 @@ func massSaberEncoding(st Saberinput) error {
 	return err
 
 }
-
+*/
 // SaberDecodingTestCase is the function that enable it to connect to a container which realizing the
 // saber decoding service
 func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error) {

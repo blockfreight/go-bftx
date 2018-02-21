@@ -49,20 +49,20 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"bufio"        // Implements buffered I/O.
-	"encoding/csv" // Package csv reads and writes comma-separated values (CSV) files.
-	"encoding/hex" // Implements hexadecimal encoding and decoding.
-	"errors"       // Implements functions to manipulate errors.
-	"fmt"          // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"io"           // Provides basic interfaces to I/O primitives.
-	"log"          // Implements a simple logging package.
-	"os"           // Provides a platform-independent interface to operating system functionality.
-	"reflect"      // Implements run-time reflection, allowing a program to manipulate objects with arbitrary types.
-	"runtime"      // Contains operations that interact with Go's runtime system.
-	"strconv"      // Implements conversions to and from string representations of basic data types.
-	"strings"      // Implements simple functions to manipulate UTF-8 encoded strings.
-	"time"         // Provides functionality for measuring and displaying time.
-
+	"bufio" // Implements buffered I/O.
+	"encoding/hex"
+	"encoding/json"
+	"errors" // Implements hexadecimal encoding and decoding.
+	// Implements functions to manipulate errors.
+	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io"  // Provides basic interfaces to I/O primitives.
+	"log" // Implements a simple logging package.
+	"os"  // Provides a platform-independent interface to operating system functionality.
+	"reflect"
+	"runtime"
+	"strconv" // Implements conversions to and from string representations of basic data types.
+	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	"time"
 	// ====================
 	// Third-party packages
 	// ====================
@@ -81,13 +81,13 @@ import (
 	// Blockfreight™ packages
 	// ======================
 
-	"github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
+	"github.com/blockfreight/go-bftx/lib/app/blockchain"
+	"github.com/blockfreight/go-bftx/lib/app/validator"    // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/common"       // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"      // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice" // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -183,13 +183,13 @@ func main() {
 				return cmdSetOption(c)
 			},
 		},
-		{
+		/*{
 			Name:  "verify",
 			Usage: "Verify the JSON imput against a BF_TX (Parameters: JSON Filepath)",
 			Action: func(c *cli.Context) error {
 				return cmdVerifyBfTx(c) //cmdCheckBfTx
 			},
-		},
+		},*/
 		{
 			Name:  "validate",
 			Usage: "Validate a BF_TX (Parameters: JSON Filepath)",
@@ -267,13 +267,13 @@ func main() {
 				return cmdPrintBfTx(c)
 			},
 		},
-		{
+		/*	{
 			Name:  "massconstruct",
 			Usage: "test purpose, load transactions that are in a csv file",
 			Action: func(c *cli.Context) error {
 				return cmdMassConstructBfTx(c)
 			},
-		},
+		},*/
 		{
 			Name:  "new_validator",
 			Usage: "Add a new validator to the validator set.",
@@ -385,7 +385,7 @@ func before(c *cli.Context) error {
 			simpleLogger(before, err)
 		}
 
-		handlers.TendermintClient = client
+		bf_tx.TendermintClient = client
 	}
 
 	return nil
@@ -413,7 +413,7 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-func cmdMassConstructBfTx(c *cli.Context) error {
+/*func cmdMassConstructBfTx(c *cli.Context) error {
 	wd, err := os.Getwd()
 	if err != nil {
 		simpleLogger(cmdMassConstructBfTx, err)
@@ -540,7 +540,7 @@ func cmdMassConstructBfTx(c *cli.Context) error {
 	}
 	// return nil
 
-}
+}*/
 
 func cmdAddValidator(c *cli.Context) error {
 	args := c.Args()
@@ -596,7 +596,7 @@ func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
 	}
 
 	// Generate BF_TX id
-	bftxID := bf_tx.GenerateBFTXUID(hash, salt)
+	bftxID := bf_tx.HashByteArray(hash, salt)
 
 	return bftxID, nil
 }
@@ -652,6 +652,7 @@ func cmdConsole(app *cli.App, c *cli.Context) error {
 
 func cmdSaberEnc(c *cli.Context) error {
 	args := c.Args()
+	var oldbftx bf_tx.BF_TX
 	if len(args) != 1 {
 		return errors.New("Command sign takes 1 argument")
 	}
@@ -659,11 +660,13 @@ func cmdSaberEnc(c *cli.Context) error {
 	// CUrrent: it only takes the default encoding configuration
 
 	// Get a BF_TX by id
-	oldbftx, err := leveldb.GetBfTx(args[0])
+	data, err := leveldb.GetBfTx(args[0])
 	if err != nil {
 		transLogger(cmdSaberEnc, err, args[0])
 		return err
 	}
+
+	json.Unmarshal(data, &oldbftx)
 	// In the long term, this conversion is unnecessary, and it makes the program to be less efficient.
 	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
 	if err != nil {
@@ -698,6 +701,7 @@ func cmdSaberEnc(c *cli.Context) error {
 
 func cmdSaberDcp(c *cli.Context) error {
 	args := c.Args()
+	var oldbftx bf_tx.BF_TX
 	if len(args) != 1 {
 		return errors.New("Command sign takes 1 argument")
 	}
@@ -705,11 +709,13 @@ func cmdSaberDcp(c *cli.Context) error {
 	// CUrrent: it only takes the default encoding configuration
 
 	// Get a BF_TX by id
-	oldbftx, err := leveldb.GetBfTx(args[0])
+	data, err := leveldb.GetBfTx(args[0])
 	if err != nil {
 		transLogger(cmdSaberDcp, err, args[0])
 		return err
 	}
+
+	json.Unmarshal(data, &oldbftx)
 	nwbftx, err := saberservice.BftxStructConverstionON(&oldbftx)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
@@ -767,14 +773,16 @@ func cmdSaberDcpTest(c *cli.Context) error {
 
 // Get some info from the application
 func cmdInfo(c *cli.Context) error {
-	resInfo, err := client.InfoSync(types.RequestInfo{})
+
+	bftxBlockchain, err := blockchain.GetInfo()
 	if err != nil {
 		simpleLogger(cmdInfo, err)
 		return err
 	}
+
 	printResponse(c, response{
-		Data:   resInfo.LastBlockAppHash,
-		Result: resInfo.Data,
+		Data:   bftxBlockchain.LastBlockAppHash,
+		Result: bftxBlockchain.Data,
 	})
 	return nil
 }
@@ -801,7 +809,7 @@ func cmdSetOption(c *cli.Context) error {
 }
 
 // Verify the JSON imput against a BF_TX
-func cmdVerifyBfTx(c *cli.Context) error {
+/* func cmdVerifyBfTx(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command verify takes 1 argument")
@@ -836,7 +844,7 @@ func cmdVerifyBfTx(c *cli.Context) error {
 	})
 
 	return nil
-}
+} */
 
 // cmdValidateBfTx validates a BFTX
 func cmdValidateBfTx(c *cli.Context) error {
@@ -881,33 +889,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 		return err
 	}
 
-	newId, err := cmdGenerateBftxID(bftx)
-	if err != nil {
-		transLogger(cmdConstructBfTx, err, newId)
-		return err
-	}
-
-	bftx.Id = newId
-
-	// Re-validate a BF_TX before create a BF_TX
-	result, err := validator.ValidateBFTX(bftx)
-	if err != nil {
-		fmt.Println(result)
-		transLogger(cmdConstructBfTx, err, newId)
-		return err
-	}
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		transLogger(cmdConstructBfTx, err, newId)
-		return err
-	}
-
-	// Save on DB
-	err = leveldb.RecordOnDB(bftx.Id, content)
-	if err != nil {
-		transLogger(cmdConstructBfTx, err, newId)
+	if err = bftx.GenerateBFTXUID(common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
@@ -922,38 +904,12 @@ func cmdConstructBfTx(c *cli.Context) error {
 // Sign the Blockfreight™ Transaction [BF_TX]
 func cmdSignBfTx(c *cli.Context) error {
 	args := c.Args()
+	var bftx bf_tx.BF_TX
 	if len(args) != 1 {
 		return errors.New("Command sign takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	bftx, err := leveldb.GetBfTx(args[0])
-	if err != nil {
-		transLogger(cmdSignBfTx, err, args[0])
-		return err
-	}
-	if bftx.Verified {
-		return errors.New("BF_TX already signed.")
-	}
-
-	// Sign BF_TX
-	bftx, err = crypto.SignBFTX(bftx)
-	if err != nil {
-		transLogger(cmdSignBfTx, err, args[0])
-		return err
-	}
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		transLogger(cmdSignBfTx, err, args[0])
-		return err
-	}
-
-	// Update on DB
-	err = leveldb.RecordOnDB(string(bftx.Id), content)
-	if err != nil {
-		transLogger(cmdSignBfTx, err, args[0])
+	if err := bftx.SignBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
@@ -967,68 +923,17 @@ func cmdSignBfTx(c *cli.Context) error {
 // Deliver a new BF_TX to application
 func cmdBroadcastBfTx(c *cli.Context) error {
 	args := c.Args()
+	var bftx bf_tx.BF_TX
 	if len(args) != 1 {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	bftx, err := leveldb.GetBfTx(args[0])
-	if err != nil {
-		transLogger(cmdBroadcastBfTx, err, args[0])
+	if err := bftx.BroadcastBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
-	}
-	if !bftx.Verified {
-		return errors.New("BF_TX is not signed yet.")
-	}
-	if bftx.Transmitted {
-		return errors.New("BF_TX already transmitted.")
-	}
-
-	// Change the boolean valud for Transmitted attribute
-	bftx.Transmitted = true
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		transLogger(cmdBroadcastBfTx, err, args[0])
-		return err
-	}
-
-	// Update on DB
-	err = leveldb.RecordOnDB(string(bftx.Id), content)
-	if err != nil {
-		transLogger(cmdBroadcastBfTx, err, args[0])
-		return err
-	}
-
-	if err != nil {
-		transLogger(cmdBroadcastBfTx, err, args[0])
-		return err
-	}
-
-	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err = rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-
-	}
-
-	defer rpcClient.Stop()
-
-	var tx tmTypes.Tx
-	tx = []byte(content)
-
-	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		fmt.Printf("%+v\n", rpcErr)
-		transLogger(cmdBroadcastBfTx, rpcErr, args[0])
-		return rpcErr
 	}
 
 	printResponse(c, response{
-		Data: resp.Hash,
-		Log:  resp.Log,
+		Result: "BF_TX broadcasted",
 	})
 
 	return nil
@@ -1052,52 +957,38 @@ func cmdCommit(c *cli.Context) error {
 // Query application state
 // TODO JCNM: Make request and response support all fields.
 func cmdQuery(c *cli.Context) error {
+	var bftx bf_tx.BF_TX
 	args := c.Args()
 	if len(args) != 1 {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-		transLogger(cmdQuery, err, args[0])
+	if err := bftx.QueryBFTX(args[0], common.ORIGIN_CMD); err != nil {
+		return err
 	}
 
-	query := "bftx.id='" + args[0] + "'"
-
-	resQuery, err := rpcClient.TxSearch(query, true)
+	content, err := bf_tx.BFTXContent(bftx)
 	if err != nil {
 		transLogger(cmdQuery, err, args[0])
 		return err
 	}
 
-	defer rpcClient.Stop()
+	printResponse(c, response{
+		Result: string(content),
+	})
 
-	if len(resQuery) > 0 {
-		printResponse(c, response{
-			Result: string(resQuery[0].Tx),
-		})
-
-		return nil
-	}
-
-	queryLogger(cmdQuery, "Blockfreight Transaction not found.", args[0])
-	return errors.New("Blockfreight Transaction not found.")
+	return nil
 }
 
 // Return the output JSON
 func cmdGetBfTx(c *cli.Context) error {
 	args := c.Args()
+	var bftx bf_tx.BF_TX
 	if len(args) != 1 {
-		return errors.New("Command get takes 1 argument")
+		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	// Get a BF_TX by id
-	bftx, err := leveldb.GetBfTx(args[0])
-	if err != nil {
-		transLogger(cmdGetBfTx, err, args[0])
+	if err := bftx.GetBFTX(args[0], common.ORIGIN_CMD); err != nil {
 		return err
 	}
 
@@ -1118,16 +1009,19 @@ func cmdGetBfTx(c *cli.Context) error {
 // Append a new BF_TX to an existing BF_TX
 func cmdAppendBfTx(c *cli.Context) error {
 	args := c.Args()
+	var oldBftx bf_tx.BF_TX
 	if len(args) != 2 {
 		return errors.New("Command append takes 2 arguments")
 	}
 
 	// Get a BF_TX by id
-	oldBftx, err := leveldb.GetBfTx(args[1])
+	data, err := leveldb.GetBfTx(args[0])
 	if err != nil {
 		transLogger(cmdAppendBfTx, err, args[1])
 		return err
 	}
+
+	json.Unmarshal(data, &oldBftx)
 
 	// Query the total of BF_TX in DB
 	// n, err := leveldb.Total()
@@ -1187,16 +1081,19 @@ func cmdAppendBfTx(c *cli.Context) error {
 // Get the current state of a determined BF_TX
 func cmdStateBfTx(c *cli.Context) error {
 	args := c.Args()
+	var bftx bf_tx.BF_TX
 	if len(args) != 1 {
-		return errors.New("Command state takes 1 argument")
+		return errors.New("Command sign takes 1 argument")
 	}
 
 	// Get a BF_TX by id
-	bftx, err := leveldb.GetBfTx(args[0])
+	data, err := leveldb.GetBfTx(args[0])
 	if err != nil {
 		transLogger(cmdStateBfTx, err, args[0])
 		return err
 	}
+
+	json.Unmarshal(data, &bftx)
 
 	// Result
 	printResponse(c, response{
@@ -1207,16 +1104,19 @@ func cmdStateBfTx(c *cli.Context) error {
 
 func cmdPrintBfTx(c *cli.Context) error {
 	args := c.Args()
+	var bftx bf_tx.BF_TX
 	if len(args) != 1 {
-		return errors.New("Command print takes 1 argument")
+		return errors.New("Command sign takes 1 argument")
 	}
 
 	// Get a BF_TX by id
-	bftx, err := leveldb.GetBfTx(args[0])
+	data, err := leveldb.GetBfTx(args[0])
 	if err != nil {
 		transLogger(cmdPrintBfTx, err, args[0])
 		return err
 	}
+
+	json.Unmarshal(data, &bftx)
 
 	// Print the BF_TX clearly
 	bf_tx.PrintBFTX(bftx)
@@ -1224,8 +1124,9 @@ func cmdPrintBfTx(c *cli.Context) error {
 }
 
 func cmdTotalBfTx(c *cli.Context) error {
-	// Query the total of BF_TX in DB
-	total, err := leveldb.Total()
+	var bftx bf_tx.BF_TX
+
+	total, err := bftx.GetTotal()
 	if err != nil {
 		simpleLogger(cmdTotalBfTx, err)
 		return err

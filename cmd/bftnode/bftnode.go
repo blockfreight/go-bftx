@@ -66,7 +66,7 @@ import (
 	// ======================
 
 	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/api/handlers"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 )
 
@@ -110,7 +110,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	handlers.TendermintClient = client
+	bf_tx.TendermintClient = client
 
 	err = api.Start()
 	if err != nil {

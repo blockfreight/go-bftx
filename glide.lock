@@ -1,5 +1,5 @@
 hash: e0a077ac162094b719c6555bce9255b1a198f94b16091b80937a9772eb3b09ce
-updated: 2018-01-30T14:48:51.833688035+11:00
+updated: 2018-02-14T13:58:37.185657+11:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -112,7 +112,7 @@ imports:
 - name: github.com/tendermint/go-merkle
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
-  version: 27be46e25124ddf775e23317a83647ce62a93f6b
+  version: b6fc872b42d41158a60307db4da051dd6f179415
   subpackages:
   - data
   - nowriter/tmlegacy

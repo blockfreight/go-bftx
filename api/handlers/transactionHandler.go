@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"reflect"
@@ -11,25 +10,17 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tendermint/abci/client"
-
 	"net/http" // Provides HTTP client and server implementations.
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
 	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"
-	rpc "github.com/tendermint/tendermint/rpc/client"
-	tmTypes "github.com/tendermint/tendermint/types"
-
 	// Provides HTTP client and server implementations.
 	// ===============
 	// Tendermint Core
 	// ===============
-	abciTypes "github.com/tendermint/abci/types"
 )
-
-var TendermintClient abcicli.Client
 
 func getFunctionName(i interface{}) string {
 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
@@ -81,102 +72,37 @@ func transLogger(i interface{}, currentError error, id string) {
 }
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-
-	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
-	if err != nil {
-		simpleLogger(ConstructBfTx, err)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	hash, err := bf_tx.HashBFTX(transaction)
-	if err != nil {
-		simpleLogger(ConstructBfTx, err)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Generate BF_TX id
-	transaction.Id = bf_tx.GenerateBFTXUID(hash, resInfo.LastBlockAppHash)
-
-	/*jsonContent, err := json.Marshal(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		transLogger(ConstructBfTx, err, transaction.Id)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	/* TODO: ENCRYPT TRANSACTION */
-
-	// Save on DB
-	if err = leveldb.RecordOnDB(transaction.Id, content); err != nil {
-		transLogger(ConstructBfTx, err, transaction.Id)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	if err := transaction.GenerateBFTXUID(common.ORIGIN_API); err != nil {
+		return nil, err
 	}
 
 	return transaction, nil
 }
 
 func SignBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
-
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger(SignBfTx, err, idBftx)
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		transLogger(SignBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	if transaction.Verified {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-
-	// Sign BF_TX
-	transaction, err = crypto.SignBFTX(transaction)
-	if err != nil {
-		transLogger(SignBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	/*jsonContent, err := json.Marshal(transaction)
-	if err != nil {
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	transaction.Private = string(crypto.CryptoTransaction(string(jsonContent)))*/
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		transLogger(SignBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Update on DB
-	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		transLogger(SignBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	var transaction bf_tx.BF_TX
+	if err := transaction.SignBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
 
 	return transaction, nil
 }
 
 func EncryptBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
-
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
 			transLogger(EncryptBfTx, err, idBftx)
 			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 		}
 		transLogger(EncryptBfTx, err, idBftx)
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
+	if err != nil {
+		transLogger(SignBfTx, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -216,7 +142,13 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 }
 
 func DecryptBfTx(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
+	var transaction bf_tx.BF_TX
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &transaction)
 
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
@@ -263,89 +195,19 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 }
 
 func BroadcastBfTx(idBftx string) (interface{}, error) {
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		transLogger(BroadcastBfTx, err, idBftx)
-		log.Fatal(err.Error())
+	var transaction bf_tx.BF_TX
+
+	if err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
-
-	// Get a BF_TX by id
-	transaction, err := leveldb.GetBfTx(idBftx)
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger(BroadcastBfTx, err, idBftx)
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		transLogger(BroadcastBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	if !transaction.Verified {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-	if transaction.Transmitted {
-		return nil, errors.New(strconv.Itoa(http.StatusNotAcceptable))
-	}
-
-	// Change the boolean valud for Transmitted attribute
-	transaction.Transmitted = true
-
-	// Get the BF_TX content in string format
-	content, err := bf_tx.BFTXContent(transaction)
-	if err != nil {
-		transLogger(BroadcastBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	// Update on DB
-	if err = leveldb.RecordOnDB(string(transaction.Id), content); err != nil {
-		transLogger(BroadcastBfTx, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	var tx tmTypes.Tx
-	tx = []byte(content)
-
-	_, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		transLogger(BroadcastBfTx, rpcErr, idBftx)
-		fmt.Printf("%+v\n", rpcErr)
-		return nil, rpcErr
-	}
-
-	defer rpcClient.Stop()
 
 	return transaction, nil
 }
 
-func GetInfo() (interface{}, error) {
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		fmt.Println(err.Error())
-		simpleLogger(GetInfo, err)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	abciInfo, err := rpcClient.ABCIInfo()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		fmt.Println(err.Error())
-		simpleLogger(GetInfo, err)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-	}
-
-	defer rpcClient.Stop()
-
-	return abciInfo.Response, nil
-}
-
 func GetTotal() (interface{}, error) {
-	// Query the total of BF_TX in DB
-	total, err := leveldb.Total()
+	var bftx bf_tx.BF_TX
+
+	total, err := bftx.GetTotal()
 	if err != nil {
 		simpleLogger(GetTotal, err)
 		return nil, err
@@ -355,48 +217,19 @@ func GetTotal() (interface{}, error) {
 }
 
 func GetTransaction(idBftx string) (interface{}, error) {
-	transaction, err := leveldb.GetBfTx(idBftx)
-	if err != nil {
-		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger(GetTransaction, err, idBftx)
-			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
-		}
-		transLogger(GetTransaction, err, idBftx)
-		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+	var transaction bf_tx.BF_TX
+	if err := transaction.GetBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
 	}
-
-	/* TODO: DECRYPT TRANSACTION */
 
 	return transaction, nil
 }
 
 func QueryTransaction(idBftx string) (interface{}, error) {
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-		transLogger(QueryTransaction, err, idBftx)
-	}
-	defer rpcClient.Stop()
-	query := "bftx.id='" + idBftx + "'"
-	resQuery, err := rpcClient.TxSearch(query, true)
-	if err != nil {
-		transLogger(QueryTransaction, err, idBftx)
+	var transaction bf_tx.BF_TX
+	if err := transaction.QueryBFTX(idBftx, common.ORIGIN_API); err != nil {
 		return nil, err
 	}
 
-	if len(resQuery) > 0 {
-		var transaction bf_tx.BF_TX
-		err := json.Unmarshal(resQuery[0].Tx, &transaction)
-		if err != nil {
-			transLogger(QueryTransaction, err, idBftx)
-			return nil, err
-		}
-
-		return transaction, nil
-	}
-
-	queryLogger(QueryTransaction, "Blockfreight Transaction not found.", idBftx)
-	return nil, errors.New(strconv.Itoa(http.StatusNotFound))
+	return transaction, nil
 }
