@@ -2,6 +2,7 @@ package graphqlObj
 
 import "github.com/graphql-go/graphql"
 
+// MasterInfoInput object for GraphQL integration
 var MasterInfoInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "MasterInfo",
@@ -19,6 +20,7 @@ var MasterInfoInput = graphql.NewInputObject(
 	},
 )
 
+// MasterInfo object for GraphQL integration
 var MasterInfo = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "MasterInfo",

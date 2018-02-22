@@ -143,6 +143,7 @@ func (app *BftApplication) Commit() types.ResponseCommit {
 	return types.ResponseCommit{Code: code.CodeTypeOK, Data: hash}
 }
 
+//Query retrieves a transaction from the network
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
 		value, proof, err := app.state.GetWithProof(reqQuery.Data)

@@ -194,6 +194,7 @@ func DecryptBFTX(idBftx string) (interface{}, error) {
 	return bftxold, nil
 }
 
+// BroadcastBfTx function to broadcast a BFTX via API
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 

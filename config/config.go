@@ -48,22 +48,25 @@
 package config
 
 import (
-    "github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
-    "encoding/json"
+	"encoding/json"
+
+	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
 )
 
+//Config objetc to isolate all the app config in a single object
 type Config struct {
-	BFTX_API_ADDRESS string `json:"bftx-api-adress"`
+	BFTX_API_ADDRESS string `json:"bftx-api-address"`
 }
 
+//LoadConfiguration loads the app config into an object
 func LoadConfiguration() (Config, error) {
-    var config Config
-    configFile, err := common.ReadJSON("./config.json")
-    if err != nil {
+	var config Config
+	configFile, err := common.ReadJSON("./config.json")
+	if err != nil {
 		return config, err
 	}
-    json.Unmarshal(configFile, &config)
-    return config, nil
+	json.Unmarshal(configFile, &config)
+	return config, nil
 }
 
 // =================================================
