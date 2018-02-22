@@ -145,7 +145,7 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 	return bftx
 }
 
-func (bftx *BF_TX) GenerateBFTXUID(origin string) error {
+func (bftx *BF_TX) GenerateBFTX(origin string) error {
 	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
 	if err != nil {
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
@@ -366,6 +366,20 @@ func (bftx BF_TX) GetTotal() (int, error) {
 	}
 
 	return total, nil
+}
+
+func (bftx *BF_TX) FullBFTXCycleWithoutEncryption(origin string) error {
+	if err := bftx.GenerateBFTX(origin); err != nil {
+		return err
+	}
+	if err := bftx.SignBFTX(bftx.Id, origin); err != nil {
+		return err
+	}
+	if err := bftx.BroadcastBFTX(bftx.Id, origin); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func handleResponse(origin string, err error, httpStatusCode string) error {
