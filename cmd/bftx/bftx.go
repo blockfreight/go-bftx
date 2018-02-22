@@ -413,135 +413,6 @@ func persistentArgs(line []byte) []string {
 	return args
 }
 
-/*func cmdMassConstructBfTx(c *cli.Context) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		simpleLogger(cmdMassConstructBfTx, err)
-		panic(err)
-	}
-	// fmt.Printf(wd + "/examples/Lading.csv")
-	csvFile, err := os.Open(wd + "/examples/Lading.csv")
-	if err != nil {
-		log.Fatal("csv read error:\n", err)
-		simpleLogger(cmdMassConstructBfTx, err)
-	}
-
-	reader := csv.NewReader(bufio.NewReader(csvFile))
-	rpcClient = rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err = rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-		simpleLogger(cmdMassConstructBfTx, err)
-	}
-
-	defer rpcClient.Stop()
-
-	i := 0
-	t0 := time.Now()
-
-	for {
-
-		line, err := reader.Read()
-		if err == io.EOF {
-			log.Fatal("io read error", err)
-			simpleLogger(cmdMassConstructBfTx, err)
-		}
-		if err != nil {
-			log.Fatal(err)
-			simpleLogger(cmdMassConstructBfTx, err)
-		}
-
-		if len(line) != 22 {
-			fmt.Printf("breaking line number: %d\n", i)
-			fmt.Printf("Line has wrong length:%d \n", len(line))
-			fmt.Printf("Line: %+v", line)
-			continue
-		}
-		bftx := saberservice.NVCsvConverterOld(line)
-
-		newID, err := cmdGenerateBftxID(bftx)
-		if err != nil {
-			transLogger(cmdMassConstructBfTx, err, newID)
-			return err
-		}
-
-		bftx.Id = newID
-
-		bftx, err = crypto.SignBFTX(bftx)
-		if err != nil {
-			transLogger(cmdMassConstructBfTx, err, newID)
-			return err
-		}
-
-		// Change the boolean valud for Transmitted attribute
-		bftx.Transmitted = true
-
-		// Get the BF_TX content in string format
-		content, err := bf_tx.BFTXContent(bftx)
-		if err != nil {
-			log.Fatal("BFTXContent error", err)
-			transLogger(cmdMassConstructBfTx, err, newID)
-			return err
-		}
-		//fmt.Printf("%+v\n", bftx.PrivateKey)
-
-		// Update on DB
-		err = leveldb.RecordOnDB(string(bftx.Id), content)
-		if err != nil {
-			log.Fatal("BFTXContent error", err)
-			transLogger(cmdMassConstructBfTx, err, newID)
-			return err
-		}
-
-		resp, err := rpcClient.BroadcastTxSync([]byte(content))
-
-		if err != nil {
-			log.Fatal("rpcclient err:", err)
-			transLogger(cmdMassConstructBfTx, err, newID)
-		}
-		// added for flow control
-		i++
-		if i%100 == 0 {
-			t1 := time.Now()
-			fmt.Printf("%+v - Time: %+s\n", resp, t1.Sub(t0))
-			t0 = t1
-
-			// If the file doesn't exist, create it, or append to the file
-			f, err := os.OpenFile("mass.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-			if err != nil {
-				log.Fatal(err)
-				transLogger(cmdMassConstructBfTx, err, newID)
-			}
-			if _, err := f.Write([]byte(content + "\n")); err != nil {
-				log.Fatal(err)
-				transLogger(cmdMassConstructBfTx, err, newID)
-			}
-			if err := f.Close(); err != nil {
-				log.Fatal(err)
-				transLogger(cmdMassConstructBfTx, err, newID)
-			}
-
-			printResponse(c, response{
-				Data: resp.Data,
-				Log:  resp.Log,
-			})
-		} else {
-			fmt.Print(i, ",")
-		}
-
-		// fmt.Printf(i, "%+v\n", resp)
-
-		// printResponse(c, response{
-		//     Data: resp.Data,
-		//     Log:  resp.Log,
-		// })
-
-	}
-	// return nil
-
-}*/
-
 func cmdAddValidator(c *cli.Context) error {
 	args := c.Args()
 	if len(args) != 1 {
@@ -889,7 +760,7 @@ func cmdConstructBfTx(c *cli.Context) error {
 		return err
 	}
 
-	if err = bftx.GenerateBFTXUID(common.ORIGIN_CMD); err != nil {
+	if err = bftx.GenerateBFTX(common.ORIGIN_CMD); err != nil {
 		return err
 	}
 

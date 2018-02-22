@@ -72,7 +72,7 @@ func transLogger(i interface{}, currentError error, id string) {
 }
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
-	if err := transaction.GenerateBFTXUID(common.ORIGIN_API); err != nil {
+	if err := transaction.GenerateBFTX(common.ORIGIN_API); err != nil {
 		return nil, err
 	}
 
@@ -88,15 +88,15 @@ func SignBfTx(idBftx string) (interface{}, error) {
 	return transaction, nil
 }
 
-func EncryptBfTx(idBftx string) (interface{}, error) {
+func EncryptBFTX(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger(EncryptBfTx, err, idBftx)
+			transLogger(EncryptBFTX, err, idBftx)
 			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 		}
-		transLogger(EncryptBfTx, err, idBftx)
+		transLogger(EncryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -113,13 +113,13 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 	nwbftx, err := saberservice.BftxStructConverstionON(&transaction)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
-		transLogger(EncryptBfTx, err, idBftx)
+		transLogger(EncryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 	st := saberservice.SaberDefaultInput()
 	saberbftx, err := saberservice.SaberEncoding(nwbftx, st)
 	if err != nil {
-		transLogger(EncryptBfTx, err, idBftx)
+		transLogger(EncryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
@@ -127,21 +127,21 @@ func EncryptBfTx(idBftx string) (interface{}, error) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(*bftxold)
 	if err != nil {
-		transLogger(EncryptBfTx, err, idBftx)
+		transLogger(EncryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
-		transLogger(EncryptBfTx, err, idBftx)
+		transLogger(EncryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	return bftxold, nil
 }
 
-func DecryptBfTx(idBftx string) (interface{}, error) {
+func DecryptBFTX(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
@@ -152,10 +152,10 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger(DecryptBfTx, err, idBftx)
+			transLogger(DecryptBFTX, err, idBftx)
 			return nil, errors.New(strconv.Itoa(http.StatusNotFound))
 		}
-		transLogger(DecryptBfTx, err, idBftx)
+		transLogger(DecryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -166,13 +166,13 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 	nwbftx, err := saberservice.BftxStructConverstionON(&transaction)
 	if err != nil {
 		log.Fatalf("Conversion error, can not convert old bftx to new bftx structure")
-		transLogger(DecryptBfTx, err, idBftx)
+		transLogger(DecryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 	st := saberservice.SaberDefaultInput()
 	saberbftx, err := saberservice.SaberDecoding(nwbftx, st)
 	if err != nil {
-		transLogger(DecryptBfTx, err, idBftx)
+		transLogger(DecryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 	bftxold, err := saberservice.BftxStructConverstionNO(saberbftx)
@@ -180,14 +180,14 @@ func DecryptBfTx(idBftx string) (interface{}, error) {
 	// Get the BF_TX content in string format
 	content, err := bf_tx.BFTXContent(*bftxold)
 	if err != nil {
-		transLogger(DecryptBfTx, err, idBftx)
+		transLogger(DecryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	err = leveldb.RecordOnDB(string(bftxold.Id), content)
 	if err != nil {
-		transLogger(DecryptBfTx, err, idBftx)
+		transLogger(DecryptBFTX, err, idBftx)
 		return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -228,6 +228,35 @@ func GetTransaction(idBftx string) (interface{}, error) {
 func QueryTransaction(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 	if err := transaction.QueryBFTX(idBftx, common.ORIGIN_API); err != nil {
+		return nil, err
+	}
+
+	return transaction, nil
+}
+
+func FullBFTXCycleWithoutEncryption(transaction bf_tx.BF_TX) (interface{}, error) {
+	if err := transaction.FullBFTXCycleWithoutEncryption(common.ORIGIN_API); err != nil {
+		return nil, err
+	}
+
+	return transaction, nil
+}
+
+func FullBFTXCycle(transaction bf_tx.BF_TX) (interface{}, error) {
+	if err := transaction.GenerateBFTX(common.ORIGIN_API); err != nil {
+		return nil, err
+	}
+
+	_, err := EncryptBFTX(transaction.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := transaction.SignBFTX(transaction.Id, common.ORIGIN_API); err != nil {
+		return nil, err
+	}
+
+	if err := transaction.BroadcastBFTX(transaction.Id, common.ORIGIN_API); err != nil {
 		return nil, err
 	}
 

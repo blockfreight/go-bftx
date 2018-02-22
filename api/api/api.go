@@ -79,9 +79,6 @@ var mutationType = graphql.NewObject(
 			"constructBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
-					"Type": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
 					"Properties": &graphql.ArgumentConfig{
 						Description: "Transaction properties.",
 						Type:        graphqlObj.PropertiesInput,
@@ -97,23 +94,43 @@ var mutationType = graphql.NewObject(
 					return apiHandler.ConstructBfTx(bftx)
 				},
 			},
-			"encryptBFTX": &graphql.Field{
+			"fullBFTXCycleWithoutEncryption": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
-					"Id": &graphql.ArgumentConfig{
-						Type: graphql.String,
+					"Properties": &graphql.ArgumentConfig{
+						Description: "Transaction properties.",
+						Type:        graphqlObj.PropertiesInput,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftxID, isOK := p.Args["Id"].(string)
-					if !isOK {
-						return nil, nil
+					bftx := bf_tx.BF_TX{}
+					jsonProperties, err := json.Marshal(p.Args)
+					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
-					return apiHandler.EncryptBfTx(bftxID)
+					return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
 				},
 			},
-			"decryptBFTX": &graphql.Field{
+			"fullBFTXCycle": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Properties": &graphql.ArgumentConfig{
+						Description: "Transaction properties.",
+						Type:        graphqlObj.PropertiesInput,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftx := bf_tx.BF_TX{}
+					jsonProperties, err := json.Marshal(p.Args)
+					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+					}
+
+					return apiHandler.FullBFTXCycle(bftx)
+				},
+			},
+			"EncryptBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"Id": &graphql.ArgumentConfig{
@@ -126,7 +143,23 @@ var mutationType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return apiHandler.DecryptBfTx(bftxID)
+					return apiHandler.EncryptBFTX(bftxID)
+				},
+			},
+			"DecryptBFTX": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Id": &graphql.ArgumentConfig{
+						Type: graphql.String,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftxID, isOK := p.Args["Id"].(string)
+					if !isOK {
+						return nil, nil
+					}
+
+					return apiHandler.DecryptBFTX(bftxID)
 				},
 			},
 			"signBFTX": &graphql.Field{
