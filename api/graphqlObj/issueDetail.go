@@ -2,6 +2,7 @@ package graphqlObj
 
 import "github.com/graphql-go/graphql"
 
+// IssueDetailsInput object for GraphQL integration
 var IssueDetailsInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "IssueDetails",
@@ -16,6 +17,7 @@ var IssueDetailsInput = graphql.NewInputObject(
 	},
 )
 
+// IssueDetails object for GraphQL integration
 var IssueDetails = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "IssueDetails",

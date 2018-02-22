@@ -2,6 +2,7 @@ package graphqlObj
 
 import "github.com/graphql-go/graphql"
 
+// AgentForOwnerInput object for GraphQL integration
 var AgentForOwnerInput = graphql.NewInputObject(
 	graphql.InputObjectConfig{
 		Name: "AgentForOwner",
@@ -22,6 +23,7 @@ var AgentForOwnerInput = graphql.NewInputObject(
 	},
 )
 
+// AgentForOwner object for GraphQL integration
 var AgentForOwner = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "agentForOwner",

@@ -4,6 +4,7 @@ import (
 	"github.com/graphql-go/graphql"
 )
 
+// TransactionType object for GraphQL integration
 var TransactionType = graphql.NewObject(
 	graphql.ObjectConfig{
 		Name: "Transaction",

@@ -75,7 +75,6 @@ import (
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ======================
 	// Blockfreight™ packages
@@ -267,39 +266,11 @@ func main() {
 				return cmdPrintBfTx(c)
 			},
 		},
-		/*	{
-			Name:  "massconstruct",
-			Usage: "test purpose, load transactions that are in a csv file",
-			Action: func(c *cli.Context) error {
-				return cmdMassConstructBfTx(c)
-			},
-		},*/
-		{
-			Name:  "new_validator",
-			Usage: "Add a new validator to the validator set.",
-			Action: func(c *cli.Context) error {
-				return cmdAddValidator(c)
-			},
-		},
 		{
 			Name:  "exit",
 			Usage: "Leaves the program. (Parameters: none)",
 			Action: func(c *cli.Context) {
 				os.Exit(0)
-			},
-		},
-		{
-			Name:  "saberenctest",
-			Usage: "prototype of saber encoding service.",
-			Action: func(c *cli.Context) error {
-				return cmdSaberEncTest(c)
-			},
-		},
-		{
-			Name:  "saberdcptest",
-			Usage: "prototype of saber decoding service.",
-			Action: func(c *cli.Context) error {
-				return cmdSaberDcpTest(c)
 			},
 		},
 		{
@@ -411,44 +382,6 @@ func persistentArgs(line []byte) []string {
 		args = append(args, strings.Split(string(line), " ")...)
 	}
 	return args
-}
-
-func cmdAddValidator(c *cli.Context) error {
-	args := c.Args()
-	if len(args) != 1 {
-		return errors.New("This command takes 1 argument")
-	}
-
-	rpcClient = rpc.NewHTTP(os.Getenv("DOCKER_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		fmt.Println("Error when initializing rpcClient")
-		log.Fatal(err.Error())
-		simpleLogger(cmdAddValidator, err)
-	}
-
-	content := "val:" + args[0]
-
-	defer rpcClient.Stop()
-
-	var tx tmTypes.Tx
-	tx = []byte(content)
-
-	resp, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		fmt.Printf("%+v\n", rpcErr)
-		simpleLogger(cmdAddValidator, rpcErr)
-		return rpcErr
-	}
-
-	printResponse(c, response{
-		Code: resp.Code,
-		Data: resp.Hash,
-		Log:  resp.Log,
-	})
-
-	return nil
-
 }
 
 func cmdGenerateBftxID(bftx bf_tx.BF_TX) (string, error) {
