@@ -130,7 +130,7 @@ var mutationType = graphql.NewObject(
 					return apiHandler.FullBFTXCycle(bftx)
 				},
 			},
-			"EncryptBFTX": &graphql.Field{
+			"encryptBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"Id": &graphql.ArgumentConfig{
@@ -146,7 +146,7 @@ var mutationType = graphql.NewObject(
 					return apiHandler.EncryptBFTX(bftxID)
 				},
 			},
-			"DecryptBFTX": &graphql.Field{
+			"decryptBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
 					"Id": &graphql.ArgumentConfig{
