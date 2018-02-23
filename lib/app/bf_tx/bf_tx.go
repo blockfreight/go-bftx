@@ -62,7 +62,6 @@ import (
 	"log"
 	"math/big"
 	"os"
-	"time"
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"net/http"
 	"strconv"
@@ -86,67 +85,19 @@ import (
 	// Blockfreight™ packages
 	// ======================
 
+	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
 	"github.com/blockfreight/go-bftx/lib/pkg/common"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Implements common functions for Blockfreight™
 )
 
 var TendermintClient abcicli.Client
 
-// func getFunctionName(i interface{}) string {
-// 	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
-// }
-
-// simpleLogger writes errors and the function name that generated the error to bftx.log
-func simpleLogger(funcName string, currentError error) {
-	// If the file doesn't exist, create it, or append to the file
-	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + funcName + ", " + currentError.Error() + "\n\n")); err != nil {
-		log.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// queryLogger writes errors, the function name that generated the error, and the transaction body to bftx.log for cmdQuery only
-func queryLogger(funcName string, currentError string, id string) {
-	// If the file doesn't exist, create it, or append to the file
-	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + funcName + ", " + currentError + ", " + id + "\n\n")); err != nil {
-		log.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// transLogger writes errors, the function name that generated the error, and the transaction body to bftx.log
-func transLogger(funcName string, currentError error, id string) {
-	// If the file doesn't exist, create it, or append to the file
-	f, err := os.OpenFile(os.Getenv("GOPATH")+"/src/github.com/blockfreight/go-bftx/logs/bftx.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if _, err := f.Write([]byte(time.Now().Format("2006/01/02 15:04") + ", " + funcName + ", " + currentError.Error() + ", " + id + "\n\n")); err != nil {
-		log.Fatal(err)
-	}
-	if err := f.Close(); err != nil {
-		log.Fatal(err)
-	}
-}
-
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
 	var bftx BF_TX
 	file, err := common.ReadJSON(jsonpath)
 	if err != nil {
-		simpleLogger("SetBFTX", err)
+		bftx_logger.SimpleLogger("SetBFTX", err)
 		return bftx, err
 	}
 	json.Unmarshal(file, &bftx)
@@ -199,13 +150,13 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 func (bftx *BF_TX) GenerateBFTX(origin string) error {
 	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
 	if err != nil {
-		simpleLogger("GenerateBFTX", err)
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	hash, err := HashBFTX(*bftx)
 	if err != nil {
-		simpleLogger("GenerateBFTX", err)
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -215,13 +166,13 @@ func (bftx *BF_TX) GenerateBFTX(origin string) error {
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		transLogger("GenerateBFTX", err, bftx.Id)
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Save on DB
 	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
-		transLogger("GenerateBFTX", err, bftx.Id)
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -232,15 +183,15 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger("SignBFTX", err, idBftx)
+			bftx_logger.TransLogger("SignBFTX", err, idBftx)
 			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
 		}
-		transLogger("SignBFTX", err, idBftx)
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if err = json.Unmarshal(data, &bftx); err != nil {
-		transLogger("SignBFTX", err, idBftx)
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -250,20 +201,20 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 
 	// Sign BF_TX
 	if err = bftx.setSignature(); err != nil {
-		transLogger("SignBFTX", err, idBftx)
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		transLogger("SignBFTX", err, idBftx)
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
-		transLogger("SignBFTX", err, idBftx)
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -275,7 +226,7 @@ func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
 func (bftx *BF_TX) setSignature() error {
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		transLogger("setSignature", err, bftx.Id)
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
 		return err
 	}
 
@@ -284,7 +235,7 @@ func (bftx *BF_TX) setSignature() error {
 	privatekey := new(ecdsa.PrivateKey)
 	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
 	if err != nil {
-		transLogger("setSignature", err, bftx.Id)
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
 		return err
 	}
 	pubkey := privatekey.PublicKey
@@ -300,7 +251,7 @@ func (bftx *BF_TX) setSignature() error {
 
 	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
 	if err != nil {
-		transLogger("setSignature", err, bftx.Id)
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
 		return err
 	}
 
@@ -329,7 +280,7 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	err := rpcClient.Start()
 	if err != nil {
 		log.Println(err.Error())
-		transLogger("BroadcastBFTX", err, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -337,15 +288,15 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger("BroadcastBFTX", err, idBftx)
+			bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
 		}
-		transLogger("BroadcastBFTX", err, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if err = json.Unmarshal(data, &bftx); err != nil {
-		transLogger("BroadcastBFTX", err, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -362,13 +313,13 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)
 	if err != nil {
-		transLogger("BroadcastBFTX", err, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(string(bftx.Id), content); err != nil {
-		transLogger("BroadcastBFTX", err, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -378,7 +329,7 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	_, rpcErr := rpcClient.BroadcastTxSync(tx)
 	if rpcErr != nil {
 		fmt.Printf("%+v\n", rpcErr)
-		transLogger("BroadcastBFTX", rpcErr, idBftx)
+		bftx_logger.TransLogger("BroadcastBFTX", rpcErr, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -391,16 +342,16 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
-			transLogger("GetBFTX", err, idBftx)
+			bftx_logger.TransLogger("GetBFTX", err, idBftx)
 			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
 		}
-		transLogger("GetBFTX", err, idBftx)
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	json.Unmarshal(data, &bftx)
 	if err != nil {
-		transLogger("GetBFTX", err, idBftx)
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
@@ -414,34 +365,34 @@ func (bftx *BF_TX) QueryBFTX(idBftx, origin string) error {
 	if err != nil {
 		log.Println(err.Error())
 		// queryLogger("QueryBFTX", err.Error(), idBftx)
-		transLogger("QueryBFTX", err, idBftx)
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 	defer rpcClient.Stop()
 	query := "bftx.id='" + idBftx + "'"
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
-		transLogger("QueryBFTX", err, idBftx)
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if len(resQuery) > 0 {
 		err := json.Unmarshal(resQuery[0].Tx, &bftx)
 		if err != nil {
-			transLogger("QueryBFTX", err, idBftx)
+			bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 			return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 		}
 		return nil
 	}
 
-	queryLogger("QueryBFTX", "Transaction not found", idBftx)
+	bftx_logger.StringLogger("QueryBFTX", "Transaction not found", idBftx)
 	return handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
 }
 
 func (bftx BF_TX) GetTotal() (int, error) {
 	total, err := leveldb.Total()
 	if err != nil {
-		simpleLogger("GetTotal", err)
+		bftx_logger.SimpleLogger("GetTotal", err)
 		return 0, err
 	}
 
@@ -450,15 +401,15 @@ func (bftx BF_TX) GetTotal() (int, error) {
 
 func (bftx *BF_TX) FullBFTXCycleWithoutEncryption(origin string) error {
 	if err := bftx.GenerateBFTX(origin); err != nil {
-		simpleLogger("FullBFTXCycleWithoutEncryption", err)
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
 		return err
 	}
 	if err := bftx.SignBFTX(bftx.Id, origin); err != nil {
-		simpleLogger("FullBFTXCycleWithoutEncryption", err)
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
 		return err
 	}
 	if err := bftx.BroadcastBFTX(bftx.Id, origin); err != nil {
-		simpleLogger("FullBFTXCycleWithoutEncryption", err)
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
 		return err
 	}
 
