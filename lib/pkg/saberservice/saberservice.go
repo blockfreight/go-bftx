@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
@@ -157,13 +156,13 @@ func BftxStructConverstionNO(tx *BFTXTransaction) (*btx.BF_TX, error) {
 	var oldbftx btx.BF_TX
 	bfjs, err := json.Marshal(*tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstionNO convertion error\n", err)
+		return &oldbftx, err
 	}
 	err = json.Unmarshal(bfjs, &oldbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstionNO Converstion failed. Maybe because of different structure. ", err)
+		return &oldbftx, err
 	}
-	return &oldbftx, err
+	return &oldbftx, nil
 }
 
 // BftxStructConverstionON (Old to New) is a function that convert the old structure
@@ -175,13 +174,13 @@ func BftxStructConverstionON(tx *btx.BF_TX) (*BFTXTransaction, error) {
 	var newbftx BFTXTransaction
 	bfjs, err := json.Marshal(tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstionON convertion error\n", err)
+		return &newbftx, err
 	}
 	err = json.Unmarshal(bfjs, &newbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstionON Converstion failed. Maybe because of different structure. ", err)
+		return &newbftx, err
 	}
-	return &newbftx, err
+	return &newbftx, nil
 }
 
 // SaberDefaultInput provides the saberinput structure with default value
@@ -446,7 +445,7 @@ func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 
 	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		return tx, err
 	}
 	defer conn.Close()
 	c := NewBFSaberServiceClient(conn)
@@ -455,11 +454,15 @@ func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 	bfdcpreq.KeyName = st.KeyName
 
 	_, err = fmt.Print("\n==============================\n")
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 
 	dcpr, err := c.BFTX_Decode(context.Background(), &bfdcpreq)
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 	fmt.Print(dcpr)
 
-	return dcpr, err
+	return dcpr, nil
 }
