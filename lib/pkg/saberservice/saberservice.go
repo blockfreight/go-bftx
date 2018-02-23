@@ -251,15 +251,17 @@ func SaberEncoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 
 	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		return tx, err
 	}
 	defer conn.Close()
 	c := NewBFSaberServiceClient(conn)
 
 	encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 
-	return encr, err
+	return encr, nil
 }
 
 // SaberEncodingTestCase is the function that enable it to connect to a container which realizing the
