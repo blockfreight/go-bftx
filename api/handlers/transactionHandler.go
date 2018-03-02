@@ -23,7 +23,7 @@ func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
 	if err := transaction.GenerateBFTX(common.ORIGIN_API); err != nil {
 		return nil, err
 	}
-
+	bftx_logger.ApiListener(transaction.Id)
 	return transaction, nil
 }
 
