@@ -12,6 +12,7 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	graphiql "github.com/mnmtanish/go-graphiql"
 )
 
 var schema, _ = graphql.NewSchema(
@@ -201,6 +202,8 @@ var mutationType = graphql.NewObject(
 //Start start the API
 func Start() error {
 	http.HandleFunc("/bftx-api", httpHandler(&schema))
+	http.HandleFunc("/", graphiql.ServeGraphiQL)
+	http.HandleFunc("/graphql", serveGraphQL(schema))
 	fmt.Println("Now server is running on: http://localhost:12345")
 	return http.ListenAndServe(":12345", nil)
 }
@@ -247,4 +250,28 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 
 	}
 
+}
+
+func serveGraphQL(s graphql.Schema) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sendError := func(err error) {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
+
+		req := &graphiql.Request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			sendError(err)
+			return
+		}
+
+		res := graphql.Do(graphql.Params{
+			Schema:        s,
+			RequestString: req.Query,
+		})
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			sendError(err)
+		}
+	}
 }

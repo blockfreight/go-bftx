@@ -75,6 +75,7 @@ import (
 	abciTypes "github.com/tendermint/abci/types"
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	tmTypes "github.com/tendermint/tendermint/types"
+	tmquery "github.com/tendermint/tmlibs/pubsub/query"
 
 	// ====================
 	// Third-party packages
@@ -369,7 +370,9 @@ func (bftx *BF_TX) QueryBFTX(idBftx, origin string) error {
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 	defer rpcClient.Stop()
-	query := "bftx.id='" + idBftx + "'"
+	query := "bftx.timestamp >= '" + idBftx + "'"
+	newquery, err := tmquery.New(query)
+	fmt.Printf("%+v/n", newquery.Conditions())
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
