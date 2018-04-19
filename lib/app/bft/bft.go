@@ -47,6 +47,7 @@ package bft
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	// =======================
@@ -115,6 +116,7 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 
 	tags := []*types.KVPair{
 		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
+		{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
 	}
 	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
 }
