@@ -114,6 +114,8 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 		panic(err)
 	}
 
+	//This is an example of how to query a transaction.
+	//http://localhost:46657/tx_search?query="bftx.id=%27<BFTX.ID>%27"&prove=true
 	tags := []*types.KVPair{
 		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
 		{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
