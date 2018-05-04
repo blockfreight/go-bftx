@@ -1,0 +1,41 @@
+# YAML example for encrytion configuration
+---
+version: v0.1
+group : SS512 # Default encryption setup
+recipients: 
+  # Define all the recipients who can see the encryption message 
+  # You can specify which user can see which part of information 
+  # in the following section
+  - Alice 
+  - Bob
+  - Carol
+  - Navia
+encryptionfields: 
+  # Details of the encryption fields
+  # The format of this part is:
+  # ===========================
+  # - FIELD_NAME: field_name
+  #   AUTHORIZEDUSER :
+  #     - user name 1
+  #     - user name 2 
+  # ===========================  
+  # the RECIPIENTS of the FIELD could see the information of 
+  # the particular field
+  - fieldname : GrossWeight 
+    authorizeduser:
+      - Alice
+      - Navia
+  - fieldname : PortOfLoading
+  # Only Alice can reveal the Packages section
+    authorizeduser:
+      - all
+publickeys:
+  # Link each recipient to their public key file
+  - userid : Alice
+    keyfile : alice_pubkey.yaml
+  - userid : Bob
+    keyfile : bob_pri_key.json
+  - userid : Carol
+    keyfile : carol_pri_key.json
+  - userid : Navia
+    keyfile : Navia_pubkey.yaml

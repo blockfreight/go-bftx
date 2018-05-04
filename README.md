@@ -54,20 +54,33 @@ $ glide update
 ### BFT-Node
 Install BFT-Node through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/go-bftx/blockfreight/cmd/bftnode
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftnode
 $ go install
 ```
-
-Then, you can execute `bftnode start`. That app will start a server that is going to wait for requests from the `bftx`.
+### BFT-Node on OSX
+Install BFT-Node through
 ```
-$ bftnode start
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftnode
+$ go build
+$ ./bftnode
+```
+
+Then, you can execute `bftnode`. That app will start a server that is going to wait for requests from the `bftx`.
+```
+$ bftnode
 ```
 
 ### BFTX
 In other terminal, install BFTX through
 ```
-$ cd $GOPATH/src/github.com/blockfreight/go-bftx/blockfreight/cmd/bftx
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftx
 $ go install
+```
+### BFTX on OSX
+In other terminal, install BFTX through
+```
+$ cd $GOPATH/src/github.com/blockfreight/go-bftx/cmd/bftx
+$ go build
 ```
 
 After that step, you can execute `bftx`. If you need some extra information, just add `help` after.
@@ -76,7 +89,7 @@ $ bftx help
 ```
 
 ## Use
-To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/go-bftx/blob/v0.2.0-dev/blockfreight/files/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
+To start using go-blockfreight, you can check the JSON example file ([bf_tx_example.json](https://github.com/blockfreight/go-bftx/blob/master/examples/bf_tx_example.json)) localted on `/blockfreight/files/` or put your own JSON file verifying the proper structure against the JSON example file.
 
 After that step, you can read the menu of bftx.
 

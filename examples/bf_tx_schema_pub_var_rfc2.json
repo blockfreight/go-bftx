@@ -4,70 +4,70 @@
     
     "shipper": { "type": "string" },
 
-    "BOL_NUM": { "type": "number" },
+    "BolNum": { "type": "number" },
 
-    "REF_NUM": { "type": "number"},
+    "RefNum": { "type": "number"},
 
     "consignee":{"type":"null"},
 
     "vessel":{"type":"number"},
 
-    "port_of_loading":{"type":"number"},
+    "PortOfLoading":{"type":"number"},
 
-    "port_of_discharge":{"type":"number"},
+    "PortOfDischarge":{"type":"number"},
 
     "nofity_address":{"type":"string"},
 
-    "desc_of_goods":{"type":"string"},
+    "DescOfGoods":{"type":"string"},
 
-    "gross_weight":{"type":"number"},
+    "GrossWeight":{"type":"number"},
 
-    "freight_payable_amt":{"type":"number"},
+    "FreightPayableAmt":{"type":"number"},
 
-    "freight_adv_amt":{"type":"number"},
+    "FreightAdvAmt":{"type":"number"},
 
-    "general_instructions":{"type":"string"},
+    "GeneralInstructions":{"type":"string"},
 
-    "date_shipped":{"type":"number", "format":"date-time"},
+    "DateShipped":{"type":"number", "format":"date-time"},
 
-     "issue_details": {
+     "IssueDetails": {
       "type": "object",
       "properties": {
-        "place_of_issue": { "type": "string" },
-        "date_of_issue": { "type": "number", "format":"date-time" }
+        "PlaceOfIssue": { "type": "string" },
+        "DateOfIssue": { "type": "number", "format":"date-time" }
       }
     },
 
-    "num_BOL":{"type":"number"},
+    "NumBol":{"type":"number"},
 
-    "master_info": {
+    "MasterInfo": {
       "type": "object",
       "properties": {
-        "first_name": { "type": "string" },
-        "last_name": { "type": "string" },
+        "FirstName": { "type": "string" },
+        "LastName": { "type": "string" },
         "sig":{"type":"null"}
       }
     },
     
 
-    "agent_for_master": {
+    "AgentForMaster": {
       "type": "object",
       "properties": {
-        "first_name": { "type": "string" },
-        "last_name": { "type": "string" },
+        "FirstName": { "type": "string" },
+        "LastName": { "type": "string" },
         "sig":{"type":"null"}
       }
     },
    
 
 
-  "agent_for_owner": {
+  "AgentForOwner": {
       "type": "object",
       "properties": {
-        "first_name": { "type": "string" },
-        "last_name": { "type": "string" },
+        "FirstName": { "type": "string" },
+        "LastName": { "type": "string" },
         "sig":{"type":"null"},
-        "conditions_for_carriage":{"type":"string"}
+        "ConditionsForCarriage":{"type":"string"}
       }
     }
 

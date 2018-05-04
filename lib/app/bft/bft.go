@@ -46,79 +46,130 @@
 package bft
 
 import (
+	"encoding/json"
+	"time"
+
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	// =======================
 	// Golang Standard library
 	// =======================
-	"strings" // Implements simple functions to manipulate UTF-8 encoded strings.
+	// Implements simple functions to manipulate UTF-8 encoded strings.
 
 	// ===============
 	// Tendermint Core
 	// ===============
+
+	"bytes"
+	"fmt"
+
+	"github.com/tendermint/abci/example/code"
 	"github.com/tendermint/abci/types"
-	tendermint "github.com/tendermint/go-common"
-	"github.com/tendermint/go-merkle"
+	"github.com/tendermint/iavl"
+	dbm "github.com/tendermint/tmlibs/db"
+
+	wire "github.com/tendermint/go-wire"
 )
 
 // BftApplication struct
 type BftApplication struct {
 	types.BaseApplication
 
-	state merkle.Tree
+	state *iavl.VersionedTree
+
+	blockHeader *types.Header
+
+	// validator set
+	changes []*types.Validator
 }
 
-// newBftApplication creates a new application
+// NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	state := merkle.NewIAVLTree(0, nil)
-	return &BftApplication{state: state}
+	stateTree := iavl.NewVersionedTree(0, dbm.NewMemDB())
+
+	return &BftApplication{
+		state: stateTree,
+	}
 }
 
 // Info returns information
-func (app *BftApplication) Info() (resInfo types.ResponseInfo) {
-  return types.ResponseInfo{Data: tendermint.Fmt("{\"size\":%v}", app.state.Size()), LastBlockAppHash: app.state.Hash(), LastBlockHeight: uint64(app.state.Height())}
+func (app *BftApplication) Info(req types.RequestInfo) (resInfo types.ResponseInfo) {
+	return types.ResponseInfo{Data: fmt.Sprintf(`{"size":%v}`, app.state.Size()), LastBlockAppHash: app.state.Hash()}
 }
 
-// tx is either "key=value" or just arbitrary bytes
-func (app *BftApplication) DeliverTx(tx []byte) types.Result {
-	parts := strings.Split(string(tx), "=")
+// DeliverTx delivers transactions.Transactions are either "key=value" or just arbitrary bytes
+func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
+	var key, value []byte
+	parts := bytes.Split(tx, []byte("="))
 	if len(parts) == 2 {
-		app.state.Set([]byte(parts[0]), []byte(parts[1]))
+		key, value = parts[0], parts[1]
 	} else {
-		app.state.Set(tx, tx)
+		key, value = tx, tx
 	}
-  return types.OK
+	app.state.Set(key, value)
+
+	var bftx bf_tx.BF_TX
+	err := json.Unmarshal(tx, &bftx)
+	if err != nil {
+		// if this wasn't a dummy app, we'd do something smarter
+		panic(err)
+	}
+
+	//This is an example of how to query a transaction.
+	//http://localhost:46657/tx_search?query="bftx.id=%27<BFTX.ID>%27"&prove=true
+	tags := []*types.KVPair{
+		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
+		{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
+	}
+	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
 }
 
-// Checktx checks a transaction
-func (app *BftApplication) CheckTx(tx []byte) types.Result {
-	return types.OK
+// CheckTx checks a transaction
+func (app *BftApplication) CheckTx(tx []byte) types.ResponseCheckTx {
+	return types.ResponseCheckTx{Code: code.CodeTypeOK}
 }
 
 // Commit commits transactions
-func (app *BftApplication) Commit() types.Result {
-  newTree := app.state.Copy()
-	hash := newTree.Save()
-	return types.NewResultOK(hash, "")
+func (app *BftApplication) Commit() types.ResponseCommit {
+	// Save a new version
+	var hash []byte
+	var err error
+
+	if app.state.Size() > 0 {
+		// just add one more to height (kind of arbitrarily stupid)
+		height := app.state.LatestVersion() + 1
+		hash, err = app.state.SaveVersion(height)
+		if err != nil {
+			// if this wasn't a dummy app, we'd do something smarter
+			panic(err)
+		}
+	}
+
+	return types.ResponseCommit{Code: code.CodeTypeOK, Data: hash}
 }
 
-// Query executes queries and returns the result
+//Query retrieves a transaction from the network
 func (app *BftApplication) Query(reqQuery types.RequestQuery) (resQuery types.ResponseQuery) {
 	if reqQuery.Prove {
-		value, proof, exists := app.state.Proof(reqQuery.Data)
+		value, proof, err := app.state.GetWithProof(reqQuery.Data)
+		// if this wasn't a dummy app, we'd do something smarter
+		if err != nil {
+			panic(err)
+		}
 		resQuery.Index = -1 // TODO make Proof return index
 		resQuery.Key = reqQuery.Data
 		resQuery.Value = value
-		resQuery.Proof = proof
-		if exists {
+		resQuery.Proof = wire.BinaryBytes(proof)
+		if value != nil {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"
 		}
 		return
 	} else {
-		index, value, exists := app.state.Get(reqQuery.Data)
+		index, value := app.state.Get(reqQuery.Data)
 		resQuery.Index = int64(index)
 		resQuery.Value = value
-		if exists {
+		if value != nil {
 			resQuery.Log = "exists"
 		} else {
 			resQuery.Log = "does not exist"

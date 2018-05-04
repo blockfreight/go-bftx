@@ -9,11 +9,11 @@ import (
 
 func TestValidator(t *testing.T) {
 	t.Log("Test on validator function")
-	bftx, err := bf_tx.SetBF_TX("../../../examples/bf_tx_example.json")
+	bftx, err := bf_tx.SetBFTX("../../../examples/bf_tx_example.json")
 	if err != nil {
 		t.Log(err.Error())
 	}
-	result, err := validator.ValidateBf_Tx(bftx)
+	result, err := validator.ValidateBFTX(bftx)
 	if err != nil {
 		t.Log(err.Error())
 	}

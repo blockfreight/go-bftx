@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package saberservice;
+
+// service, encrypt a plain text into a cypertext using saber
+service BFSaberService {
+    // request a service of encryption
+    rpc BFTX_Encode(BFTX_Encode_request) returns (BFTX_transaction) {};
+    // request a service for decryption
+    rpc BFTX_Decode(BFTX_Decode_request) returns (BFTX_transaction) {}
+}
+
+// The BFTX encryption transaction data structure (test version)
+message BFTX_Encode_request{
+    BFTX_transaction bftxtrans = 1;
+    BFTX_encryptionConfig bftxconfig = 2;
+}
+// The BFTX decryption transaction data structure (test version)
+message BFTX_Decode_request{
+    BFTX_transaction bftxtrans = 1;
+    string KeyName = 2;
+}
+
+message BFTX_transaction {
+    BFTX_Payload Properties = 1;
+    string Id = 2;
+    SignKey PrivateKey = 3;
+    string Signhash = 4;
+    string Signature = 5;
+    bool Verified = 6;
+    bool Transmitted = 7;
+    string Amendment = 8;
+    string Private = 9;
+}
+
+message SignKey{
+    string Curve = 1;
+    string X = 2;
+    string Y = 3;
+    string D = 4;
+}
+
+message BFTX_Payload{
+    string Shipper = 1;
+    string BolNum = 2;
+    string RefNum = 3;
+    string Vessel = 4;
+    string PortOfLoading = 5;
+    string PortOfDischarge = 6;
+    string UnitOfVolume = 7;
+    string NotifyAddress = 8;
+    string DescOfGoods = 9;
+    string GrossWeight = 10;
+    string FreightPayableAmt = 11;
+    string FreightAdvAmt = 12;
+    string GeneralInstructions = 13;
+    string DateShipped = 14;
+    ISSUEDETAILS IssueDetails = 15;
+    string NumBol = 16;
+    MASTERINFO MasterInfo = 17;
+    AGENTFORMASTER AgentForMaster = 18;
+    AGENTFOROWNER AgentForOwner = 19;
+    string EncryptionMetaData = 20;
+    string Consignee = 21;
+    string HouseBill = 22;
+    string ReceiveAgent = 23;
+    string Destination = 24;
+    string MarksAndNumbers = 25;
+    string UnitOfWeight = 26;
+    string Volume =27;
+    string Container =28;
+    string ContainerSeal =29;
+    string Packages = 30;
+    string PackType = 31;
+    string INCOTerms = 32;
+    string DeliverAgent = 33; 
+    string ContainerMode = 34;
+    string ContainerType = 35;
+}
+
+message ISSUEDETAILS{
+    string PlaceOfIssue = 1;
+    string DateOfIssue = 2;
+}
+
+message MASTERINFO{
+    string FirstName = 1;
+    string LastName = 2;
+    string Sig = 3;
+}
+
+message AGENTFORMASTER{
+    string FirstName = 1;
+    string LastName = 2;
+    string Sig = 3;
+}
+
+message AGENTFOROWNER{
+    string FirstName = 1;
+    string LastName = 2;
+    string Sig = 3;
+    string ConditionsForCarriage = 4;
+}
+
+message BFTX_encryptionConfig{
+    string version = 1;
+    string group = 2;
+    repeated string recipients = 3;
+    repeated ENCRYPTIONFIELD encryptionfields = 4;
+    repeated PUBLICKEYS publickeys = 5;
+
+}
+
+message ENCRYPTIONFIELD{
+    string fieldname = 1;
+    repeated string authorizeduser= 2;
+}
+
+message PUBLICKEYS{
+    string userid = 1;
+    string keyfile = 2;
+}

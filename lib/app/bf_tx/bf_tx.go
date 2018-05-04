@@ -50,10 +50,31 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/elliptic"
+	"crypto/md5"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/json"
+	"errors" // Implements the SHA256 Algorithm for Hash.
+	"hash"
+	"io"
+	"log"
+	"math/big"
+	"os"
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"net/http"
+	"strconv"
+
+	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
+
+	// ===============
+	// Tendermint Core
+	// ===============
+	"github.com/tendermint/abci/client"
+	abciTypes "github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ====================
 	// Third-party packages
@@ -63,68 +84,363 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
+
+	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Implements common functions for Blockfreight™
 )
 
-// SetBF_TX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
-func SetBF_TX(jsonpath string) (BF_TX, error) {
-	var bf_tx BF_TX
+var TendermintClient abcicli.Client
+
+// SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
+func SetBFTX(jsonpath string) (BF_TX, error) {
+	var bftx BF_TX
 	file, err := common.ReadJSON(jsonpath)
 	if err != nil {
-		return bf_tx, err
+		bftx_logger.SimpleLogger("SetBFTX", err)
+		return bftx, err
 	}
-	json.Unmarshal(file, &bf_tx)
-	return bf_tx, nil
+	json.Unmarshal(file, &bftx)
+	return bftx, nil
 }
 
-//HashBF_TX hashes the BF_TX object
-func HashBF_TX(bf_tx BF_TX) ([]byte, error) {
-	bf_tx_bytes := []byte(fmt.Sprintf("%v", bf_tx))
+//HashBFTX hashes the BF_TX object
+func HashBFTX(bftx BF_TX) ([]byte, error) {
+	bftxBytes := []byte(fmt.Sprintf("%v", bftx))
 
 	hash := sha256.New()
-	hash.Write(bf_tx_bytes)
+	hash.Write(bftxBytes)
 
 	return hash.Sum(nil), nil
 }
 
-//HashBF_TX_salt hashes two byte arrays and returns it.
-func HashBF_TX_salt(hash []byte, salt []byte) []byte {
-	return common.HashByteArrays(hash, salt)
+//HashByteArray hashes two byte arrays and returns it.
+func HashByteArray(hash []byte, salt []byte) string {
+	return "BFTX" + fmt.Sprintf("%x", common.HashByteArrays(hash, salt))
 }
 
-// BF_TXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
-func BF_TXContent(bf_tx BF_TX) (string, error) {
-	jsonContent, err := json.Marshal(bf_tx)
+// BFTXContent receives the BF_TX structure, applies it the json.Marshal procedure and return the content of the BF_TX JSON.
+func BFTXContent(bftx BF_TX) (string, error) {
+	jsonContent, err := json.Marshal(bftx)
 	return string(jsonContent), err
 }
 
-// PrintBF_TX receives a BF_TX and prints it clearly.
-func PrintBF_TX(bf_tx BF_TX) {
-	spew.Dump(bf_tx)
+// PrintBFTX receives a BF_TX and prints it clearly.
+func PrintBFTX(bftx BF_TX) {
+	spew.Dump(bftx)
 }
 
 // State reports the current state of a BF_TX
-func State(bf_tx BF_TX) string {
-	if bf_tx.Transmitted {
+func State(bftx BF_TX) string {
+	if bftx.Transmitted {
 		return "Transmitted!"
-	} else if bf_tx.Verified {
+	} else if bftx.Verified {
 		return "Signed!"
 	} else {
 		return "Constructed!"
 	}
 }
 
+func ByteArrayToBFTX(obj []byte) BF_TX {
+	var bftx BF_TX
+	json.Unmarshal(obj, &bftx)
+	return bftx
+}
+
+func (bftx *BF_TX) GenerateBFTX(origin string) error {
+	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
+	if err != nil {
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	hash, err := HashBFTX(*bftx)
+	if err != nil {
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Generate BF_TX id
+	bftx.Id = HashByteArray(hash, resInfo.LastBlockAppHash)
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Save on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+}
+
+func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("SignBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if bftx.Verified {
+		return handleResponse(origin, errors.New("Transaction already signed"), strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Sign BF_TX
+	if err = bftx.setSignature(); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+
+}
+
+// SignBFTX has the whole process of signing each BF_TX.
+func (bftx *BF_TX) setSignature() error {
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+
+	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+
+	privatekey := new(ecdsa.PrivateKey)
+	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+	pubkey := privatekey.PublicKey
+
+	// Sign ecdsa style
+	var h hash.Hash
+	h = md5.New()
+	r := big.NewInt(0)
+	s := big.NewInt(0)
+
+	io.WriteString(h, content)
+	signhash := h.Sum(nil)
+
+	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+
+	signature := r.Bytes()
+	signature = append(signature, s.Bytes()...)
+
+	sign := ""
+	for i, _ := range signature {
+		sign += strconv.Itoa(int(signature[i]))
+	}
+
+	// Verification
+	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
+
+	//Set Private Key and Sign to BF_TX
+	bftx.PrivateKey = *privatekey
+	bftx.Signhash = signhash
+	bftx.Signature = sign
+	bftx.Verified = verifystatus
+
+	return nil
+}
+
+func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Get a BF_TX by id
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if !bftx.Verified {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+	if bftx.Transmitted {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Change the boolean valud for Transmitted attribute
+	bftx.Transmitted = true
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(string(bftx.Id), content); err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	_, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		bftx_logger.TransLogger("BroadcastBFTX", rpcErr, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	defer rpcClient.Stop()
+
+	return nil
+}
+
+func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("GetBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &bftx)
+	if err != nil {
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+
+}
+
+func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	var bftxs []BF_TX
+	if err != nil {
+		log.Println(err.Error())
+		// queryLogger("QueryBFTX", err.Error(), idBftx)
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+	defer rpcClient.Stop()
+	query := "bftx.id CONTAINS '" + idBftx + "'"
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if len(resQuery) > 0 {
+		for _, element := range resQuery {
+
+			var tx BF_TX
+			err := json.Unmarshal(element.Tx, &tx)
+			if err != nil {
+				bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+				return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+			}
+			bftxs = append(bftxs, tx)
+		}
+
+		return bftxs, nil
+	}
+
+	bftx_logger.StringLogger("QueryBFTX", "Transaction not found", idBftx)
+	return nil, handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
+}
+
+func (bftx BF_TX) GetTotal() (int, error) {
+	total, err := leveldb.Total()
+	if err != nil {
+		bftx_logger.SimpleLogger("GetTotal", err)
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (bftx *BF_TX) FullBFTXCycleWithoutEncryption(origin string) error {
+	if err := bftx.GenerateBFTX(origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+	if err := bftx.SignBFTX(bftx.Id, origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+	if err := bftx.BroadcastBFTX(bftx.Id, origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+
+	return nil
+}
+
+func handleResponse(origin string, err error, httpStatusCode string) error {
+	if origin == common.ORIGIN_API {
+		return errors.New(httpStatusCode)
+	}
+	return err
+}
+
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
-func Reinitialize(bf_tx BF_TX) BF_TX {
-	bf_tx.PrivateKey.Curve = nil
-	bf_tx.PrivateKey.X = nil
-	bf_tx.PrivateKey.Y = nil
-	bf_tx.PrivateKey.D = nil
-	bf_tx.Signhash = nil
-	bf_tx.Signature = ""
-	bf_tx.Verified = false
-	bf_tx.Transmitted = false
-	return bf_tx
+func Reinitialize(bftx BF_TX) BF_TX {
+	bftx.PrivateKey.Curve = nil
+	bftx.PrivateKey.X = nil
+	bftx.PrivateKey.Y = nil
+	bftx.PrivateKey.D = nil
+	bftx.Signhash = nil
+	bftx.Signature = ""
+	bftx.Verified = false
+	bftx.Transmitted = false
+	return bftx
 }
 
 // BF_TX structure respresents an logical abstraction of a Blockfreight™ Transaction.
@@ -132,195 +448,92 @@ type BF_TX struct {
 	// =========================
 	// Bill of Lading attributes
 	// =========================
-	Type       string
 	Properties Properties
 
 	// ===================================
 	// Blockfreight Transaction attributes
 	// ===================================
-	Id          string
-	PrivateKey  ecdsa.PrivateKey
-	Signhash    []uint8
-	Signature   string
-	Verified    bool
-	Transmitted bool
-	Amendment   string
+	Id          string           `json:"Id"`
+	PrivateKey  ecdsa.PrivateKey `json:"-"`
+	Signhash    []uint8          `json:"Signhash"`
+	Signature   string           `json:"Signature"`
+	Verified    bool             `json:"Verified"`
+	Transmitted bool             `json:"Transmitted"`
+	Amendment   string           `json:"Amendment"`
+	Private     string           `json:"Private"`
 }
 
 // Properties struct
 type Properties struct {
-	Shipper              Shipper
-	Bol_Num              BolNum
-	Ref_Num              RefNum
-	Consignee            Consignee
-	Vessel               Vessel
-	Port_of_Loading      PortLoading
-	Port_of_Discharge    PortDischarge
-	Notify_Address       NotifyAddress
-	Desc_of_Goods        DescGoods
-	Gross_Weight         GrossWeight
-	Freight_Payable_Amt  FreightPayableAmt
-	Freight_Adv_Amt      FreightAdvAmt
-	General_Instructions GeneralInstructions
-	Date_Shipped         Date
-	Issue_Details        IssueDetails
-	Num_Bol              NumBol
-	Master_Info          MasterInfo
-	Agent_for_Master     AgentMaster
-	Agent_for_Owner      AgentOwner
-}
-
-// Shipper struct
-type Shipper struct {
-	Type string
-}
-
-// BolNum struct
-type BolNum struct {
-	Type int
-}
-
-// RefNum struct
-type RefNum struct {
-	Type int
-}
-
-// Consignee struct
-type Consignee struct {
-	Type string //Null
-}
-
-// Vessel struct
-type Vessel struct {
-	Type int
-}
-
-// PortLoading struct
-type PortLoading struct {
-	Type int
-}
-
-// PortDischarge struct
-type PortDischarge struct {
-	Type int
-}
-
-// NotifyAddress struct
-type NotifyAddress struct {
-	Type string
-}
-
-// DescGoods struct
-type DescGoods struct {
-	Type string
-}
-
-// GrossWeight struct
-type GrossWeight struct {
-	Type int
-}
-
-// FreightPayableAmt struct
-type FreightPayableAmt struct {
-	Type int
-}
-
-// FreightAdvAmt struct
-type FreightAdvAmt struct {
-	Type int
-}
-
-// GeneralInstructions struct
-type GeneralInstructions struct {
-	Type string
+	Shipper             string       `protobuf:"bytes,1,opt,name=Shipper" json:"Shipper"`
+	BolNum              string       `protobuf:"varint,1,opt,name=BolNum" json:"BolNum"`
+	RefNum              string       `protobuf:"varint,2,opt,name=RefNum" json:"RefNum"`
+	Consignee           string       `protobuf:"bytes,2,opt,name=Consignee" json:"Consignee"`
+	HouseBill           string       `protobuf:"bytes,3,opt,name=HouseBill" json:"HouseBill"`
+	Vessel              string       `protobuf:"varint,3,opt,name=Vessel" json:"Vessel"`
+	Packages            string       `protobuf:"varint,4,opt,name=Packages" json:"Packages"`
+	PackType            string       `protobuf:"bytes,4,opt,name=PackType" json:"PackType"`
+	INCOTerms           string       `protobuf:"bytes,5,opt,name=INCOTerms" json:"INCOTerms"`
+	PortOfLoading       string       `protobuf:"bytes,6,opt,name=PortOfLoading" json:"PortOfLoading"`
+	PortOfDischarge     string       `protobuf:"bytes,7,opt,name=PortOfDischarge" json:"PortOfDischarge"`
+	Destination         string       `protobuf:"bytes,8,opt,name=Destination" json:"Destination"`
+	MarksAndNumbers     string       `protobuf:"bytes,9,opt,name=MarksAndNumbers" json:"MarksAndNumbers"`
+	UnitOfWeight        string       `protobuf:"bytes,10,opt,name=UnitOfWeight" json:"UnitOfWeight"`
+	DeliverAgent        string       `protobuf:"bytes,11,opt,name=DeliverAgent" json:"DeliverAgent"`
+	ReceiveAgent        string       `protobuf:"bytes,12,opt,name=ReceiveAgent" json:"ReceiveAgent"`
+	Container           string       `protobuf:"bytes,13,opt,name=Container" json:"Container"`
+	ContainerSeal       string       `protobuf:"bytes,14,opt,name=ContainerSeal" json:"ContainerSeal"`
+	ContainerMode       string       `protobuf:"bytes,15,opt,name=ContainerMode" json:"ContainerMode"`
+	ContainerType       string       `protobuf:"bytes,16,opt,name=ContainerType" json:"ContainerType"`
+	Volume              string       `protobuf:"bytes,17,opt,name=Volume" json:"Volume"`
+	UnitOfVolume        string       `protobuf:"bytes,18,opt,name=UnitOfVolume" json:"UnitOfVolume"`
+	NotifyAddress       string       `protobuf:"bytes,19,opt,name=NotifyAddress" json:"NotifyAddress"`
+	DescOfGoods         string       `protobuf:"bytes,20,opt,name=DescOfGoods" json:"DescOfGoods"`
+	GrossWeight         string       `protobuf:"varint,5,opt,name=GrossWeight" json:"GrossWeight"`
+	FreightPayableAmt   string       `protobuf:"varint,6,opt,name=FreightPayableAmt" json:"FreightPayableAmt"`
+	FreightAdvAmt       string       `protobuf:"varint,7,opt,name=FreightAdvAmt" json:"FreightAdvAmt"`
+	GeneralInstructions string       `protobuf:"bytes,21,opt,name=GeneralInstructions" json:"GeneralInstructions"`
+	DateShipped         string       `protobuf:"bytes,22,opt,name=DateShipped" json:"DateShipped"`
+	IssueDetails        IssueDetails `json:"IssueDetails"`
+	NumBol              string       `protobuf:"varint,8,opt,name=NumBol" json:"NumBol"`
+	MasterInfo          MasterInfo   `json:"MasterInfo"`
+	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
+	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
+	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
 // Date struct
 type Date struct {
-	Type   int
+	Type   string
 	Format string
 }
 
 // IssueDetails struct
 type IssueDetails struct {
-	Type       string
-	Properties IssueDetailsProperties
+	PlaceOfIssue string `json:"PlaceOfIssue"`
+	DateOfIssue  string `json:"DateOfIssue"`
 }
 
-// IssueDetailsProperties struct
-type IssueDetailsProperties struct {
-	Place_of_Issue PlaceIssue
-	Date_of_Issue  Date
-}
-
-// PlaceIssue struct
-type PlaceIssue struct {
-	Type string
-}
-
-// Numbol struct
-type NumBol struct {
-	Type int
-}
-
-// Masterinfo struct
+// MasterInfo struct
 type MasterInfo struct {
-	Type       string
-	Properties MasterInfoProperties
-}
-
-// MasterInfoProperties struct
-type MasterInfoProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentMaster struct
 type AgentMaster struct {
-	Type       string
-	Properties AgentMasterProperties
-}
-
-//AgentMasterProperties struct
-type AgentMasterProperties struct {
-	First_Name FirstName
-	Last_Name  LastName
-	Sig        Sig
+	FirstName string `json:"FirstName"`
+	LastName  string `json:"LastName"`
+	Sig       string `json:"Sig"`
 }
 
 // AgentOwner struct
 type AgentOwner struct {
-	Type       string
-	Properties AgentOwnerProperties
-}
-
-// AgentOwnerProperties struct
-type AgentOwnerProperties struct {
-	First_Name              FirstName
-	Last_Name               LastName
-	Sig                     Sig
-	Conditions_for_Carriage ConditionsCarriage
-}
-
-// FirstName struct
-type FirstName struct {
-	Type string
-}
-
-// LastName struct
-type LastName struct {
-	Type string
-}
-
-// Sig struct
-type Sig struct {
-	Type string
-}
-
-// ConditionsCarriage struct
-type ConditionsCarriage struct {
-	Type string
+	FirstName             string `json:"FirstName"`
+	LastName              string `json:"LastName"`
+	Sig                   string `json:"Sig"`
+	ConditionsForCarriage string `json:"ConditionsForCarriage"`
 }
 
 // =================================================

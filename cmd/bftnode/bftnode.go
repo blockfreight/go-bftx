@@ -1,3 +1,4 @@
+// File: ./blockfreight/cmd/bftnode/bftnode.go
 // Summary: Application code for Blockfreight™ | The blockchain of global freight.
 // License: MIT License
 // Company: Blockfreight, Inc.
@@ -51,8 +52,7 @@ import (
 	"flag" // Implements command-line flag parsing.
 	"fmt"  // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"log"  // Implements a simple logging package.
-	"os"
-	"strings"
+	"strconv"
 
 	// ===============
 	// Tendermint Core
@@ -60,105 +60,21 @@ import (
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
-	"github.com/tendermint/abci/version"
 	tendermint "github.com/tendermint/go-common"
-	"github.com/urfave/cli"
-
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+
+	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
-	"github.com/blockfreight/go-bftx/lib/pkg/key"
 )
 
-// Structure for data passed to print response.
-type response struct {
-	// generic abci response
-	Data   []byte
-	Code   types.CodeType
-	Log    string
-	Result string //Blockfreight Purposes
-}
-
-// client is a global variable so it can be reused by the console
 var client abcicli.Client
 
 func main() {
 
-	//workaround for the cli library (https://github.com/urfave/cli/issues/565)
-	cli.OsExiter = func(_ int) {}
-
-	app := cli.NewApp()
-	app.Name = "bftnode"
-	app.Usage = "bftnode [command] [args...]"
-	app.Version = version.Version
-	app.Flags = []cli.Flag{
-		cli.StringFlag{
-			Name:  "address",
-			Value: "tcp://127.0.0.1:46658",
-			//Value: "tcp://172.17.0.3:46658",
-			Usage: "address of application socket",
-		},
-		cli.StringFlag{
-			Name:  "call",
-			Value: "socket",
-			Usage: "socket or grpc",
-		},
-		cli.BoolFlag{
-			Name:  "verbose",
-			Usage: "print the command and results as if it were a console session",
-		},
-	}
-	app.Commands = []cli.Command{
-		{
-			Name:  "start",
-			Usage: "Start Blockfreight Node Application. (Parameters: none)",
-			Action: func(c *cli.Context) {
-				cmdStartServer()
-			},
-		},
-		{
-			Name:  "exit",
-			Usage: "Leaves the program. (Parameters: none)",
-			Action: func(c *cli.Context) {
-				os.Exit(0)
-			},
-		},
-		{
-			Name:  "new_key",
-			Usage: "Generate a new Public/Private Key",
-			Action: func(c *cli.Context) error {
-				return cmdGenerateKey(c)
-			},
-		},
-	}
-	err := app.Run(os.Args)
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-
-}
-
-// cmdGenerateKey function creates a new public/private key
-func cmdGenerateKey(c *cli.Context) error {
-	result, err := key.GenerateNewKey()
-	if err != nil {
-		return nil
-	}
-
-	printResponse(c, response{
-		Result: result,
-	})
-	return nil
-}
-
-// cmdStartServer function creates the Blockfreight Node Application
-func cmdStartServer() {
-
-	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Node")
-	fmt.Println("...........................................\n")
-
 	// Parameters
 	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
 	abciPtr := flag.String("bft", "socket", "socket | grpc")
@@ -171,11 +87,35 @@ func cmdStartServer() {
 
 	// Start the listener
 	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println(srv)
+	fmt.Println(*addrPtr)
+
+	err = srv.Start()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Service created by " + *abciPtr + " server")
+	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
+
+	client, err = abcicli.NewClient(*addrPtr, "socket", false)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	fmt.Println("Service created by " + *abciPtr + " server")
+
+	err = client.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	bf_tx.TendermintClient = client
+
+	err = api.Start()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 
 	// Wait forever
 	tendermint.TrapSignal(func() {
@@ -183,33 +123,6 @@ func cmdStartServer() {
 		fmt.Println("Stopping service")
 		srv.Stop()
 	})
-
-}
-
-func printResponse(c *cli.Context, rsp response) {
-
-	verbose := c.GlobalBool("verbose")
-
-	if verbose {
-		fmt.Println(">", c.Command.Name, strings.Join(c.Args(), " "))
-	}
-
-	if !rsp.Code.IsOK() {
-		fmt.Printf("-> code: %s\n", rsp.Code.String())
-	}
-	if rsp.Result != "" {
-		fmt.Printf("%s", rsp.Result)
-	}
-	if len(rsp.Data) != 0 {
-		//fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
-		fmt.Printf("-> data.hex: %X\n", rsp.Data)
-	}
-	if rsp.Log != "" {
-		fmt.Printf("-> log: %s\n", rsp.Log)
-	}
-	if verbose {
-		fmt.Println("")
-	}
 
 }
 

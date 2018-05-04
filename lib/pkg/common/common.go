@@ -46,6 +46,7 @@
 package common
 
 import (
+
 	// =======================
 	// Golang Standard library
 	// =======================
@@ -54,6 +55,9 @@ import (
 	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
 	"io/ioutil"     // Implements some I/O utility functions.
 )
+
+const ORIGIN_API = "API"
+const ORIGIN_CMD = "CMD"
 
 // ReadJSON is a function that receives the path of a file encapsulates the native Golang process of reading a file.
 func ReadJSON(path string) ([]byte, error) {

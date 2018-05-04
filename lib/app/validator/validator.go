@@ -58,136 +58,175 @@ import (
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 )
 
-// ValidateBf_Tx is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
-func ValidateBf_Tx(bf_tx bf_tx.BF_TX) (string, error) {
+// ValidateBFTX is a function that receives the BF_TX and return the proper message according with the result of ValidateFields function.
+func ValidateBFTX(bftx bf_tx.BF_TX) (string, error) {
 	var espErr error
 
-	valid, err := ValidateFields(bf_tx)
+	valid, err := ValidateFields(bftx)
 	if valid {
 		return "Success! [OK]", nil
-	} else {
-		if err != "" {
-			espErr = errors.New(`
+	}
+
+	if err != "" {
+		espErr = errors.New(`
     Specific Error [01]:
     ` + err)
-		}
-		return `
+	}
+	return `
     Blockfreight, Inc. © 2017. Open Source (MIT) License.
 
     Error [01]:
 
     Invalid structure in JSON provided. JSON 结构无效.
     Struttura JSON non valido. هيكل JSON صالح. 無効なJSON構造.
-    Estructura inválida en el JSON dado.
+	Estructura inválida en el JSON dado.
+	Estrutura inválida no JSON enviado.
 
     support: support@blockfreight.com`, espErr
-	}
 }
 
 // ValidateFields is a function that receives the BF_TX, validates every field in the BF_TX and return true or false, and a message if some field is wrong.
-func ValidateFields(bf_tx bf_tx.BF_TX) (bool, string) {
-	if reflect.TypeOf(bf_tx.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Type is not a string."
+func ValidateFields(bftx bf_tx.BF_TX) (bool, string) {
+	if reflect.TypeOf(bftx.Properties.Shipper) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.Shipperis not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Shipper.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Shipper.Type is not a string."
+	// if reflect.TypeOf(bftx.Properties.BolNum).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.BolNum is not a number."
+	// }
+	// if reflect.TypeOf(bftx.Properties.RefNum).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.RefNum is not a number."
+	// }
+	if reflect.TypeOf(bftx.Properties.Consignee) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.Consignee is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Bol_Num.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Bol_Num.Type == 0 {
-		return false, "bf_tx.Properties.Bol_Num.Type is not a number."
+	// if reflect.TypeOf(bftx.Properties.Vessel).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.Vessel is not a number."
+	// }
+	if reflect.TypeOf(bftx.Properties.PortOfLoading) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.PortOfLoading is not a number."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Ref_Num.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Ref_Num.Type == 0 {
-		return false, "bf_tx.Properties.Ref_Num.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.PortOfDischarge) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.PortOfDischarge is not a number."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Consignee.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Consignee.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.UnitOfVolume) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.UnitOfVolume is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Vessel.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Vessel.Type == 0 {
-		return false, "bf_tx.Properties.Vessel.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.NotifyAddress) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.NotifyAddress is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Port_of_Loading.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Port_of_Loading.Type == 0 {
-		return false, "bf_tx.Properties.Port_of_Loading.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.DescOfGoods) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.DescOfGoods is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Port_of_Discharge.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Port_of_Discharge.Type == 0 {
-		return false, "bf_tx.Properties.Port_of_Discharge.Type is not a number."
+	// if reflect.TypeOf(bftx.Properties.GrossWeight).Kind() != reflect.Float64 {
+	// 	return false, "bftx.Properties.GrossWeight is not a float64."
+	// }
+	// if reflect.TypeOf(bftx.Properties.FreightPayableAmt).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.FreightPayableAmt is not an int."
+	// }
+	// if reflect.TypeOf(bftx.Properties.FreightAdvAmt).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.FreightAdvAmt is not an int."
+	// }
+	if reflect.TypeOf(bftx.Properties.GeneralInstructions) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.GeneralInstructions is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Notify_Address.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Notify_Address.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.DateShipped) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.DateShipped is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Desc_of_Goods.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Desc_of_Goods.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.IssueDetails.DateOfIssue) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.IssueDetails.Properties.PlaceOfIssue is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Gross_Weight.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Gross_Weight.Type == 0 {
-		return false, "bf_tx.Properties.Gross_Weight.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.IssueDetails.PlaceOfIssue) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.IssueDetails.Properties.PlaceOfIssue is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Freight_Payable_Amt.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Freight_Payable_Amt.Type == 0 {
-		return false, "bf_tx.Properties.Freight_Payable_Amt.Type is not a number."
+	// if reflect.TypeOf(bftx.Properties.NumBol).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.NumBol is not a number."
+	// }
+
+	if reflect.TypeOf(bftx.Properties.MasterInfo.FirstName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.MasterInfo.Properties.FirstName is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Freight_Adv_Amt.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Freight_Adv_Amt.Type == 0 {
-		return false, "bf_tx.Properties.Freight_Adv_Amt.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.MasterInfo.LastName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.MasterInfo.Properties.LastName is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.General_Instructions.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.General_Instructions.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.MasterInfo.Sig) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.MasterInfo.Properties.Sig is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Date_Shipped.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Date_Shipped.Type == 0 {
-		return false, "bf_tx.Properties.Date_Shipped.Type is not a number."
+
+	if reflect.TypeOf(bftx.Properties.AgentForMaster.FirstName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForMaster.Properties.FirstName is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Date_Shipped.Format) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Date_Shipped.Format is not a date format."
+	if reflect.TypeOf(bftx.Properties.AgentForMaster.LastName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForMaster.Properties.LastName is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Issue_Details.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Issue_Details.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.AgentForMaster.Sig) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForMaster.Properties.Sig is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Issue_Details.Properties.Place_of_Issue.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Issue_Details.Properties.Place_of_Issue.Type is not a string."
+
+	if reflect.TypeOf(bftx.Properties.AgentForOwner.FirstName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForOwner.Properties.FirstName is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Issue_Details.Properties.Date_of_Issue.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Issue_Details.Properties.Date_of_Issue.Type == 0 {
-		return false, "bf_tx.Properties.Issue_Details.Properties.Date_of_Issue.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.AgentForOwner.LastName) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForOwner.Properties.LastName is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Issue_Details.Properties.Date_of_Issue.Format) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Issue_Details.Properties.Place_of_Issue.Format is not a date format."
+	if reflect.TypeOf(bftx.Properties.AgentForOwner.Sig) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForOwner.Properties.Sig is not a string."
 	}
-	if (reflect.TypeOf(bf_tx.Properties.Num_Bol.Type) != reflect.TypeOf(1)) || bf_tx.Properties.Num_Bol.Type == 0 {
-		return false, "bf_tx.Properties.Num_Bol.Type is not a number."
+	if reflect.TypeOf(bftx.Properties.AgentForOwner.ConditionsForCarriage) != reflect.TypeOf("s") {
+		return false, "bftx.Properties.AgentForOwner.Properties.ConditionsForCarriage is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Master_Info.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Master_Info.Type is not a string."
+
+	// ------------------------------------------------------------------------
+	// New fields
+	// ------------------------------------------------------------------------
+	if reflect.TypeOf(bftx.Properties.EncryptionMetaData).Kind() != reflect.String {
+		return false, "bftx.Properties.EncryptionMetaData is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Master_Info.Properties.First_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Master_Info.Properties.First_Name.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.Consignee).Kind() != reflect.String {
+		return false, "bftx.Properties.Consignee is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Master_Info.Properties.Last_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Master_Info.Properties.Last_Name.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.HouseBill).Kind() != reflect.String {
+		return false, "bftx.Properties.HouseBill is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Master_Info.Properties.Sig.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Master_Info.Properties.Sig.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.ReceiveAgent).Kind() != reflect.String {
+		return false, "bftx.Properties.ReceiveAgent is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Master.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Master.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.Destination).Kind() != reflect.String {
+		return false, "bftx.Properties.Destination is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Master.Properties.First_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Master.Properties.First_Name.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.MarksAndNumbers).Kind() != reflect.String {
+		return false, "bftx.Properties.MarksAndNumbers is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Master.Properties.Last_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Master.Properties.Last_Name.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.UnitOfWeight).Kind() != reflect.String {
+		return false, "bftx.Properties.UnitOfWeight is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Master.Properties.Sig.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Master.Properties.Sig.Type is not a string."
+	// if reflect.TypeOf(bftx.Properties.Volume).Kind() != reflect.Float64 {
+	// 	return false, "bftx.Properties.Volume is not a float."
+	// }
+	if reflect.TypeOf(bftx.Properties.Container).Kind() != reflect.String {
+		return false, "bftx.Properties.Container is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Owner.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Owner.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.ContainerSeal).Kind() != reflect.String {
+		return false, "bftx.Properties.ContainerSeal is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Owner.Properties.First_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Owner.Properties.First_Name.Type is not a string."
+	// if reflect.TypeOf(bftx.Properties.Packages).Kind() != reflect.Int {
+	// 	return false, "bftx.Properties.Packages is not a string."
+	// }
+	if reflect.TypeOf(bftx.Properties.PackType).Kind() != reflect.String {
+		return false, "bftx.Properties.PackType is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Owner.Properties.Last_Name.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Owner.Properties.Last_Name.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.INCOTerms).Kind() != reflect.String {
+		return false, "bftx.Properties.INCOTerms is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Owner.Properties.Sig.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Owner.Properties.Sig.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.DeliverAgent).Kind() != reflect.String {
+		return false, "bftx.Properties.DeliverAgent is not a string."
 	}
-	if reflect.TypeOf(bf_tx.Properties.Agent_for_Owner.Properties.Conditions_for_Carriage.Type) != reflect.TypeOf("s") {
-		return false, "bf_tx.Properties.Agent_for_Owner.Properties.Conditions_for_Carriage.Type is not a string."
+	if reflect.TypeOf(bftx.Properties.ContainerMode).Kind() != reflect.String {
+		return false, "bftx.Properties.ContainerMode is not a string."
 	}
+	if reflect.TypeOf(bftx.Properties.ContainerType).Kind() != reflect.String {
+		return false, "bftx.Properties.ContainerType is not a string."
+	}
+
 	return true, ""
 }
 

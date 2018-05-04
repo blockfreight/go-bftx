@@ -50,27 +50,23 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
-	"errors"        // Implements functions to manipulate errors.
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"errors" // Implements functions to manipulate errors.
+	"os"
 
 	// ====================
 	// Third-party packages
 	// ====================
-	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
 
-	// ======================
-	// Blockfreight™ packages
-	// ======================
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
 )
 
-var db_path string = "bft-db" //Folder name where is going to be the LevelDB
+var dbPath = os.Getenv("GOPATH") + "/src/github.com/blockfreight/go-bftx/bft-db" //Folder name where is going to be the LevelDB
 
 // OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that occurred.
-func OpenDB(db_path string) (db *leveldb.DB, err error) {
-	db, err = leveldb.OpenFile(db_path, nil)
+func OpenDB(dbPath string) (db *leveldb.DB, err error) {
+	db, err = leveldb.OpenFile(dbPath, nil)
 	return db, err
-
 }
 
 // CloseDB is a function that receives a DB pointer that closes the connection to DB.
@@ -78,14 +74,14 @@ func CloseDB(db *leveldb.DB) {
 	db.Close()
 }
 
-// InsertBF_TX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool.
-func InsertBF_TX(key string, value string, db *leveldb.DB) error {
+// InsertBFTX is a function that receives the key and value strings to insert a tuple in determined DB, the final parameter. As result, it returns a true or false bool.
+func InsertBFTX(key string, value string, db *leveldb.DB) error {
 	return db.Put([]byte(key), []byte(value), nil)
 }
 
 // Total is a function that returns the total of BF_TX stored in the DB.
 func Total() (int, error) {
-	db, err := OpenDB(db_path)
+	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
 	if err != nil {
 		return 0, err
@@ -102,12 +98,12 @@ func Total() (int, error) {
 
 // RecordOnDB is a function that receives the content of the BF_RX JSON to insert it into the DB and return true or false according to the result.
 func RecordOnDB(id string, json string) error {
-	db, err := OpenDB(db_path)
+	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
 	if err != nil {
 		return err
 	}
-	err = InsertBF_TX(id, json, db)
+	err = InsertBFTX(id, json, db)
 	if err != nil {
 		return err
 	}
@@ -115,30 +111,29 @@ func RecordOnDB(id string, json string) error {
 }
 
 // GetBfTx is a function that receives a bf_tx id, and returns the BF_TX if it exists.
-func GetBfTx(id string) (bf_tx.BF_TX, error) {
-	var bftx bf_tx.BF_TX
-	db, err := OpenDB(db_path)
+func GetBfTx(id string) ([]byte, error) {
+	var data []byte
+	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
 	if err != nil {
-		return bftx, err
+		return data, err
 	}
 
-	data, err := db.Get([]byte(id), nil)
+	data, err = db.Get([]byte(id), nil)
 	if err != nil {
 		if err.Error() == "leveldb: not found" {
-			return bftx, errors.New("LevelDB Get function: BF_TX not found.")
+			return data, errors.New("LevelDB Get function: BF_TX not found.")
 		}
-		return bftx, errors.New("LevelDB Get function: " + err.Error())
+		return data, errors.New("LevelDB Get function: " + err.Error())
 	}
 
-	json.Unmarshal(data, &bftx)
-	return bftx, nil
+	return data, nil
 }
 
 // Verify is a function that receives a content and look for a BF_TX that has the same content.
-func Verify(jcontent string) ([]byte, error) {
+/* func Verify(jcontent string) ([]byte, error) {
 	var bftx bf_tx.BF_TX
-	db, err := OpenDB(db_path)
+	db, err := OpenDB(dbPath)
 	defer CloseDB(db)
 	if err != nil {
 		return nil, err
@@ -156,7 +151,7 @@ func Verify(jcontent string) ([]byte, error) {
 		bftx = bf_tx.Reinitialize(bftx)
 
 		// Get the BF_TX old_content in string format
-		content, err := bf_tx.BF_TXContent(bftx)
+		content, err := bf_tx.BFTXContent(bftx)
 		if err != nil {
 			return nil, err
 		}
@@ -170,7 +165,7 @@ func Verify(jcontent string) ([]byte, error) {
 	iter.Release()
 
 	return nil, iter.Error()
-}
+} */
 
 // =================================================
 // Blockfreight™ | The blockchain of global freight.
