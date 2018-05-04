@@ -359,34 +359,41 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 
 }
 
-func (bftx *BF_TX) QueryBFTX(idBftx, origin string) error {
+func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
+	var bftxs []BF_TX
 	if err != nil {
 		log.Println(err.Error())
 		// queryLogger("QueryBFTX", err.Error(), idBftx)
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 	defer rpcClient.Stop()
-	query := "bftx.id='" + idBftx + "'"
+	query := "bftx.id CONTAINS '" + idBftx + "'"
 	resQuery, err := rpcClient.TxSearch(query, true)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if len(resQuery) > 0 {
-		err := json.Unmarshal(resQuery[0].Tx, &bftx)
-		if err != nil {
-			bftx_logger.TransLogger("QueryBFTX", err, idBftx)
-			return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		for _, element := range resQuery {
+
+			var tx BF_TX
+			err := json.Unmarshal(element.Tx, &tx)
+			if err != nil {
+				bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+				return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+			}
+			bftxs = append(bftxs, tx)
 		}
-		return nil
+
+		return bftxs, nil
 	}
 
 	bftx_logger.StringLogger("QueryBFTX", "Transaction not found", idBftx)
-	return handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
+	return nil, handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
 }
 
 func (bftx BF_TX) GetTotal() (int, error) {

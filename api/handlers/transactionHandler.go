@@ -176,11 +176,13 @@ func GetTransaction(idBftx string) (interface{}, error) {
 
 func QueryTransaction(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
-	if err := transaction.QueryBFTX(idBftx, common.ORIGIN_API); err != nil {
+	bftxs, err := transaction.QueryBFTX(idBftx, common.ORIGIN_API)
+
+	if err != nil {
 		return nil, err
 	}
 
-	return transaction, nil
+	return bftxs, nil
 }
 
 func FullBFTXCycleWithoutEncryption(transaction bf_tx.BF_TX) (interface{}, error) {

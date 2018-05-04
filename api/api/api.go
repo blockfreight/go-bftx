@@ -43,7 +43,7 @@ var queryType = graphql.NewObject(
 				},
 			},
 			"queryTransaction": &graphql.Field{
-				Type: graphqlObj.TransactionType,
+				Type: graphql.NewList(graphqlObj.TransactionType),
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.String,

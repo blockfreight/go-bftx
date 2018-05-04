@@ -717,19 +717,12 @@ func cmdQuery(c *cli.Context) error {
 		return errors.New("Command query takes 1 argument")
 	}
 
-	if err := bftx.QueryBFTX(args[0], common.ORIGIN_CMD); err != nil {
-		return err
-	}
-
-	content, err := bf_tx.BFTXContent(bftx)
+	var bftxs, err = bftx.QueryBFTX(args[0], common.ORIGIN_API)
 	if err != nil {
-		bftx_logger.TransLogger("cmdQuery", err, args[0])
 		return err
 	}
 
-	printResponse(c, response{
-		Result: string(content),
-	})
+	fmt.Println(bftxs)
 
 	return nil
 }
