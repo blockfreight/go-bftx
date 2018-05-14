@@ -13,4 +13,4 @@ unzip ${VERSION}/tendermint_${VERSION}_darwin_386.zip -d ${VERSION}
 ${VERSION}/tendermint version
 ${VERSION}/tendermint unsafe_reset_all --home ${VERSION}
 ${VERSION}/tendermint init --home ./${VERSION}
-${VERSION}/tendermint node --home ./${VERSION} --p2p.seeds="bftx0.blockfreight.net:888,bftx1.blockfreight.net:888,bftx2.blockfreight.net:888,bftx3.blockfreight.net:888"
+bftnode start & ${VERSION}/tendermint node --home ./${VERSION} --p2p.seeds="bftx0.blockfreight.net:888,bftx1.blockfreight.net:888,bftx2.blockfreight.net:888,bftx3.blockfreight.net:888"
