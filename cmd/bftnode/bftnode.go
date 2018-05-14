@@ -68,6 +68,7 @@ import (
 	"github.com/blockfreight/go-bftx/api/api"
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
+	"github.com/blockfreight/go-bftx/build/package/version"
 )
 
 var client abcicli.Client
@@ -91,6 +92,7 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(srv)
+	fmt.Println("Version: " + version.Version)
 	fmt.Println(*addrPtr)
 
 	err = srv.Start()

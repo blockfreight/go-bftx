@@ -49,7 +49,7 @@ package version
 const Maj = "0"
 
 // Min constant
-const Min = "6"
+const Min = "7"
 
 // Fix constant
 const Fix = "0"
