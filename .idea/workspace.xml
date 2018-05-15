@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="4f2c5ca8-5822-4a2c-9a88-fd63cb6d51dc" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/bin/bfn.sh" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/tm.sh" beforeDir="false" />
-    </list>
+    <list default="true" id="4f2c5ca8-5822-4a2c-9a88-fd63cb6d51dc" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,7 +31,7 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="372" />
-    <option name="y" value="198" />
+    <option name="y" value="195" />
     <option name="width" value="1749" />
     <option name="height" value="1206" />
   </component>
@@ -83,7 +79,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="372" y="198" width="1749" height="1206" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.29291153" />
       <window_info anchor="bottom" id="TODO" order="6" />
