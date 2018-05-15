@@ -134,7 +134,7 @@ get_vendor_deps: tools
 	glide install
 
 #  ================================
-#       Build Docker Image
+#       Btuild Docker Image
 #  ================================
 
 build-docker:
