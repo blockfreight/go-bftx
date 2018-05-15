@@ -13,6 +13,7 @@ $1=0.15.0
 VERSION=0.15.0
 INSTALL_DIR=~/.blockfreight
 rm -rf ${INSTALL_DIR}
+mkdir ${INSTALL_DIR}
 #wget https://github.com/blockfreight/go-bftx/releases/download/v0.5.15/blockfreight.zip -P ${INSTALL_DIR}
 curl -o ${INSTALL_DIR}/blockfreight.zip -L https://github.com/blockfreight/go-bftx/releases/download/v0.5.15/blockfreight.zip
 unzip ${INSTALL_DIR}/blockfreight.zip -d ${INSTALL_DIR}
