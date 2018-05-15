@@ -12,6 +12,8 @@
 $1=0.15.0
 VERSION=0.15.0
 INSTALL_DIR=~/.blockfreight
+pkill -9 "tendermint"
+pkill -9 "bftnode"
 rm -rf ${INSTALL_DIR}
 mkdir ${INSTALL_DIR}
 #wget https://github.com/blockfreight/go-bftx/releases/download/v0.5.15/blockfreight.zip -P ${INSTALL_DIR}
