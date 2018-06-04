@@ -703,7 +703,6 @@ func cmdCommit(c *cli.Context) error {
 
 	printResponse(c, response{
 		Data: result.Data,
-		Log:  result.Log,
 	})
 	return nil
 }
