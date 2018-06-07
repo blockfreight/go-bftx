@@ -7,11 +7,14 @@ import (
 	"net/http" // Provides HTTP client and server implementations.
 	"strconv"
 
+	"os"
+
 	"github.com/blockfreight/go-bftx/api/graphqlObj"
 	apiHandler "github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Provides some useful functions to work with LevelDB.
 	"github.com/graphql-go/graphql"
 	"github.com/graphql-go/handler"
+	graphiql "github.com/mnmtanish/go-graphiql"
 )
 
 var schema, _ = graphql.NewSchema(
@@ -35,14 +38,14 @@ var queryType = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+						return nil, errors.New(strconv.Itoa(http.StatusBadRequest))
 					}
 
 					return apiHandler.GetTransaction(bftxID)
 				},
 			},
 			"queryTransaction": &graphql.Field{
-				Type: graphqlObj.TransactionType,
+				Type: graphql.NewList(graphqlObj.TransactionType),
 				Args: graphql.FieldConfigArgument{
 					"id": &graphql.ArgumentConfig{
 						Type: graphql.String,
@@ -51,7 +54,7 @@ var queryType = graphql.NewObject(
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
 					bftxID, isOK := p.Args["id"].(string)
 					if !isOK {
-						return nil, nil
+						return nil, errors.New(strconv.Itoa(http.StatusBadRequest))
 					}
 
 					return apiHandler.QueryTransaction(bftxID)
@@ -79,9 +82,6 @@ var mutationType = graphql.NewObject(
 			"constructBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
-					"Type": &graphql.ArgumentConfig{
-						Type: graphql.String,
-					},
 					"Properties": &graphql.ArgumentConfig{
 						Description: "Transaction properties.",
 						Type:        graphqlObj.PropertiesInput,
@@ -91,11 +91,46 @@ var mutationType = graphql.NewObject(
 					bftx := bf_tx.BF_TX{}
 					jsonProperties, err := json.Marshal(p.Args)
 					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						fmt.Printf("err")
-						fmt.Print(err)
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
 					return apiHandler.ConstructBfTx(bftx)
+				},
+			},
+			"fullBFTXCycleWithoutEncryption": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Properties": &graphql.ArgumentConfig{
+						Description: "Transaction properties.",
+						Type:        graphqlObj.PropertiesInput,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftx := bf_tx.BF_TX{}
+					jsonProperties, err := json.Marshal(p.Args)
+					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+					}
+
+					return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
+				},
+			},
+			"fullBFTXCycle": &graphql.Field{
+				Type: graphqlObj.TransactionType,
+				Args: graphql.FieldConfigArgument{
+					"Properties": &graphql.ArgumentConfig{
+						Description: "Transaction properties.",
+						Type:        graphqlObj.PropertiesInput,
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					bftx := bf_tx.BF_TX{}
+					jsonProperties, err := json.Marshal(p.Args)
+					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
+						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
+					}
+
+					return apiHandler.FullBFTXCycle(bftx)
 				},
 			},
 			"encryptBFTX": &graphql.Field{
@@ -111,7 +146,7 @@ var mutationType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return apiHandler.EncryptBfTx(bftxID)
+					return apiHandler.EncryptBFTX(bftxID)
 				},
 			},
 			"decryptBFTX": &graphql.Field{
@@ -127,7 +162,7 @@ var mutationType = graphql.NewObject(
 						return nil, nil
 					}
 
-					return apiHandler.DecryptBfTx(bftxID)
+					return apiHandler.DecryptBFTX(bftxID)
 				},
 			},
 			"signBFTX": &graphql.Field{
@@ -169,6 +204,14 @@ var mutationType = graphql.NewObject(
 //Start start the API
 func Start() error {
 	http.HandleFunc("/bftx-api", httpHandler(&schema))
+	http.HandleFunc("/", graphiql.ServeGraphiQL)
+	http.HandleFunc("/graphql", serveGraphQL(schema))
+	ex, err := os.Executable()
+	if err != nil {
+		fmt.Println(err)
+	}
+	file, err := os.Stat(ex)
+	fmt.Println("Compiled: " + file.ModTime().String())
 	fmt.Println("Now server is running on: http://localhost:12345")
 	return http.ListenAndServe(":12345", nil)
 }
@@ -215,4 +258,28 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 
 	}
 
+}
+
+func serveGraphQL(s graphql.Schema) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		sendError := func(err error) {
+			w.WriteHeader(500)
+			w.Write([]byte(err.Error()))
+		}
+
+		req := &graphiql.Request{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			sendError(err)
+			return
+		}
+
+		res := graphql.Do(graphql.Params{
+			Schema:        s,
+			RequestString: req.Query,
+		})
+
+		if err := json.NewEncoder(w).Encode(res); err != nil {
+			sendError(err)
+		}
+	}
 }

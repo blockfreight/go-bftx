@@ -47,6 +47,7 @@ package bft
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	// =======================
@@ -113,15 +114,26 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 		panic(err)
 	}
 
+	//This is an example of how to query a transaction.
+	//http://localhost:46657/tx_search?query="bftx.id=%27<BFTX.ID>%27"&prove=true
+	//http://localhost:46657/tx_search?query="bftx.id=%27BFTX13c289fd48e351a79d8824c88a8721c42fb114480bd38b4d2a45701ca6b629e6%27"&prove=true
 	tags := []*types.KVPair{
 		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
+		{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
 	}
 	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
 }
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.ResponseCheckTx {
+	fmt.Println(string(tx[:]));
 	return types.ResponseCheckTx{Code: code.CodeTypeOK}
+	//if cpcash.validate("BFTXafe2242d45cc5e54041b2b52913ef9a1aede4998a32e3fee128cf7d1e7575a41") {
+	//	return types.ResponseCheckTx{Code: code.CodeTypeOK}
+	//}
+	//return types.ResponseCheckTx{Code: code.NotPaid}
+
+
 }
 
 // Commit commits transactions

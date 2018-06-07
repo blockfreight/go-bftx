@@ -49,80 +49,25 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/md5" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"context" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
 	"log"
 	// Implements several standard elliptic curves over prime fields.
 	// Implements the MD5 hash algorithm as defined in RFC 1321.
-	"crypto/rand" // Implements a cryptographically secure pseudorandom number generator.
-	"hash"        // Provides interfaces for hash functions.
-	"io"          // Provides basic interfaces to I/O primitives.
-	"math/big"    // Implements arbitrary-precision arithmetic (big numbers).
-	"strconv"     // Implements conversions to and from string representations of basic data types.
-
+	// Implements a cryptographically secure pseudorandom number generator.
+	// Provides interfaces for hash functions.
+	// Provides basic interfaces to I/O primitives.
+	// Implements arbitrary-precision arithmetic (big numbers).
+	// Implements conversions to and from string representations of basic data types.
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
+	// Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
 	"google.golang.org/grpc"
 )
 
 const (
 	address = "localhost:22222"
 )
-
-// SignBFTX has the whole process of signing each BF_TX.
-func SignBFTX(bftx bf_tx.BF_TX) (bf_tx.BF_TX, error) {
-
-	content, err := bf_tx.BFTXContent(bftx)
-	if err != nil {
-		return bftx, err
-	}
-
-	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
-
-	privatekey := new(ecdsa.PrivateKey)
-	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
-	if err != nil {
-		return bftx, err
-	}
-	pubkey := privatekey.PublicKey
-
-	// Sign ecdsa style
-	var h hash.Hash
-	h = md5.New()
-	r := big.NewInt(0)
-	s := big.NewInt(0)
-
-	io.WriteString(h, content)
-	signhash := h.Sum(nil)
-
-	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
-	if err != nil {
-		return bftx, err
-	}
-
-	signature := r.Bytes()
-	signature = append(signature, s.Bytes()...)
-
-	sign := ""
-	for i, _ := range signature {
-		sign += strconv.Itoa(int(signature[i]))
-	}
-
-	// Verification
-	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
-
-	//Set Private Key and Sign to BF_TX
-	bftx.PrivateKey = *privatekey
-	bftx.Signhash = signhash
-	bftx.Signature = sign
-	bftx.Verified = verifystatus
-
-	return bftx, nil
-}
 
 func CryptoTransaction(content string) []byte {
 	// Set up a connection to the server.

@@ -10,6 +10,9 @@ var PropertiesType = graphql.NewObject(
 			"Shipper": &graphql.Field{
 				Type: graphql.String,
 			},
+			"EncryptionMetaData": &graphql.Field{
+				Type: graphql.String,
+			},
 			"BolNum": &graphql.Field{
 				Type: graphql.String,
 			},
@@ -119,6 +122,9 @@ var PropertiesInput = graphql.NewInputObject(
 		Name: "Properties",
 		Fields: graphql.InputObjectConfigFieldMap{
 			"Shipper": &graphql.InputObjectFieldConfig{
+				Type: graphql.String,
+			},
+			"EncryptionMetaData": &graphql.InputObjectFieldConfig{
 				Type: graphql.String,
 			},
 			"BolNum": &graphql.InputObjectFieldConfig{

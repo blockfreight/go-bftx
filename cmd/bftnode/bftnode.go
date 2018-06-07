@@ -66,8 +66,9 @@ import (
 	// ======================
 
 	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/api/handlers"
+	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
+	"github.com/blockfreight/go-bftx/build/package/version"
 )
 
 var client abcicli.Client
@@ -91,6 +92,7 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println(srv)
+	fmt.Println("Version: " + version.Version)
 	fmt.Println(*addrPtr)
 
 	err = srv.Start()
@@ -110,7 +112,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	handlers.TendermintClient = client
+	bf_tx.TendermintClient = client
 
 	err = api.Start()
 	if err != nil {

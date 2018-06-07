@@ -3,21 +3,13 @@ package saberservice
 import (
 	"bufio"
 	"context"
-	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
 	btx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/pkg/crypto"
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"
-	th "github.com/blockfreight/go-bftx/lib/pkg/tenderhelper"
-	abcicli "github.com/tendermint/abci/client"
-	rpc "github.com/tendermint/tendermint/rpc/client"
 	"google.golang.org/grpc"
 	yaml "gopkg.in/yaml.v2"
 )
@@ -164,13 +156,13 @@ func BftxStructConverstionNO(tx *BFTXTransaction) (*btx.BF_TX, error) {
 	var oldbftx btx.BF_TX
 	bfjs, err := json.Marshal(*tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstionNO convertion error\n", err)
+		return &oldbftx, err
 	}
 	err = json.Unmarshal(bfjs, &oldbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstionNO Converstion failed. Maybe because of different structure. ", err)
+		return &oldbftx, err
 	}
-	return &oldbftx, err
+	return &oldbftx, nil
 }
 
 // BftxStructConverstionON (Old to New) is a function that convert the old structure
@@ -182,13 +174,13 @@ func BftxStructConverstionON(tx *btx.BF_TX) (*BFTXTransaction, error) {
 	var newbftx BFTXTransaction
 	bfjs, err := json.Marshal(tx)
 	if err != nil {
-		log.Fatal("\nBftxStructConverstionON convertion error\n", err)
+		return &newbftx, err
 	}
 	err = json.Unmarshal(bfjs, &newbftx)
 	if err != nil {
-		log.Fatal("BftxStructConverstionON Converstion failed. Maybe because of different structure. ", err)
+		return &newbftx, err
 	}
-	return &newbftx, err
+	return &newbftx, nil
 }
 
 // SaberDefaultInput provides the saberinput structure with default value
@@ -258,24 +250,26 @@ func SaberEncoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 
 	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		return tx, err
 	}
 	defer conn.Close()
 	c := NewBFSaberServiceClient(conn)
 
 	encr, err := c.BFTX_Encode(context.Background(), &bfencreq)
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 
-	return encr, err
+	return encr, nil
 }
 
 // SaberEncodingTestCase is the function that enable it to connect to a container which realizing the
 // saber encoding service
 func SaberEncodingTestCase(st Saberinput) (*BFTXTransaction, error) {
 	switch st.mode {
-	case "massconstruct":
-		err := massSaberEncoding(st)
-		return nil, err
+	//	case "massconstruct":
+	//		err := massSaberEncoding(st)
+	//		return nil, err
 	default:
 		tx := loadtransaction(st.txpath)
 		// txconfig := loadconfiguration(st.txconfigpath)
@@ -300,6 +294,7 @@ func SaberEncodingTestCase(st Saberinput) (*BFTXTransaction, error) {
 }
 
 // massSaberEncoding is used for massively load the transaction from the lading.csv file
+/*
 func massSaberEncoding(st Saberinput) error {
 	// define the index i
 	i := 0
@@ -394,9 +389,14 @@ func massSaberEncoding(st Saberinput) error {
 			log.Fatalf("HashBFTX error: %v", err)
 		}
 		// Generate BF_TX id
-		bftxID := btx.GenerateBFTXUID(hash, salt)
+		bftxID := btx.HashByteArray(hash, salt)
 		bfmsg.Id = bftxID
 		// do the bftx sign--------------------------------------
+
+		if err = crypto.SignBFTX()
+		if err != nil {
+			return err
+		}
 
 		bfmsg, err = crypto.SignBFTX(bfmsg)
 		if err != nil {
@@ -436,7 +436,7 @@ func massSaberEncoding(st Saberinput) error {
 	return err
 
 }
-
+*/
 // SaberDecodingTestCase is the function that enable it to connect to a container which realizing the
 // saber decoding service
 func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error) {
@@ -445,7 +445,7 @@ func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 
 	conn, err := grpc.Dial(st.address, grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("%s cannot connected by program: %v", st.address, err)
+		return tx, err
 	}
 	defer conn.Close()
 	c := NewBFSaberServiceClient(conn)
@@ -454,11 +454,15 @@ func SaberDecoding(tx *BFTXTransaction, st Saberinput) (*BFTXTransaction, error)
 	bfdcpreq.KeyName = st.KeyName
 
 	_, err = fmt.Print("\n==============================\n")
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 
 	dcpr, err := c.BFTX_Decode(context.Background(), &bfdcpreq)
-	check(err)
+	if err != nil {
+		return tx, err
+	}
 	fmt.Print(dcpr)
 
-	return dcpr, err
+	return dcpr, nil
 }

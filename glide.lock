@@ -1,5 +1,5 @@
-hash: d302a1ec792a0a098d2c64470263e968e452e8f9f50e66c26ea450044e0f1895
-updated: 2018-02-19T12:09:52.801241+11:00
+hash: 977be5cbf00cd85fa0ad81edadee854c5b96d637f9421123d7c3c895800b10c2
+updated: 2018-04-20T08:56:25.398205+10:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 53f55a46349aa8f44b90895047e843666991cf24
@@ -73,6 +73,8 @@ imports:
   version: ed8eb9e318d7a84ce5915b495b7d35e0cfe7b5a8
 - name: github.com/mattn/go-isatty
   version: 66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8
+- name: github.com/mnmtanish/go-graphiql
+  version: cef5a61bd62b996aa67029c6c858f673d6e51718
 - name: github.com/pkg/errors
   version: 645ef00459ed84a119197bfb8d8205042c6df63d
 - name: github.com/rcrowley/go-metrics
@@ -112,7 +114,7 @@ imports:
 - name: github.com/tendermint/go-merkle
   version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/go-wire
-  version: b6fc872b42d41158a60307db4da051dd6f179415
+  version: fa721242b042ecd4c6ed1a934ee740db4f74e45c
   subpackages:
   - data
   - nowriter/tmlegacy

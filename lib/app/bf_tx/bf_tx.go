@@ -50,11 +50,31 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"crypto/ecdsa"  // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
-	"crypto/sha256" // Implements the SHA256 Algorithm for Hash.
-	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 4627.
+	"crypto/ecdsa" // Implements the Elliptic Curve Digital Signature Algorithm, as defined in FIPS 186-3.
+	"crypto/elliptic"
+	"crypto/md5"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/json"
+	"errors" // Implements the SHA256 Algorithm for Hash.
+	"hash"
+	"io"
+	"log"
+	"math/big"
+	"os"
+	// Implements encoding and decoding of JSON as defined in RFC 4627.
+	"net/http"
+	"strconv"
 
 	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
+
+	// ===============
+	// Tendermint Core
+	// ===============
+	"github.com/tendermint/abci/client"
+	abciTypes "github.com/tendermint/abci/types"
+	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ====================
 	// Third-party packages
@@ -65,14 +85,19 @@ import (
 	// Blockfreight™ packages
 	// ======================
 
-	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
+	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
+	"github.com/blockfreight/go-bftx/lib/pkg/common"
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Implements common functions for Blockfreight™
 )
+
+var TendermintClient abcicli.Client
 
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
 	var bftx BF_TX
 	file, err := common.ReadJSON(jsonpath)
 	if err != nil {
+		bftx_logger.SimpleLogger("SetBFTX", err)
 		return bftx, err
 	}
 	json.Unmarshal(file, &bftx)
@@ -89,8 +114,8 @@ func HashBFTX(bftx BF_TX) ([]byte, error) {
 	return hash.Sum(nil), nil
 }
 
-//GenerateBFTXUID hashes two byte arrays and returns it.
-func GenerateBFTXUID(hash []byte, salt []byte) string {
+//HashByteArray hashes two byte arrays and returns it.
+func HashByteArray(hash []byte, salt []byte) string {
 	return "BFTX" + fmt.Sprintf("%x", common.HashByteArrays(hash, salt))
 }
 
@@ -120,6 +145,295 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 	var bftx BF_TX
 	json.Unmarshal(obj, &bftx)
 	return bftx
+}
+
+func (bftx *BF_TX) GenerateBFTX(origin string) error {
+	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
+	if err != nil {
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	hash, err := HashBFTX(*bftx)
+	if err != nil {
+		bftx_logger.SimpleLogger("GenerateBFTX", err)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Generate BF_TX id
+	bftx.Id = HashByteArray(hash, resInfo.LastBlockAppHash)
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Save on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		bftx_logger.TransLogger("GenerateBFTX", err, bftx.Id)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+}
+
+func (bftx *BF_TX) SignBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("SignBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if bftx.Verified {
+		return handleResponse(origin, errors.New("Transaction already signed"), strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Sign BF_TX
+	if err = bftx.setSignature(); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(bftx.Id, content); err != nil {
+		bftx_logger.TransLogger("SignBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+
+}
+
+// SignBFTX has the whole process of signing each BF_TX.
+func (bftx *BF_TX) setSignature() error {
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+
+	pubkeyCurve := elliptic.P256() //see http://golang.org/pkg/crypto/elliptic/#P256
+
+	privatekey := new(ecdsa.PrivateKey)
+	privatekey, err = ecdsa.GenerateKey(pubkeyCurve, rand.Reader) // this generates a public & private key pair
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+	pubkey := privatekey.PublicKey
+
+	// Sign ecdsa style
+	var h hash.Hash
+	h = md5.New()
+	r := big.NewInt(0)
+	s := big.NewInt(0)
+
+	io.WriteString(h, content)
+	signhash := h.Sum(nil)
+
+	r, s, err = ecdsa.Sign(rand.Reader, privatekey, signhash)
+	if err != nil {
+		bftx_logger.TransLogger("setSignature", err, bftx.Id)
+		return err
+	}
+
+	signature := r.Bytes()
+	signature = append(signature, s.Bytes()...)
+
+	sign := ""
+	for i, _ := range signature {
+		sign += strconv.Itoa(int(signature[i]))
+	}
+
+	// Verification
+	verifystatus := ecdsa.Verify(&pubkey, signhash, r, s)
+
+	//Set Private Key and Sign to BF_TX
+	bftx.PrivateKey = *privatekey
+	bftx.Signhash = signhash
+	bftx.Signature = sign
+	bftx.Verified = verifystatus
+
+	return nil
+}
+
+func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Get a BF_TX by id
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if err = json.Unmarshal(data, &bftx); err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if !bftx.Verified {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+	if bftx.Transmitted {
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+	}
+
+	// Change the boolean valud for Transmitted attribute
+	bftx.Transmitted = true
+
+	// Get the BF_TX content in string format
+	content, err := BFTXContent(*bftx)
+	if err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	// Update on DB
+	if err = leveldb.RecordOnDB(string(bftx.Id), content); err != nil {
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	var tx tmTypes.Tx
+	tx = []byte(content)
+
+	_, rpcErr := rpcClient.BroadcastTxSync(tx)
+	if rpcErr != nil {
+		fmt.Printf("%+v\n", rpcErr)
+		bftx_logger.TransLogger("BroadcastBFTX", rpcErr, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	defer rpcClient.Stop()
+
+	return nil
+}
+
+func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
+	data, err := leveldb.GetBfTx(idBftx)
+	if err != nil {
+		if err.Error() == "LevelDB Get function: BF_TX not found." {
+			bftx_logger.TransLogger("GetBFTX", err, idBftx)
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+		}
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	json.Unmarshal(data, &bftx)
+	if err != nil {
+		bftx_logger.TransLogger("GetBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	return nil
+
+}
+
+func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	var bftxs []BF_TX
+	if err != nil {
+		log.Println(err.Error())
+		// queryLogger("QueryBFTX", err.Error(), idBftx)
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+	defer rpcClient.Stop()
+	query := "bftx.id CONTAINS '" + idBftx + "'"
+	resQuery, err := rpcClient.TxSearch(query, true)
+	if err != nil {
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	if len(resQuery) > 0 {
+		for _, element := range resQuery {
+
+			var tx BF_TX
+			err := json.Unmarshal(element.Tx, &tx)
+			if err != nil {
+				bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+				return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+			}
+			bftxs = append(bftxs, tx)
+		}
+
+		return bftxs, nil
+	}
+
+	bftx_logger.StringLogger("QueryBFTX", "Transaction not found", idBftx)
+	return nil, handleResponse(origin, errors.New("Transaction not found"), strconv.Itoa(http.StatusNotFound))
+}
+
+func (bftx BF_TX) GetTotal() (int, error) {
+	total, err := leveldb.Total()
+	if err != nil {
+		bftx_logger.SimpleLogger("GetTotal", err)
+		return 0, err
+	}
+
+	return total, nil
+}
+
+func (bftx *BF_TX) FullBFTXCycleWithoutEncryption(origin string) error {
+	if err := bftx.GenerateBFTX(origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+	if err := bftx.SignBFTX(bftx.Id, origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+	if err := bftx.BroadcastBFTX(bftx.Id, origin); err != nil {
+		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
+		return err
+	}
+
+	return nil
+}
+
+func handleResponse(origin string, err error, httpStatusCode string) error {
+	if origin == common.ORIGIN_API {
+		return errors.New(httpStatusCode)
+	}
+	return err
 }
 
 // Reinitialize set the default values to the Blockfreight attributes of BF_TX
@@ -194,71 +508,6 @@ type Properties struct {
 	EncryptionMetaData  string       `json:"EncryptionMetaData"`
 }
 
-// Shipper struct
-type Shipper struct {
-	Type string
-}
-
-// BolNum struct
-type BolNum struct {
-	Type string
-}
-
-// RefNum struct
-type RefNum struct {
-	Type string
-}
-
-// Consignee struct
-type Consignee struct {
-	Type string //Null
-}
-
-// Vessel struct
-type Vessel struct {
-	Type string
-}
-
-// PortLoading struct
-type PortLoading struct {
-	Type string
-}
-
-// PortDischarge struct
-type PortDischarge struct {
-	Type string
-}
-
-// NotifyAddress struct
-type NotifyAddress struct {
-	Type string
-}
-
-// DescGoods struct
-type DescGoods struct {
-	Type string
-}
-
-// GrossWeight struct
-type GrossWeight struct {
-	Type string
-}
-
-// FreightPayableAmt struct
-type FreightPayableAmt struct {
-	Type string
-}
-
-// FreightAdvAmt struct
-type FreightAdvAmt struct {
-	Type string
-}
-
-// GeneralInstructions struct
-type GeneralInstructions struct {
-	Type string
-}
-
 // Date struct
 type Date struct {
 	Type   string
@@ -269,16 +518,6 @@ type Date struct {
 type IssueDetails struct {
 	PlaceOfIssue string `json:"PlaceOfIssue"`
 	DateOfIssue  string `json:"DateOfIssue"`
-}
-
-// PlaceIssue struct
-type PlaceIssue struct {
-	Type string
-}
-
-// NumBol struct
-type NumBol struct {
-	Type string
 }
 
 // MasterInfo struct
@@ -301,26 +540,6 @@ type AgentOwner struct {
 	LastName              string `json:"LastName"`
 	Sig                   string `json:"Sig"`
 	ConditionsForCarriage string `json:"ConditionsForCarriage"`
-}
-
-// FirstName struct
-type FirstName struct {
-	Type string
-}
-
-// LastName struct
-type LastName struct {
-	Type string
-}
-
-// Sig struct
-type Sig struct {
-	Type string
-}
-
-// ConditionsCarriage struct
-type ConditionsCarriage struct {
-	Type string
 }
 
 // =================================================
