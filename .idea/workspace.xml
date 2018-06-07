@@ -3,7 +3,10 @@
   <component name="ChangeListManager">
     <list default="true" id="4f2c5ca8-5822-4a2c-9a88-fd63cb6d51dc" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bin/bfn.sh" beforeDir="false" afterPath="$PROJECT_DIR$/bin/bfn.sh" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/api/api.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/api/api.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/api/graphqlObj/properties.go" beforeDir="false" afterPath="$PROJECT_DIR$/api/graphqlObj/properties.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/cmd/bftnode/bftnode" beforeDir="false" afterPath="$PROJECT_DIR$/cmd/bftnode/bftnode" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/app/bf_tx/bf_tx.go" beforeDir="false" afterPath="$PROJECT_DIR$/lib/app/bf_tx/bf_tx.go" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -13,12 +16,12 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file leaf-file-name="bfn.sh" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/bin/bfn.sh">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+            <state relative-caret-position="38">
+              <caret line="11" column="9" selection-start-line="11" selection-start-column="9" selection-end-line="11" selection-end-column="9" />
             </state>
           </provider>
         </entry>
@@ -53,10 +56,10 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="372" />
-    <option name="y" value="195" />
-    <option name="width" value="1749" />
-    <option name="height" value="1206" />
+    <option name="x" value="616" />
+    <option name="y" value="310" />
+    <option name="width" value="1432" />
+    <option name="height" value="813" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="false" id="Update" />
@@ -72,11 +75,6 @@
             <path>
               <item name="go-bftx" type="b2602c69:ProjectViewProjectNode" />
               <item name="go-bftx" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="go-bftx" type="b2602c69:ProjectViewProjectNode" />
-              <item name="go-bftx" type="462c0819:PsiDirectoryNode" />
-              <item name="bin" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -109,10 +107,9 @@
     </option>
   </component>
   <component name="ToolWindowManager">
-    <frame x="372" y="195" width="1749" height="1206" extended-state="0" />
-    <editor active="true" />
+    <frame x="616" y="310" width="1432" height="813" extended-state="0" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.29642648" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.3659218" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="right" id="Database" order="3" />
@@ -120,16 +117,16 @@
       <window_info anchor="bottom" id="Version Control" order="7" />
       <window_info anchor="bottom" id="Run" order="2" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Terminal" order="7" visible="true" weight="0.3296501" />
+      <window_info active="true" anchor="bottom" id="Terminal" order="7" visible="true" weight="0.45737484" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="bottom" id="Find" order="1" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Message" order="0" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,13 +139,28 @@
     <MESSAGE value="update" />
     <MESSAGE value="url instead of wget" />
     <MESSAGE value="update&#10;ˆ" />
-    <option name="LAST_COMMIT_MESSAGE" value="update&#10;ˆ" />
+    <MESSAGE value="ˆ" />
+    <option name="LAST_COMMIT_MESSAGE" value="ˆ" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/bin/bfn.sh">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+        <state relative-caret-position="165">
+          <caret line="11" column="9" selection-start-line="11" selection-start-column="9" selection-end-line="11" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/bfn.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="165">
+          <caret line="11" column="9" lean-forward="true" selection-start-line="11" selection-start-column="9" selection-end-line="11" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/bin/bfn.sh">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="38">
+          <caret line="11" column="9" selection-start-line="11" selection-start-column="9" selection-end-line="11" selection-end-column="9" />
         </state>
       </provider>
     </entry>

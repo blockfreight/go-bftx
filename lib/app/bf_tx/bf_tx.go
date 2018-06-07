@@ -276,6 +276,9 @@ func (bftx *BF_TX) setSignature() error {
 }
 
 func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
@@ -360,6 +363,9 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 }
 
 func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	var bftxs []BF_TX

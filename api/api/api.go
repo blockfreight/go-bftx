@@ -7,6 +7,8 @@ import (
 	"net/http" // Provides HTTP client and server implementations.
 	"strconv"
 
+	"os"
+
 	"github.com/blockfreight/go-bftx/api/graphqlObj"
 	apiHandler "github.com/blockfreight/go-bftx/api/handlers"
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx" // Provides some useful functions to work with LevelDB.
@@ -204,6 +206,12 @@ func Start() error {
 	http.HandleFunc("/bftx-api", httpHandler(&schema))
 	http.HandleFunc("/", graphiql.ServeGraphiQL)
 	http.HandleFunc("/graphql", serveGraphQL(schema))
+	ex, err := os.Executable()
+	if err != nil {
+		fmt.Println(err)
+	}
+	file, err := os.Stat(ex)
+	fmt.Println("Compiled: " + file.ModTime().String())
 	fmt.Println("Now server is running on: http://localhost:12345")
 	return http.ListenAndServe(":12345", nil)
 }
