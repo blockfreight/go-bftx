@@ -95,42 +95,6 @@ var mutationType = graphql.NewObject(
 					return apiHandler.ConstructBfTx(bftx)
 				},
 			},
-			"fullBFTXCycleWithoutEncryption": &graphql.Field{
-				Type: graphqlObj.TransactionType,
-				Args: graphql.FieldConfigArgument{
-					"Properties": &graphql.ArgumentConfig{
-						Description: "Transaction properties.",
-						Type:        graphqlObj.PropertiesInput,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftx := bf_tx.BF_TX{}
-					jsonProperties, err := json.Marshal(p.Args)
-					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-					}
-
-					return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
-				},
-			},
-			"fullBFTXCycle": &graphql.Field{
-				Type: graphqlObj.TransactionType,
-				Args: graphql.FieldConfigArgument{
-					"Properties": &graphql.ArgumentConfig{
-						Description: "Transaction properties.",
-						Type:        graphqlObj.PropertiesInput,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftx := bf_tx.BF_TX{}
-					jsonProperties, err := json.Marshal(p.Args)
-					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-					}
-
-					return apiHandler.FullBFTXCycle(bftx)
-				},
-			},
 			"encryptBFTX": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
