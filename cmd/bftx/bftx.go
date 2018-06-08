@@ -700,11 +700,11 @@ func cmdCommit(c *cli.Context) error {
 		bftx_logger.SimpleLogger("cmdCommit", err)
 		return err
 	}
-
-	printResponse(c, response{
-		Data: result.Data,
-		Log:  result.Log,
-	})
+	fmt.Print(result)
+	// printResponse(c, response{
+	// 	Data: result.Data,
+	// 	Log:  result.Log,
+	// })
 	return nil
 }
 

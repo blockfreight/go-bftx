@@ -377,14 +377,14 @@ func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
 	}
 	defer rpcClient.Stop()
 	query := "bftx.id CONTAINS '" + idBftx + "'"
-	resQuery, err := rpcClient.TxSearch(query, true)
+	resQuery, err := rpcClient.TxSearch(query, true, 1, 10)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	if len(resQuery) > 0 {
-		for _, element := range resQuery {
+	if resQuery.TotalCount > 0 {
+		for _, element := range resQuery.Txs {
 
 			var tx BF_TX
 			err := json.Unmarshal(element.Tx, &tx)

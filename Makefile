@@ -53,7 +53,7 @@ VERSION ?= $(shell git describe --tags --always --dirty --match=v* 2> /dev/null 
 BIN      = $(GOPATH)/bin
 BASE     = $(GOPATH)/src/$(PACKAGE)
 TESTPKGS = $(shell go list ./test/... | grep -v vendor) 
-
+ $(info $(VERSION))
 GO      = go
 GODOC   = godoc
 GOFMT   = gofmt

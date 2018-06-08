@@ -47,7 +47,7 @@ package bft
 
 import (
 	"encoding/json"
-	"time"
+	//"time"
 
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
 	// =======================
@@ -84,7 +84,7 @@ type BftApplication struct {
 
 // NewBftApplication creates a new application
 func NewBftApplication() *BftApplication {
-	stateTree := iavl.NewVersionedTree(0, dbm.NewMemDB())
+	stateTree := iavl.NewVersionedTree(dbm.NewMemDB(), 0)
 
 	return &BftApplication{
 		state: stateTree,
@@ -117,23 +117,45 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 	//This is an example of how to query a transaction.
 	//http://localhost:46657/tx_search?query="bftx.id=%27<BFTX.ID>%27"&prove=true
 	//http://localhost:46657/tx_search?query="bftx.id=%27BFTX13c289fd48e351a79d8824c88a8721c42fb114480bd38b4d2a45701ca6b629e6%27"&prove=true
-	tags := []*types.KVPair{
-		{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
-		{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
-	}
-	return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
+
+	// tags := []*types.KVPair{
+
+	// 	{Key: "bftx.id", ValueType: types.KVPair_STRING, ValueString: bftx.Id},
+	// 	{Key: "bftx.timestamp", ValueType: types.KVPair_INT, ValueInt: time.Now().Unix()},
+	// }
+	// return types.ResponseDeliverTx{Code: code.CodeTypeOK, Tags: tags}
+	return types.ResponseDeliverTx{Code: code.CodeTypeOK}
 }
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.ResponseCheckTx {
-	fmt.Println(string(tx[:]));
+	fmt.Println(string(tx[:]))
 	return types.ResponseCheckTx{Code: code.CodeTypeOK}
 	//if cpcash.validate("BFTXafe2242d45cc5e54041b2b52913ef9a1aede4998a32e3fee128cf7d1e7575a41") {
 	//	return types.ResponseCheckTx{Code: code.CodeTypeOK}
 	//}
 	//return types.ResponseCheckTx{Code: code.NotPaid}
 
+}
 
+type State struct {
+	db      dbm.DB
+	Size    int64  `json:"size"`
+	Height  int64  `json:"height"`
+	AppHash []byte `json:"app_hash"`
+}
+
+// var (
+// 	stateKey        = []byte("stateKey")
+// 	kvPairPrefixKey = []byte("kvPairKey:")
+// )
+
+func saveState(state State) {
+	// stateBytes, err := json.Marshal(state)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// /state.db.Set(stateKey, stateBytes)
 }
 
 // Commit commits transactions
@@ -144,15 +166,18 @@ func (app *BftApplication) Commit() types.ResponseCommit {
 
 	if app.state.Size() > 0 {
 		// just add one more to height (kind of arbitrarily stupid)
-		height := app.state.LatestVersion() + 1
-		hash, err = app.state.SaveVersion(height)
+
+		//height := app.state.SaveVersion() + 1
+
+		// hash, err = app.state.SaveVersion(hash,height,nil)
+		//app.state.Height();// += 1
 		if err != nil {
 			// if this wasn't a dummy app, we'd do something smarter
 			panic(err)
 		}
 	}
-
-	return types.ResponseCommit{Code: code.CodeTypeOK, Data: hash}
+	return types.ResponseCommit{Data: hash}
+	//return types.ResponseCommit{Code: code.CodeTypeOK, Data: hash}
 }
 
 //Query retrieves a transaction from the network
