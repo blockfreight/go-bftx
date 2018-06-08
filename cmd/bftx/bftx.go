@@ -688,6 +688,7 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return err
 	}
 
+	fmt.Print("Result from rpcClient.BroadcastTxSync()")
 	fmt.Printf("%+v\n", rpcResult)
 
 	printResponse(c, response{
