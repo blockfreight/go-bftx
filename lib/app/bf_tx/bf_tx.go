@@ -74,6 +74,7 @@ import (
 	"github.com/tendermint/abci/client"
 	abciTypes "github.com/tendermint/abci/types"
 	rpc "github.com/tendermint/tendermint/rpc/client"
+	ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 
 	// ====================
@@ -275,13 +276,13 @@ func (bftx *BF_TX) setSignature() error {
 	return nil
 }
 
-func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
+func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) (*ctypes.ResultBroadcastTx, error) {
 	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
 	err := rpcClient.Start()
 	if err != nil {
 		log.Println(err.Error())
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Get a BF_TX by id
@@ -289,22 +290,22 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
 			bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+			return nil, handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
 		}
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if err = json.Unmarshal(data, &bftx); err != nil {
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if !bftx.Verified {
-		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
 	}
 	if bftx.Transmitted {
-		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
 	}
 
 	// Change the boolean valud for Transmitted attribute
@@ -314,28 +315,28 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	content, err := BFTXContent(*bftx)
 	if err != nil {
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	// Update on DB
 	if err = leveldb.RecordOnDB(string(bftx.Id), content); err != nil {
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	var tx tmTypes.Tx
 	tx = []byte(content)
 
-	_, rpcErr := rpcClient.BroadcastTxSync(tx)
-	if rpcErr != nil {
-		fmt.Printf("%+v\n", rpcErr)
-		bftx_logger.TransLogger("BroadcastBFTX", rpcErr, idBftx)
-		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	rpcResult, err := rpcClient.BroadcastTxSync(tx)
+	if err != nil {
+		fmt.Printf("%+v\n", err)
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	defer rpcClient.Stop()
 
-	return nil
+	return rpcResult, nil
 }
 
 func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
@@ -371,14 +372,14 @@ func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
 	}
 	defer rpcClient.Stop()
 	query := "bftx.id CONTAINS '" + idBftx + "'"
-	resQuery, err := rpcClient.TxSearch(query, true)
+	resQuery, err := rpcClient.TxSearch(query, true, 1, 10)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
-	if len(resQuery) > 0 {
-		for _, element := range resQuery {
+	if len(resQuery.Txs) > 0 {
+		for _, element := range resQuery.Txs {
 
 			var tx BF_TX
 			err := json.Unmarshal(element.Tx, &tx)
@@ -404,23 +405,6 @@ func (bftx BF_TX) GetTotal() (int, error) {
 	}
 
 	return total, nil
-}
-
-func (bftx *BF_TX) FullBFTXCycleWithoutEncryption(origin string) error {
-	if err := bftx.GenerateBFTX(origin); err != nil {
-		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
-		return err
-	}
-	if err := bftx.SignBFTX(bftx.Id, origin); err != nil {
-		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
-		return err
-	}
-	if err := bftx.BroadcastBFTX(bftx.Id, origin); err != nil {
-		bftx_logger.SimpleLogger("FullBFTXCycleWithoutEncryption", err)
-		return err
-	}
-
-	return nil
 }
 
 func handleResponse(origin string, err error, httpStatusCode string) error {

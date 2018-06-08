@@ -6,6 +6,12 @@ owners:
   email: support@blockfreight.com
   homepage: https://blockfreight.com
 import:
+- package: github.com/tendermint/iavl
+  version: v0.7.0
+- package: github.com/tendermint/go-wire
+  version: v0.7.3
+- package: github.com/tendermint/tmlibs
+  version: v0.8.3-rc0
 - package: github.com/davecgh/go-spew
   version: ~1.1.0
   subpackages:
@@ -14,41 +20,24 @@ import:
   subpackages:
   - leveldb
 - package: github.com/tendermint/abci
-  version: ~0.9.0
+  version: ~0.10.3
   subpackages:
   - client
   - server
   - types
-- package: golang.org/x/net
-  version: d866cfc389cec985d6fda2859936a575a55a3ab6
-  subpackages:
-    - context
-- package: google.golang.org/grpc
-  version: v1.7.3
 - package: github.com/tendermint/tendermint  
-  version: ~0.15.0
+  version: v0.19.7
   subpackages:
   - rpc/client
   - types
+  - config
 - package: github.com/tendermint/go-common
 - package: github.com/mnmtanish/go-graphiql
 - package: github.com/tendermint/go-crypto
-  version: ~0.4.1
+  version: ~0.6.2
 - package: github.com/tendermint/go-merkle
-- package: github.com/tendermint/go-wire
-  version: ~0.7.2
-  subpackages:
-  - data
-- package: github.com/tendermint/tmlibs
-  version: ~0.6.0
-  repo: http://github.com/tendermint/tmlibs
-  vcs: git
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
 - package: github.com/graphql-go/handler
 - package: github.com/urfave/cli
   version: ~1.19.1
-- package: github.com/tendermint/iavl
-  version: ~0.2.0
-  subpackages:
-  - iavl
