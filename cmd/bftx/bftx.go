@@ -682,9 +682,14 @@ func cmdBroadcastBfTx(c *cli.Context) error {
 		return errors.New("Command broadcast takes 1 argument")
 	}
 
-	if err := bftx.BroadcastBFTX(args[0], common.ORIGIN_CMD); err != nil {
+	err := bftx.BroadcastBFTX(args[0], common.ORIGIN_CMD)
+
+	if err != nil {
 		return err
 	}
+
+	// fmt.Print("Result from rpcClient.BroadcastTxSync()")
+	// fmt.Printf("%+v\n", rpcResult)
 
 	printResponse(c, response{
 		Result: "BF_TX broadcasted",
@@ -700,11 +705,10 @@ func cmdCommit(c *cli.Context) error {
 		bftx_logger.SimpleLogger("cmdCommit", err)
 		return err
 	}
-	fmt.Print(result)
-	// printResponse(c, response{
-	// 	Data: result.Data,
-	// 	Log:  result.Log,
-	// })
+
+	printResponse(c, response{
+		Data: result.Data,
+	})
 	return nil
 }
 
@@ -900,7 +904,7 @@ func printResponse(c *cli.Context, rsp response) {
 		fmt.Printf("-> blockfreight result: %s\n", rsp.Result)
 	}
 	if len(rsp.Data) != 0 {
-		//fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
+		fmt.Printf("-> blockfreight data: %s\n", rsp.Data)
 		fmt.Printf("-> data.hex: %X\n", rsp.Data)
 	}
 	if rsp.Log != "" {
