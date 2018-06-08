@@ -112,7 +112,8 @@ var mutationType = graphql.NewObject(
 						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
-					return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
+					//return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
+					return apiHandler.QueryTransaction("bftx")
 				},
 			},
 			"fullBFTXCycle": &graphql.Field{
@@ -130,7 +131,8 @@ var mutationType = graphql.NewObject(
 						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
 					}
 
-					return apiHandler.FullBFTXCycle(bftx)
+					//return apiHandler.FullBFTXCycle(bftx)
+					return apiHandler.QueryTransaction("bftx")
 				},
 			},
 			"encryptBFTX": &graphql.Field{

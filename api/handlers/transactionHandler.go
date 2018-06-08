@@ -147,7 +147,9 @@ func DecryptBFTX(idBftx string) (interface{}, error) {
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 
-	if err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API); err != nil {
+	 err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API)
+
+	if err != nil {
 		return nil, err
 	}
 
@@ -183,33 +185,4 @@ func QueryTransaction(idBftx string) (interface{}, error) {
 	}
 
 	return bftxs, nil
-}
-
-func FullBFTXCycleWithoutEncryption(transaction bf_tx.BF_TX) (interface{}, error) {
-	if err := transaction.FullBFTXCycleWithoutEncryption(common.ORIGIN_API); err != nil {
-		return nil, err
-	}
-
-	return transaction, nil
-}
-
-func FullBFTXCycle(transaction bf_tx.BF_TX) (interface{}, error) {
-	if err := transaction.GenerateBFTX(common.ORIGIN_API); err != nil {
-		return nil, err
-	}
-
-	_, err := EncryptBFTX(transaction.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := transaction.SignBFTX(transaction.Id, common.ORIGIN_API); err != nil {
-		return nil, err
-	}
-
-	if err := transaction.BroadcastBFTX(transaction.Id, common.ORIGIN_API); err != nil {
-		return nil, err
-	}
-
-	return transaction, nil
 }
