@@ -59,9 +59,7 @@ import (
 	"errors" // Implements the SHA256 Algorithm for Hash.
 	"hash"
 	"io"
-	"log"
 	"math/big"
-	"os"
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"net/http"
 	"strconv"
@@ -92,6 +90,7 @@ import (
 )
 
 var TendermintClient abcicli.Client
+var RPCClient rpc.Client
 
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
@@ -277,38 +276,27 @@ func (bftx *BF_TX) setSignature() error {
 }
 
 func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
-	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
-		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
-	}
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
-	if err != nil {
-		log.Println(err.Error())
-		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
-	}
-
 	// Get a BF_TX by id
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
 		if err.Error() == "LevelDB Get function: BF_TX not found." {
 			bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-			return  handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
+			return handleResponse(origin, err, strconv.Itoa(http.StatusNotFound))
 		}
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if err = json.Unmarshal(data, &bftx); err != nil {
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
 
 	if !bftx.Verified {
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
 	}
 	if bftx.Transmitted {
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusNotAcceptable))
 	}
 
 	// Change the boolean valud for Transmitted attribute
@@ -330,14 +318,12 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	var tx tmTypes.Tx
 	tx = []byte(content)
 
-	_, err = rpcClient.BroadcastTxSync(tx)
+	_, err = RPCClient.BroadcastTxSync(tx)
 	if err != nil {
 		fmt.Printf("%+v\n", err)
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
-		return  handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
-
-	defer rpcClient.Stop()
 
 	return nil
 }
@@ -364,21 +350,10 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 }
 
 func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
-	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
-		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
-	}
-	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
-	err := rpcClient.Start()
 	var bftxs []BF_TX
-	if err != nil {
-		log.Println(err.Error())
-		// queryLogger("QueryBFTX", err.Error(), idBftx)
-		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
-		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
-	}
-	defer rpcClient.Stop()
+
 	query := "bftx.id CONTAINS '" + idBftx + "'"
-	resQuery, err := rpcClient.TxSearch(query, true, 1, 10)
+	resQuery, err := RPCClient.TxSearch(query, true, 1, 10)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))

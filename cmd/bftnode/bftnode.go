@@ -50,28 +50,28 @@ import (
 	// Golang Standard library
 	// =======================
 	"flag" // Implements command-line flag parsing.
-	"fmt"  // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"log"  // Implements a simple logging package.
+	"fmt"
+	"log" // Implements formatted I/O with functions analogous to C's printf and scanf.
+	// Implements a simple logging package.
+
+	"os"
 	"strconv"
 
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/server"
 	"github.com/tendermint/abci/types"
 	tendermint "github.com/tendermint/go-common"
+	rpc "github.com/tendermint/tendermint/rpc/client"
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-
 	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 	"github.com/blockfreight/go-bftx/build/package/version"
+	bftx "github.com/blockfreight/go-bftx/lib/app/bf_tx"
+	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
 )
-
-var client abcicli.Client
 
 func main() {
 
@@ -103,16 +103,18 @@ func main() {
 	fmt.Println("Service created by " + *abciPtr + " server")
 	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
 
-	client, err = abcicli.NewClient(*addrPtr, "socket", false)
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err = rpcClient.Start()
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
-	err = client.Start()
-	if err != nil {
-		log.Fatal(err.Error())
-	}
-	bf_tx.TendermintClient = client
+	fmt.Println("RPC connection created on: " + os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"))
+
+	bftx.RPCClient = rpcClient
 
 	err = api.Start()
 	if err != nil {
