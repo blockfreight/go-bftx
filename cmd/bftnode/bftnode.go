@@ -125,6 +125,7 @@ func main() {
 	tendermint.TrapSignal(func() {
 		// Cleanup
 		fmt.Println("Stopping service")
+		rpcClient.Stop()
 		srv.Stop()
 	})
 
