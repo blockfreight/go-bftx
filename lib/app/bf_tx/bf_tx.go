@@ -59,7 +59,9 @@ import (
 	"errors" // Implements the SHA256 Algorithm for Hash.
 	"hash"
 	"io"
+	"log"
 	"math/big"
+	"os"
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"net/http"
 	"strconv"
@@ -90,7 +92,6 @@ import (
 )
 
 var TendermintClient abcicli.Client
-var RPCClient rpc.Client
 
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
@@ -276,6 +277,17 @@ func (bftx *BF_TX) setSignature() error {
 }
 
 func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
 	// Get a BF_TX by id
 	data, err := leveldb.GetBfTx(idBftx)
 	if err != nil {
@@ -318,12 +330,14 @@ func (bftx *BF_TX) BroadcastBFTX(idBftx, origin string) error {
 	var tx tmTypes.Tx
 	tx = []byte(content)
 
-	_, err = RPCClient.BroadcastTxSync(tx)
+	_, err = rpcClient.BroadcastTxSync(tx)
 	if err != nil {
 		fmt.Printf("%+v\n", err)
 		bftx_logger.TransLogger("BroadcastBFTX", err, idBftx)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
 	}
+
+	defer rpcClient.Stop()
 
 	return nil
 }
@@ -350,10 +364,21 @@ func (bftx *BF_TX) GetBFTX(idBftx, origin string) error {
 }
 
 func (bftx *BF_TX) QueryBFTX(idBftx, origin string) ([]BF_TX, error) {
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
 	var bftxs []BF_TX
-
+	if err != nil {
+		log.Println(err.Error())
+		// queryLogger("QueryBFTX", err.Error(), idBftx)
+		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
+		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+	defer rpcClient.Stop()
 	query := "bftx.id CONTAINS '" + idBftx + "'"
-	resQuery, err := RPCClient.TxSearch(query, true, 1, 10)
+	resQuery, err := rpcClient.TxSearch(query, true, 1, 10)
 	if err != nil {
 		bftx_logger.TransLogger("QueryBFTX", err, idBftx)
 		return nil, handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
