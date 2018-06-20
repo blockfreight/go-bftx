@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  genesis.json: |-
+    {
+        "chain_id":"chain-idealX",
+        "app_options":{
+            "accounts":[
+              {
+                  "pub_key":"bftx0"
+              }
+            ]
+        }
+      }
+metadata:
+    name: app-config    

@@ -1,0 +1,137 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  name: bftx
+spec:
+  selector:
+    matchLabels:
+       app: bftx
+  serviceName: blockfreight
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: bftx
+    spec:
+     containers:
+      - name: tm
+        imagePullPolicy: IfNotPresent
+        image: tendermint/tendermint:0.20.0
+        ports:
+        - containerPort: 46656
+          name: p2p
+        - containerPort: 46657
+          name: rpc
+        env:
+        - name: SEEDS
+          valueFrom:
+            configMapKeyRef:
+              name: bftx-config
+              key: seeds
+        - name: VALIDATOR_POWER
+          valueFrom:
+            configMapKeyRef:
+              name: bftx-config
+              key: validator.power
+        - name: VALIDATORS
+          valueFrom:
+            configMapKeyRef:
+              name: bftx-config
+              key: validators
+        - name: TMHOME
+          value: /tendermint
+        command:
+        - /bin/sh
+        - "-c"
+        - |
+          set -ex
+          mkdir /tendermint/config
+          tendermint gen_node_key
+          # Creating genesis.json
+          curl -L https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/genesis.json > $TMHOME/config/genesis.json
+          # Creating config.toml
+          curl -L https://raw.githubusercontent.com/blockfreight/tools/master/config.toml > $TMHOME/config.toml
+          cp $TMHOME/config.toml /tendermint/config/config.toml
+          NODE_ID=$(tendermint show_node_id)
+          # Starting Tendermint
+          tendermint node --moniker="`hostname`" --p2p.seeds="a1057aa0fd2693285041d9fca77f3402d1b58191@bftx0.blockfreight.net:8888,017386c65c59844f8f681966d875da19f36213bc@bftx1.blockfreight.net:8888,94065d3354f2cf49704392702d6e0a4b0e95cd02@bftx2.blockfreight.net:8888,22acd2f9052a48676c57618cc94d477e6056d959@bftx3.blockfreight.net:8888" --proxy_app="tcp://localhost:46658" --consensus.create_empty_blocks=false
+      - name: app
+        imagePullPolicy: Always
+        image: blockfreight/go-bftx:rc1
+        ports:
+        - containerPort: 12345
+        - containerPort: 46658
+        env:
+        - name: BFTXHOME
+          value: /go/src/github.com/blockfreight/go-bftx
+        - name: LOCAL_RPC_CLIENT_ADDRESS
+          value: tcp://localhost:46657
+        workingDir: /go/src/github.com/blockfreight/go-bftx
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+         
+          rm -f /socks/app.sock # remove old socket
+          bftnode start
+      - name: pub-key
+        imagePullPolicy: IfNotPresent
+        image: nginx
+        ports:
+        - containerPort: 80
+          name: http
+        - containerPort: 8080
+        command:
+        - bash
+        - "-c"
+        - |
+          set -ex
+          # fixes 403 Permission Denied (open() "/tendermint/pub_key.json" failed (13: Permission denied))
+          # => we cannot serve from /tendermint, so we copy the file
+          mkdir -p /usr/share/nginx
+          mkdir -p /etc/nginx/html
+          cd /etc/nginx/html
+          touch index.html
+          cat > index.html << EOL   
+            <!DOCTYPE html PUBLIC"ISO/IEC 15445:2000//DTD HTML//EN"><html><head><title></title></head><body><p>Blockfreight.</body></html>
+          EOL
+          nginx -g "daemon off;"
+        volumeMounts:
+        - name: tmdir
+          mountPath: /tendermint
+        - name: appdir
+          mountPath: /app
+        - mountPath: /etc/nginx/conf.d/pub_key.conf
+          name: tmconfigdir
+          subPath: pub_key_nginx.conf
+     volumes:
+      - name: tmconfigdir
+        configMap:
+          name: bftx-config
+      - name: appconfigdir
+        configMap:
+          name: app-config
+      - name: socksdir
+        emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: tmdir
+      annotations:
+        volume.alpha.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+  - metadata:
+      name: appdir
+      annotations:
+        volume.alpha.kubernetes.io/storage-class: anything
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 12Mi
+  updateStrategy:
+    type: RollingUpdate

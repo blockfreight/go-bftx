@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+# // BFTX Metadata Annontation
+metadata:
+  annotations:
+    # // BFTX tolerate-unready-endpoints - Defaults to affimative response in bootstrap phase
+    # // Note: Future deprecation: https://github.com/kubernetes/kubernetes/issues/49239
+    # // @todo SECURITY CHECK / STACK OVERFLOW / PRE-READY INJECTION ATTACK VECTORS ? (any) ?
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  # // Project Name & App Label
+  name: blockfreight
+  labels:
+    app: blockfreight
+spec:
+  # // Define Endpoint (Load-balancer) & Port Assignment
+  type: LoadBalancer
+  ports:
+  - port: 8888
+    targetPort: 8888
+    name: p2p
+  - port: 24365
+    targetPort: 46657
+    name: rpc
+  - port: 80
+    name: http
+  selector:
+    app: bftx

@@ -1,0 +1,9 @@
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: bftx-budget
+spec:
+  selector:
+    matchLabels:
+      app: bftx
+  minAvailable: 2
