@@ -17,6 +17,7 @@ matrix:
     before_install:
       - docker build -t blockfreight/go-bftx:ci-cd .
       - docker images
+      - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
       - docker push blockfreight/go-bftx:ci-cd
     # deploy:
     # provider: script
