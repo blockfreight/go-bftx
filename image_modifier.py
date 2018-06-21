@@ -13,6 +13,7 @@ for i, yaml_block in enumerate(ruamel.yaml.round_trip_load_all(stream=open(yaml_
 
 # parse the most recent git commit sha from command line
 docker_image = 'blockfreight/go-bftx:ci-cd-' + check_output('git log -1 --pretty=format:%h'.split()).decode()
+# docker_image = sys.argv[1] # pass in travis environment variable to the program
 
 # update go-bftx image with most recent git-commit-sha tag in the StatefulSet block
 yaml_block['spec']['template']['spec']['containers'][1]['image'] = docker_image
