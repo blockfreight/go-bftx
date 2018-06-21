@@ -19,7 +19,6 @@ matrix:
     deploy:
     provider: script
     script: 
-      - docker images
       - bash docker_push.sh
     on:
       branch: ci-cd
