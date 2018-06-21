@@ -16,10 +16,12 @@ matrix:
       - docker
     before_install:
       - docker build -t blockfreight/go-bftx:ci-cd .
-    deploy:
-    provider: script
-    script: 
-      - bash docker_push.sh
+      - docker images
+      - docker push blockfreight/go-bftx:ci-cd
+    # deploy:
+    # provider: script
+    # script: 
+    #   - bash docker_push.sh
     on:
       branch: ci-cd
     # - language: python
