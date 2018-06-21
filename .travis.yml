@@ -1,10 +1,52 @@
-language: go
-go:
-- 1.9.x
-install:
-- go get github.com/Masterminds/glide
-env:
-  matrix:
-  - secure: txMfFu+iWuMcRNR2W0yuHJlWSsf0/wzQfyGoCR+v7UfWrQw9l+54QIATy8V/6lT/g/522yzpfcAMJQs1NDkbXYIoHbMlkZOmFtL2kzAL7kwuIRIY6oYkrd6tLCEJJRrhoDwTKVZyC4gPnDLaGOdXvk2FerlNNAr+o3feLKonStLrvGg5EvIW2vtNtAxiXvb3OZ3QSV6zGCQf9yIUukoY0cpWUnzxfrfx2xZN3kjIDSSJmguBcr6YhMpS+7Ci0/me1kQNnW/e5kdfTbgxm2I1Sp5iAtSzYyrkDtrVJdBAfSpFMTKZTBsn735jFC7gUrNAS6qg/zdAo9x5H365QC8OmH8WVVYR7xCbI6IM9Ylu8iV8MBm/8RhuDuRjRTmUeIFYzSqstnOtFS5lADBURs5E4ubWWoLwN0urQ7t0CcdRZIPEIhTQfz2dHEVUYZj/C3qWlkTY/gUmxU/JE63mokfLzDLooMhB8Tkcl2C8z2onKEKmVAPGwu5tB+S8Rp2nEZQL/+wyU94TDrhHsg3+3IqI20pjxBcBtxXpowyeO2fwYii3RFqrDVrxOYkVsZinspBhrklyRE5LjjU4HnVkHKEhN7F+1n8V2MzwQsAJ7f/+ZMgnT8kFyfTJYTEs5JIxOqsVZxPEnXsJimgcFjr6ooPX3U9Cx75V4TgP864he1U3pdA=
-  - secure: viy4dJpFt/9fgjNHn7lUmvG3jukpGeMULmM8Eq5rXchlWdRmmeacG41AokkMqDSv1aYXziplq5Xcj/xuXpNzlnj+Uu23UppsG60nNjIg2ePdqDHgelFF4cBswghHpY4XpULEv6BKQEl5ASeBPEWKLmTH6kA8wA0YUtKCf7/6EitLt/VYQXjGkA/YZ0tZ7LBy+Jv8vFL4tEq0m+vaxCKkMYkFLXSOlt4TWkO6TkKwY06mulYrEIBedQgHwrZmUH6pskbVLSH5axA0GkUZXxMdoe+xMUwqZbDL3ZeWtXFD1nmUWD/psqt+j9O4HzyddL5W9Z2Lb/31DMsMWZpvCPI0dxLuqh2/1T/g1atXBRvqKBt7b1O0+wztLdFtptVEjdOJ9aJICjNH8E2DW7KkouuJjL8ecef2vgHBPlXXz7M0G2+JXvpV/Gq3S0lnL6bqTru7/YwuQjAAQgLwlN/XfUKqmtPHEc9BJ7J3xd8/ELFJAFpb5weDfmu1aKzqBxUKRU2irGPmvRSBkZXHBuJqcLJGv7liggO8VPZMoYrAIFhQhQ6SrJeB714VnVW0GHdQSbsUh85e9TMP5SRjlFrPlf/szSqPowxSrP9G1pQs30BVItXbg+3B8j6PyMhIEj6dSlsqNRB4XfQom48U6diLCHnU4euPBs/4gioAY/wsGnrbG4c=
-  - secure: bnQ6cphaZfOVblqfmVwcxyMdpZnti+rAAxZl6WeuKSbCXVw533OMFpWzsw+U0UHrwSAUKO/E5qIcbit+Ew3b7mzxxW/BbEOwGvEEAE04wrQj0al9Z0FXeAdombvqLQqIRJxqzSKAl2IkuS+Qyr7r2OWh0OvP9KJjpDgGiAPflqkhgnKEvRY6dXi9c8Iqwqt3slanMykXC5MD+7l3QR7B+s0MngUNH64bI3HGaYcef/f9nzxQJ8hrQLoPjSeuDlctJOpcqIEwDfFh5CwmLskw8AKP/qbHeHxLgyd52BAfhxJI5/6QTXXRv7ivKzZ+6jFUVAf/VoRZs++JxfNqQMQs2OFeMwxAsX0lB/u3rCMOwlUDg8Vq0vT+l/LLf6LZEkHgVrBHCK/K2Y4i5vu/AfmmlWpDB/Uw8XT9wzI75eaXmTem3gprAj9LDxHlIIujNgY2pHfyxICouk2vYvFS+1QIB7gLuOGR7RxXdifEJs4UqSd/GXNfdixTZTTexoK+5LTc4v1e43nCazcL9G3+BybhHPsQ3T3saJ09Mqi2vTzCVk5kBeeJQh3CgG9DV0IGoGH+rcD6w2kSyguLUV7Wmz696mSOu8YYOZJoMwrbQe54s3nTRkiPFscNHAjlDi231bq3G559ud838UoQH86eDFlUg8zkBcqkk0UE/0/Ke3AKxMQ=
+matrix:
+  include:
+    language: go
+    go:
+    - 1.9.x
+    install:
+    - go get github.com/Masterminds/glide
+    env:
+      matrix:
+        - secure: txMfFu+iWuMcRNR2W0yuHJlWSsf0/wzQfyGoCR+v7UfWrQw9l+54QIATy8V/6lT/g/522yzpfcAMJQs1NDkbXYIoHbMlkZOmFtL2kzAL7kwuIRIY6oYkrd6tLCEJJRrhoDwTKVZyC4gPnDLaGOdXvk2FerlNNAr+o3feLKonStLrvGg5EvIW2vtNtAxiXvb3OZ3QSV6zGCQf9yIUukoY0cpWUnzxfrfx2xZN3kjIDSSJmguBcr6YhMpS+7Ci0/me1kQNnW/e5kdfTbgxm2I1Sp5iAtSzYyrkDtrVJdBAfSpFMTKZTBsn735jFC7gUrNAS6qg/zdAo9x5H365QC8OmH8WVVYR7xCbI6IM9Ylu8iV8MBm/8RhuDuRjRTmUeIFYzSqstnOtFS5lADBURs5E4ubWWoLwN0urQ7t0CcdRZIPEIhTQfz2dHEVUYZj/C3qWlkTY/gUmxU/JE63mokfLzDLooMhB8Tkcl2C8z2onKEKmVAPGwu5tB+S8Rp2nEZQL/+wyU94TDrhHsg3+3IqI20pjxBcBtxXpowyeO2fwYii3RFqrDVrxOYkVsZinspBhrklyRE5LjjU4HnVkHKEhN7F+1n8V2MzwQsAJ7f/+ZMgnT8kFyfTJYTEs5JIxOqsVZxPEnXsJimgcFjr6ooPX3U9Cx75V4TgP864he1U3pdA=
+        - secure: viy4dJpFt/9fgjNHn7lUmvG3jukpGeMULmM8Eq5rXchlWdRmmeacG41AokkMqDSv1aYXziplq5Xcj/xuXpNzlnj+Uu23UppsG60nNjIg2ePdqDHgelFF4cBswghHpY4XpULEv6BKQEl5ASeBPEWKLmTH6kA8wA0YUtKCf7/6EitLt/VYQXjGkA/YZ0tZ7LBy+Jv8vFL4tEq0m+vaxCKkMYkFLXSOlt4TWkO6TkKwY06mulYrEIBedQgHwrZmUH6pskbVLSH5axA0GkUZXxMdoe+xMUwqZbDL3ZeWtXFD1nmUWD/psqt+j9O4HzyddL5W9Z2Lb/31DMsMWZpvCPI0dxLuqh2/1T/g1atXBRvqKBt7b1O0+wztLdFtptVEjdOJ9aJICjNH8E2DW7KkouuJjL8ecef2vgHBPlXXz7M0G2+JXvpV/Gq3S0lnL6bqTru7/YwuQjAAQgLwlN/XfUKqmtPHEc9BJ7J3xd8/ELFJAFpb5weDfmu1aKzqBxUKRU2irGPmvRSBkZXHBuJqcLJGv7liggO8VPZMoYrAIFhQhQ6SrJeB714VnVW0GHdQSbsUh85e9TMP5SRjlFrPlf/szSqPowxSrP9G1pQs30BVItXbg+3B8j6PyMhIEj6dSlsqNRB4XfQom48U6diLCHnU4euPBs/4gioAY/wsGnrbG4c=
+        - secure: bnQ6cphaZfOVblqfmVwcxyMdpZnti+rAAxZl6WeuKSbCXVw533OMFpWzsw+U0UHrwSAUKO/E5qIcbit+Ew3b7mzxxW/BbEOwGvEEAE04wrQj0al9Z0FXeAdombvqLQqIRJxqzSKAl2IkuS+Qyr7r2OWh0OvP9KJjpDgGiAPflqkhgnKEvRY6dXi9c8Iqwqt3slanMykXC5MD+7l3QR7B+s0MngUNH64bI3HGaYcef/f9nzxQJ8hrQLoPjSeuDlctJOpcqIEwDfFh5CwmLskw8AKP/qbHeHxLgyd52BAfhxJI5/6QTXXRv7ivKzZ+6jFUVAf/VoRZs++JxfNqQMQs2OFeMwxAsX0lB/u3rCMOwlUDg8Vq0vT+l/LLf6LZEkHgVrBHCK/K2Y4i5vu/AfmmlWpDB/Uw8XT9wzI75eaXmTem3gprAj9LDxHlIIujNgY2pHfyxICouk2vYvFS+1QIB7gLuOGR7RxXdifEJs4UqSd/GXNfdixTZTTexoK+5LTc4v1e43nCazcL9G3+BybhHPsQ3T3saJ09Mqi2vTzCVk5kBeeJQh3CgG9DV0IGoGH+rcD6w2kSyguLUV7Wmz696mSOu8YYOZJoMwrbQe54s3nTRkiPFscNHAjlDi231bq3G559ud838UoQH86eDFlUg8zkBcqkk0UE/0/Ke3AKxMQ=
+    sudo: required
+    language: ruby
+    services:
+      - docker
+    before_install:
+      - docker build -t blockfreight/go-bftx .
+    deploy:
+    provider: script
+    script: bash docker_push.sh
+    on:
+      branch: ci-cd
+    # - language: python
+    # python:
+    #   - 3.6
+    # install:
+    #   - pip install ruamel.yaml
+    # deploy:
+    #   provider: script
+    #   skip_cleanup: true
+    #   script: python app_modifier.py
+    #   on:
+    #     branch: master
+    language: bash
+    addons:
+      ssh_known_hosts:
+      - $BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP
+      - $BLOCKFREIGHT_SSH_USER@BFTX1_MASTER_IP
+      - $BLOCKFREIGHT_SSH_USER@BFTX2_MASTER_IP
+      - $BLOCKFREIGHT_SSH_USER@BFTX3_MASTER_IP
+    before_deploy:
+    - openssl aes-256-cbc -K $encrypted_1034b1fa055d_key -iv $encrypted_1034b1fa055d_iv -in deploy_rsa.enc -out /tmp/deploy_rsa -d
+    - eval "$(ssh-agent -s)"
+    - chmod 600 /tmp/deploy_rsa
+    - ssh-add /tmp/deploy_rsa
+    deploy:
+      provider: script
+      skip_cleanup: true
+      script: bash update-node.sh
+      on:
+        branch: ci-cd
