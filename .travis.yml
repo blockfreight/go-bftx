@@ -15,15 +15,15 @@ matrix:
     - docker
     after_success:
     # - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-    - echo ${COMMIT}
     - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - export REPO=blockfreight/go-bftx
-    - export TAG=ci-cd
-    - docker build -f Dockerfile -t ${REPO}:${COMMIT} .
-    - docker tag $REPO:$COMMIT $REPO:$TAG
+    # - export TAG=ci-cd
+    - TAG=ci-cd-`echo ${TRAVIS_COMMIT}`
+    - docker build -f Dockerfile -t ${REPO}:${TAG} .
+    # - docker tag $REPO:$COMMIT $REPO:$TAG
     - docker push $REPO
-    on:
-      branch: ci-cd
+    # on:
+      # branch: ci-cd
     addons:
       ssh_known_hosts:
       - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
