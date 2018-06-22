@@ -15,6 +15,7 @@ matrix:
     - docker
     after_success:
     # - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+    - echo ${COMMIT}
     - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - export REPO=blockfreight/go-bftx
     - export TAG=ci-cd
@@ -30,7 +31,7 @@ matrix:
       - "$BLOCKFREIGHT_SSH_USER@BFTX2_MASTER_IP"
       - "$BLOCKFREIGHT_SSH_USER@BFTX3_MASTER_IP"
     before_deploy:
-    - openssl aes-256-cbc -K $encrypted_1034b1fa055d_key -iv $encrypted_1034b1fa055d_iv
+    - openssl aes-256-cbc -K $encrypted_c9b8e5769633_key -iv $encrypted_c9b8e5769633_iv
       -in deploy_rsa.enc -out /tmp/deploy_rsa -d
     - eval "$(ssh-agent -s)"
     - chmod 600 /tmp/deploy_rsa
