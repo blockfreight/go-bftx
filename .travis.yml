@@ -14,7 +14,8 @@ matrix:
     services:
     - docker
     after_success:
-    - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+    # - docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+    - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
     - export REPO=blockfreight/go-bftx
     - export TAG=ci-cd
     - docker build -f Dockerfile -t ${REPO}:${COMMIT} .
