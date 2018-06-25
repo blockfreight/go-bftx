@@ -23,7 +23,7 @@ matrix:
     # - if [ "$TRAVIS_BRANCH" == "ci-cd" ]; then
     #   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
     #   docker push $REPO;
-    #   fi
+    # fi
     deploy:
     provider: script
       script: bash docker_push.sh $REPO #$TAG
