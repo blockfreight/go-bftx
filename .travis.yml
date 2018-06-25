@@ -17,16 +17,18 @@ matrix:
     after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - export REPO=blockfreight/go-bftx
-    - TAG=ci-cd-`git log -1 --pretty=format:%h`
+    - export TAG=ci-cd-`git log -1 --pretty=format:%h`
     - docker build -f Dockerfile -t $REPO .
     - docker tag $REPO $REPO:$TAG
+    - echo $TAG
+    - docker push $REPO
     # - if [ "$TRAVIS_BRANCH" == "ci-cd" ]; then
     #   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
     #   docker push $REPO;
     # fi
-    deploy:
-    provider: script
-      script: bash docker_push.sh $REPO #$TAG
+    # deploy:
+    # provider: script
+    #   script: bash docker_push.sh $REPO #$TAG
     # addons:
     #   ssh_known_hosts:
     #   - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
