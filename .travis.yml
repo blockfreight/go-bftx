@@ -27,7 +27,7 @@ matrix:
     #   fi
     deploy:
     provider: script
-      - bash docker_push.sh $REPO #$TAG
+      script: bash docker_push.sh $REPO #$TAG
     # addons:
     #   ssh_known_hosts:
     #   - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
