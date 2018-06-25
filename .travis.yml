@@ -5,15 +5,15 @@ matrix:
     - 1.9.x
     install:
     - go get github.com/Masterminds/glide
-    env:
-      global:
-      - export REPO=blockfreight/go-bftx
-      - export TAG=ci-cd-`git log -1 --pretty=format:%h`
+    # env:
+      # global:
     sudo: required
     services:
     - docker
     after_success:
     - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - export REPO=blockfreight/go-bftx
+    - export TAG=ci-cd-`git log -1 --pretty=format:%h`
     - docker build -f Dockerfile -t $REPO .
     - docker tag $REPO $REPO:$TAG
     - docker push $REPO:$TAG
