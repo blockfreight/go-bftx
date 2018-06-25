@@ -14,12 +14,15 @@ matrix:
     services:
     - docker
     after_success:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    # - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - export REPO=blockfreight/go-bftx
     - TAG=ci-cd-`git log -1 --pretty=format:%h`
     - docker build -f Dockerfile -t $REPO .
     - docker tag $REPO $REPO:$TAG
-    - docker push $REPO:$TAG # not working
+    - if [ "$TRAVIS_BRANCH" == "ci-cd" ]; then
+      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
+      docker push $REPO:$TAG;
+      fi
     # deploy:
     # provider: script
       # - bash docker_push.sh $REPO $TAG
