@@ -9,20 +9,20 @@ matrix:
       global:
       - secure: "p6mjprQy7bNTIkrwuQIfdssy4FpXbR283rsloVBc77seDF7tdpIVUNF53Q+BXpgC7I9qJMD9BZTJQDzYfazeY7OIYCgZg9dm8jdx52N4GF/gY9HFRjvUhUAtUVnAhfZ6AdOAAloDJ94Y5a8CXIhL5XJ92hyMgEbjYhRkGPmxEhRGVUVQ5XkUjMjd+hzjfzQEXdHZ0wIiGSuqRBNivq6GXOy3pgn4fBwuJwjO1Jtv3WueXz55kr0H3nytKFzwsUwTsUlRedpSrBU8AF6cn4eTrTeWcGa10O4byVCeeb/+K7KSLnDJrNvfV7kVSgVsIPOhOEMQAX6/+zjt9HlHEtJ8OhUb512ePxCEUi4B1RnNk/d3zAO1/iE3z2LDK4zXdNcTPh2eLeI00qbwKFxenBqGFf4JxSwCwF6uIa9qNGcttbEVmyWvxtq8a3muXlWO/jh785s190+AwFfU2SRkk97JMZdDBzeTns2362/UAd+0yskurQwSO4e6VAOJthX8/LETMa7+qiqij7rm/Q+6pLxuqkNIwW/ITQU32UzqDsukRaOCMAu5rZjPTZWp5EXrno/h1JRRrTLARBNi0h9FvcwPS5nLI5fuKZUjGWWxeaA4eNxpuMYSSrb8iJhJHVafJyESLFy135/24dB7pFNQp9E1BWIjSBw5xcqkag1+Giv3XBo=" # DOCKER_USERNAME
       - secure: "LBpSgGRHGCSIl1JIW/xd1GQG/1OvZTN6S0E1hMnZ+xRlaHdnPf3SgeYI/BQlG2++vINlMWMXd9PIIWnbGwp6AfDY6UYFOTP0vndsiSsfKT/bBspuazrLAH1uLksdeQ7U/JGoCAaTumFjXTUgyNEamrAEYXLAK7pUNw6gJXIR7yUlFAjLfV+VK5lYqLgx9O7A5VqCSLb1PMTVKlmgJvOnkw7IVkZj/dg8qozJzgh0A5uY7IGsHfifX0c30GjLx3HCUReDuOdo8v/hIFg/9FegTeIfLzd2QkiIEwEVMnw1nHNenH0P9up1t4G9hjheS/Q8ztjCts36dPTdfjC2LGFI0NpwLfLtTr9keXjNFV95aH5RfwWfrgZfrr/Z67QBRkD6sr5Slsh0Bv8VP0eYvRTbMlO/plhAapKUBxvc3SH+UT2PdxNWLdI28hdxLLaILVj5Lakv34y0kX/Mi3YKRr58IWDObh1j2Lmg0wfuU3xYWa2AYm0ZN1JQSxeN/vwaesxkJeEthIF//VWOCwyuLUn0DbMtOzjK2ruki2FdVHC4m4gkHHxrRHUffbFgGaxjFVJl4YkZIpHpDi1eXoc3OaITKBi5xoa98zAu18Zs9yVCJI9cS6HqLK09DPLl69j2LMM/5kgnZG882AvEd8PZWB2hcvBQqzOEaZafEFGx/7j0P8U=" # DOCKER_PASSWORD
-      - COMMIT=${TRAVIS_COMMIT:0:7} # not slicing commit sha
+      # - COMMIT=${TRAVIS_COMMIT:0:7} # not slicing commit sha
     sudo: required
     services:
     - docker
     after_success:
-    - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
     - export REPO=blockfreight/go-bftx
-    - TAG=ci-cd-`echo ${TRAVIS_COMMIT}`
-    - docker build -f Dockerfile -t ${REPO}:${TAG} .
-    - echo $TAG
-    # - docker push $REPO:$TAG
-    deploy:
-    provider: script
-      - bash docker_push.sh ${REPO} ${TAG}
+    - TAG=ci-cd-`git log -1 --pretty=format:%h`
+    - docker build -f Dockerfile -t $REPO .
+    - docker tag $REPO $REPO:$TAG
+    - docker push $REPO:$TAG # not working
+    # deploy:
+    # provider: script
+      # - bash docker_push.sh $REPO $TAG
     addons:
       ssh_known_hosts:
       - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
