@@ -7,15 +7,12 @@ import ruamel.yaml
 import sys
 from subprocess import check_output
 
-yaml_path = 'blockfreight-statefulset.yaml'
-for i, yaml_block in enumerate(ruamel.yaml.round_trip_load_all(stream=open(yaml_path))):
-    pass
+yaml = ruamel.yaml.YAML()
+yaml.preserve_quotes = True
+yaml_file = list(yaml.load_all(open('statefulset.yaml')))
 
-# parse the most recent git commit sha from command line
-docker_image = 'blockfreight/go-bftx:ci-cd-' + check_output('git log -1 --pretty=format:%h'.split()).decode()
-# docker_image = sys.argv[1] # pass in travis environment variable to the program
+docker_image = (sys.argv[1] + ':' + sys.argv[2]) # pass in travis environment variable to the program
 
-# update go-bftx image with most recent git-commit-sha tag in the StatefulSet block
-yaml_block['spec']['template']['spec']['containers'][1]['image'] = docker_image
-
-ruamel.yaml.round_trip_dump(yaml_block, sys.stdout)
+yaml_file[0]['spec']['template']['spec']['containers'][1]['image'] = docker_image
+with open('statefulset.yaml', 'w') as f:
+    yaml.dump_all(yaml_file, f)

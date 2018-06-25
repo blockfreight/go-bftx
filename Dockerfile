@@ -4,7 +4,6 @@ FROM alpine:3.5
 ENV BFTXHOME /go/src/github.com/blockfreight/go-bftx
 ENV LOCAL_RPC_CLIENT_ADDRESS tcp://localhost:46657
 ENV DOCKER_RPC_CLIENT_ADDRESS tcp://blockfreight:46657
-ENV TEST travis
 
 # Create a basecoin user and group first so the IDs get set the same way, even
 # as the rest of this may change over time.
