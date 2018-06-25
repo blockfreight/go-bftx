@@ -21,13 +21,13 @@ matrix:
     - TAG=ci-cd-`git log -1 --pretty=format:%h`
     - docker build -f Dockerfile -t $REPO .
     - docker tag $REPO $REPO:$TAG
-    - if [ "$TRAVIS_BRANCH" == "ci-cd" ]; then
-      echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
-      docker push $REPO:$TAG;
-      fi
-    # deploy:
-    # provider: script
-      # - bash docker_push.sh $REPO $TAG
+    # - if [ "$TRAVIS_BRANCH" == "ci-cd" ]; then
+    #   echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin;
+    #   docker push $REPO;
+    #   fi
+    deploy:
+    provider: script
+      - bash docker_push.sh $REPO #$TAG
     addons:
       ssh_known_hosts:
       - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
