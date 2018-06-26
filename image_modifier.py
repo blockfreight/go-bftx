@@ -9,10 +9,11 @@ from subprocess import check_output
 
 yaml = ruamel.yaml.YAML()
 yaml.preserve_quotes = True
-yaml_file = list(yaml.load_all(open('statefulset.yaml')))
+yaml_file = list(yaml.load_all(open('app.yaml')))
 
-docker_image = (sys.argv[1] + ':' + sys.argv[2]) # pass in travis environment variable to the program
+# pass in travis environment variable to the program
+docker_image = (sys.argv[1] + ':' + sys.argv[2])
 
-yaml_file[0]['spec']['template']['spec']['containers'][1]['image'] = docker_image
-with open('statefulset.yaml', 'w') as f:
+yaml_file[-1]['spec']['template']['spec']['containers'][1]['image'] = docker_image
+with open('app.yaml', 'w') as f:
     yaml.dump_all(yaml_file, f)

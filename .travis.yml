@@ -32,6 +32,6 @@ matrix:
     deploy:
       provider: script
       skip_cleanup: true
-      script: bash update-node.sh $REPO $TAG
+      script: bash update-node.sh $TAG #$VM_USER $REPO $TAG
       on:
         branch: ci-cd
