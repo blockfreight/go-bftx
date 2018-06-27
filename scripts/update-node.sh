@@ -18,7 +18,7 @@ do
     sed -i -- 's|'$OLD_TAG'|'$NEW_TAG'|g' app.yaml;\
     echo old_tag: $OLD_TAG;\
     echo new_tag: $NEW_TAG;\
-    cat app.yaml | grep $NEW_TAG | awk '{print $1 " " $2}';\
+    cat app.yaml | grep $NEW_TAG | awk '{print $1 $2}';\
     kubectl apply -f app.yaml && kubectl delete pods --all --grace-period=0 --force;\
     rm app.yaml" <<-'ENDSSH'
 
