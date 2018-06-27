@@ -11,10 +11,10 @@ do
     ssh -oStrictHostKeyChecking=no $BLOCKFREIGHT_SSH_USER@$validator "env validator_name=$validator_name;\
     curl https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/app.yaml > app.yaml;\
     sed -i -- 's|<VALIDATOR_NAME>|$validator_name|g' app.yaml;\
-    sed -i -- 's|'$PREV_TAG'|'blockfreight/go-bftx:$1'|g' app.yaml;\
+    sed -i -- 's|'$PREV_TAG'|'$1'|g' app.yaml;\
     echo old_tag: $PREV_TAG
     echo new_tag: $1
-    cat app.yaml
+    cat app.yaml | grep $1
     kubectl apply -f app.yaml && kubectl delete pods --all --grace-period=0 --force;\
     rm app.yaml" <<-'ENDSSH'
 
