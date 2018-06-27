@@ -1,10 +1,10 @@
 matrix:
   include:
     language: bash
-    go:
-    - 1.9.x
-    install:
-    - go get github.com/Masterminds/glide
+    # go:
+    # - 1.9.x
+    # install:
+    # - go get github.com/Masterminds/glide
     sudo: required
     services:
     - docker
