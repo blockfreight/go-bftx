@@ -5,33 +5,34 @@ matrix:
     - 1.9.x
     install:
     - go get github.com/Masterminds/glide
-    # env:
-      # global:
-    sudo: required
-    services:
-    - docker
-    after_success:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - export REPO=blockfreight/go-bftx
-    - export TAG=ci-cd-`git log -1 --pretty=format:%h`
-    - docker build -f Dockerfile -t $REPO .
-    - docker tag $REPO $REPO:$TAG
-    - docker push $REPO:$TAG
-    addons:
-      ssh_known_hosts:
-      - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
-      - "$BLOCKFREIGHT_SSH_USER@BFTX1_MASTER_IP"
-      - "$BLOCKFREIGHT_SSH_USER@BFTX2_MASTER_IP"
-      - "$BLOCKFREIGHT_SSH_USER@BFTX3_MASTER_IP"
-    before_deploy:
-    - openssl aes-256-cbc -K $encrypted_c9b8e5769633_key -iv $encrypted_c9b8e5769633_iv
-      -in deploy_rsa.enc -out /tmp/deploy_rsa -d
-    - eval "$(ssh-agent -s)"
-    - chmod 600 /tmp/deploy_rsa
-    - ssh-add /tmp/deploy_rsa
-    deploy:
-      provider: script
-      skip_cleanup: true
-      script: bash update-node.sh $TAG #$VM_USER $REPO $TAG
-      on:
-        branch: ci-cd
+    env:
+      global:
+        - CONTAINER=`curl https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/app.yaml | grep blockfreight/go-bftx: | awk '{print $2}' | sed -e 's#.*:\(\)#\1#'`
+    # sudo: required
+    # services:
+    # - docker
+    # after_success:
+    # - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    # - export REPO=blockfreight/go-bftx
+    # - export TAG=ci-cd-`git log -1 --pretty=format:%h`
+    # - docker build -f Dockerfile -t $REPO .
+    # - docker tag $REPO $REPO:$TAG
+    # - docker push $REPO:$TAG
+    # addons:
+    #   ssh_known_hosts:
+    #   - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
+    #   - "$BLOCKFREIGHT_SSH_USER@BFTX1_MASTER_IP"
+    #   - "$BLOCKFREIGHT_SSH_USER@BFTX2_MASTER_IP"
+    #   - "$BLOCKFREIGHT_SSH_USER@BFTX3_MASTER_IP"
+    # before_deploy:
+    # - openssl aes-256-cbc -K $encrypted_c9b8e5769633_key -iv $encrypted_c9b8e5769633_iv
+    #   -in deploy_rsa.enc -out /tmp/deploy_rsa -d
+    # - eval "$(ssh-agent -s)"
+    # - chmod 600 /tmp/deploy_rsa
+    # - ssh-add /tmp/deploy_rsa
+    # deploy:
+    #   provider: script
+    #   skip_cleanup: true
+    #   script: bash update-node.sh $TAG $CONTAINER #$VM_USER $REPO $TAG
+    #   on:
+    #     branch: ci-cd
