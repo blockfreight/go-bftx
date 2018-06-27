@@ -5,8 +5,6 @@ matrix:
     - 1.9.x
     install:
     - go get github.com/Masterminds/glide
-    # env:
-    #   global:
     sudo: required
     services:
     - docker
@@ -32,6 +30,6 @@ matrix:
     deploy:
       provider: script
       skip_cleanup: true
-      script: bash update-node.sh $TAG #$VM_USER $REPO $TAG
+      script: bash update-node.sh $TAG
       on:
         branch: ci-cd
