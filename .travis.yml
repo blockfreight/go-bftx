@@ -16,6 +16,7 @@ matrix:
     - docker tag $REPO $REPO:$TAG
     - docker tag $REPO $REPO:ci-cd
     - docker push $REPO:$TAG
+    - docker push $REPO:ci-cd
     addons:
       ssh_known_hosts:
       - "$BLOCKFREIGHT_SSH_USER@BFTX0_MASTER_IP"
