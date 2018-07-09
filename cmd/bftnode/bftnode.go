@@ -97,6 +97,7 @@ func main() {
 	config.Genesis = homeDir + "/.blockfreight/config/genesis.json"
 	config.PrivValidator = homeDir + "/.blockfreight/config/priv_validator.json"
 	config.NodeKey = homeDir + "/.blockfreight/config/node_key.json"
+	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
 
 	logger.Info("Setting up config", "nodeInfo", config)
 
