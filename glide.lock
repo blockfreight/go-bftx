@@ -1,5 +1,5 @@
-hash: c99d5b0233ae647df906fc6db337c9c38eca271790c91c8d0745a5acb6aaf2bc
-updated: 2018-07-04T10:15:34.055513+10:00
+hash: 48bfe84c767d17a1154a1dcc01e294e2fdf3553e804b12c768aa52508c4e5bd6
+updated: 2018-07-09T11:26:50.263326+10:00
 imports:
 - name: github.com/btcsuite/btcd
   version: 1432d294a5b055c297457c25434efbf13384cc46
@@ -99,12 +99,8 @@ imports:
   - extra25519
 - name: github.com/tendermint/go-amino
   version: c7424fdd930314cc4c344b331e112dac004718ef
-- name: github.com/tendermint/go-common
-  version: c23635790521deee1b50b6489e47717bff473606
 - name: github.com/tendermint/go-crypto
   version: 710efe576acfcc22ead7781cec67a1265cbba0b0
-- name: github.com/tendermint/go-merkle
-  version: 714d4d04557fd068a7c2a1748241ce8428015a96
 - name: github.com/tendermint/iavl
   version: c9206995e8f948e99927f5084a88a7e94ca256da
 - name: github.com/tendermint/tendermint

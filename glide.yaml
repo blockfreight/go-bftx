@@ -32,11 +32,9 @@ import:
   - types
   - config
   - node
-- package: github.com/tendermint/go-common
 - package: github.com/mnmtanish/go-graphiql
 - package: github.com/tendermint/go-crypto
   version: ~v0.7.0-rc0
-- package: github.com/tendermint/go-merkle
 - package: github.com/graphql-go/graphql
 - package: github.com/graphql-go/graphql-go-handler
 - package: github.com/graphql-go/handler
