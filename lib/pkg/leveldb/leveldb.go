@@ -52,7 +52,6 @@ import (
 	// =======================
 	// Implements encoding and decoding of JSON as defined in RFC 4627.
 	"errors" // Implements functions to manipulate errors.
-	"os"
 
 	// ====================
 	// Third-party packages
@@ -61,7 +60,7 @@ import (
 	"github.com/syndtr/goleveldb/leveldb" // Implementation of the LevelDB key/value database in the Go programming language.
 )
 
-var dbPath = os.Getenv("GOPATH") + "/src/github.com/blockfreight/go-bftx/bft-db" //Folder name where is going to be the LevelDB
+var dbPath = "/Users/gianfelipe/.blockfreight/config/bft-db" //Folder name where is going to be the LevelDB
 
 // OpenDB is a function that receives the path of the DB, creates or opens that DB and return ir with a possible error if that occurred.
 func OpenDB(dbPath string) (db *leveldb.DB, err error) {

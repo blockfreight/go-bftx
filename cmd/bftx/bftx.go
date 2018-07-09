@@ -305,8 +305,6 @@ func before(c *cli.Context) error {
 			log.Fatal(err.Error())
 			bftx_logger.SimpleLogger("before", err)
 		}
-
-		bf_tx.TendermintClient = client
 	}
 
 	return nil

@@ -31,6 +31,7 @@ import:
   - rpc/client
   - types
   - config
+  - node
 - package: github.com/tendermint/go-common
 - package: github.com/mnmtanish/go-graphiql
 - package: github.com/tendermint/go-crypto

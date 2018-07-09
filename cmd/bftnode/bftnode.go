@@ -56,9 +56,8 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
+
 	tmConfig "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tendermint/node"
 	tmNode "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
@@ -66,12 +65,12 @@ import (
 	// ======================
 	// Blockfreight™ packages
 	// ======================
+	"github.com/blockfreight/go-bftx/api/api"
 	"github.com/blockfreight/go-bftx/lib/app/bft"
 	// Implements the main functions to work with the Blockfreight™ Network.
 )
 
-var client abcicli.Client
-
+var homeDir = os.Getenv("HOME")
 var logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 
 func BlockfreightAppClientCreator(addr, transport, dbDir string) proxy.ClientCreator {
@@ -90,14 +89,14 @@ func main() {
 
 	config := tmConfig.DefaultConfig()
 
-	config.P2P.Seeds = "aeabbf6b891435013f2a800fa9e22a1451ca90fd@bftx0.blockfreight.net:8888,6e9515c2cfed19464e6ce11ba2297ecdb411103b@bftx1.blockfreight.net:8888,b8b988370783bd0e58bf926d621a47160af2bdae@bftx2.blockfreight.net:8888,8c091f4e3dc4ac27db1efd38beee012d99967fd8@bftx3.blockfreight.net:8888"
+	config.P2P.Seeds = "0ce024c57fc1137bfbee70a1e520fba4c9163fbe@bftx0.blockfreight.net:8888,0537b4c4800b810858dc554e65f85b76217ff900@bftx1.blockfreight.net:8888,5a4833829cc5cec95a6194fb16e3ad75b605968b@bftx2.blockfreight.net:8888,5fe8f8847e4b87c6eea350bcd55269d3c492ffcb@bftx3.blockfreight.net:8888"
 	config.Consensus.CreateEmptyBlocks = false
 
 	config.TxIndex = index
-	config.DBPath = "./bft-db"
-	config.Genesis = "/Users/gianfelipe/.tendermint/config/genesis.json"
-	config.PrivValidator = "/Users/gianfelipe/.tendermint/config/priv_validator.json"
-	config.NodeKey = "/Users/gianfelipe/.tendermint/config/node_key.json"
+	config.DBPath = homeDir + "/.blockfreight/config/bft-db"
+	config.Genesis = homeDir + "/.blockfreight/config/genesis.json"
+	config.PrivValidator = homeDir + "/.blockfreight/config/priv_validator.json"
+	config.NodeKey = homeDir + "/.blockfreight/config/node_key.json"
 
 	logger.Info("Setting up config", "nodeInfo", config)
 
@@ -109,8 +108,6 @@ func main() {
 		logger,
 	)
 
-	logger.Info("Started node", "nodeInfo", node.GenesisDoc)
-
 	if err != nil {
 		fmt.Errorf("Failed to create a node: %v", err)
 	}
@@ -121,19 +118,14 @@ func main() {
 
 	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 
+	err = api.Start()
+	if err != nil {
+		logger.Error(err.Error())
+	}
+
 	// Trap signal, run forever.
 	node.RunForever()
 
-}
-
-func StartBFTXNode(config *tmConfig.Config, logger log.Logger) (*node.Node, error) {
-	return tmNode.NewNode(config,
-		privval.LoadOrGenFilePV(config.PrivValidatorFile()),
-		BlockfreightAppClientCreator(config.ProxyApp, config.ABCI, config.DBDir()),
-		tmNode.DefaultGenesisDocProviderFunc(config),
-		tmNode.DefaultDBProvider,
-		logger,
-	)
 }
 
 // =================================================
