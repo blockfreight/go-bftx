@@ -71,8 +71,7 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
-	abciTypes "github.com/tendermint/abci/types"
+
 	rpc "github.com/tendermint/tendermint/rpc/client"
 	//ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
@@ -90,8 +89,6 @@ import (
 	"github.com/blockfreight/go-bftx/lib/pkg/common"
 	"github.com/blockfreight/go-bftx/lib/pkg/leveldb" // Implements common functions for Blockfreight™
 )
-
-var TendermintClient abcicli.Client
 
 // SetBFTX receives the path of a JSON, reads it and returns the BF_TX structure with all attributes.
 func SetBFTX(jsonpath string) (BF_TX, error) {
@@ -149,7 +146,18 @@ func ByteArrayToBFTX(obj []byte) BF_TX {
 }
 
 func (bftx *BF_TX) GenerateBFTX(origin string) error {
-	resInfo, err := TendermintClient.InfoSync(abciTypes.RequestInfo{})
+	if os.Getenv("LOCAL_RPC_CLIENT_ADDRESS") == "" {
+		os.Setenv("LOCAL_RPC_CLIENT_ADDRESS", "tcp://localhost:46657")
+	}
+	rpcClient := rpc.NewHTTP(os.Getenv("LOCAL_RPC_CLIENT_ADDRESS"), "/websocket")
+	err := rpcClient.Start()
+	if err != nil {
+		log.Println(err.Error())
+		bftx_logger.TransLogger("BroadcastBFTX", err, "")
+		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
+	}
+
+	resInfo, err := rpcClient.ABCIInfo()
 	if err != nil {
 		bftx_logger.SimpleLogger("GenerateBFTX", err)
 		return handleResponse(origin, err, strconv.Itoa(http.StatusInternalServerError))
@@ -162,7 +170,7 @@ func (bftx *BF_TX) GenerateBFTX(origin string) error {
 	}
 
 	// Generate BF_TX id
-	bftx.Id = HashByteArray(hash, resInfo.LastBlockAppHash)
+	bftx.Id = HashByteArray(hash, resInfo.Response.GetLastBlockAppHash())
 
 	// Get the BF_TX content in string format
 	content, err := BFTXContent(*bftx)

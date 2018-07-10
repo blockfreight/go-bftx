@@ -49,82 +49,83 @@ import (
 	// =======================
 	// Golang Standard library
 	// =======================
-	"flag" // Implements command-line flag parsing.
-	"fmt"  // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"log"  // Implements a simple logging package.
-	"strconv"
+	// Implements command-line flag parsing.
+	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"os"
 
 	// ===============
 	// Tendermint Core
 	// ===============
-	"github.com/tendermint/abci/client"
-	"github.com/tendermint/abci/server"
-	"github.com/tendermint/abci/types"
-	tendermint "github.com/tendermint/go-common"
+
+	tmConfig "github.com/tendermint/tendermint/config"
+	tmNode "github.com/tendermint/tendermint/node"
+	"github.com/tendermint/tendermint/privval"
+	"github.com/tendermint/tendermint/proxy"
+	"github.com/tendermint/tmlibs/log"
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-
 	"github.com/blockfreight/go-bftx/api/api"
-	"github.com/blockfreight/go-bftx/build/package/version"
-	"github.com/blockfreight/go-bftx/lib/app/bf_tx"
-	"github.com/blockfreight/go-bftx/lib/app/bft" // Implements the main functions to work with the Blockfreight™ Network.
+	"github.com/blockfreight/go-bftx/lib/app/bft"
+	// Implements the main functions to work with the Blockfreight™ Network.
 )
 
-var client abcicli.Client
+var homeDir = os.Getenv("HOME")
+var logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+
+func BlockfreightAppClientCreator(addr, transport, dbDir string) proxy.ClientCreator {
+	return proxy.NewLocalClientCreator(bft.NewBftApplication())
+}
 
 func main() {
 
 	fmt.Println("Blockfreight™ Node")
-	// Parameters
-	addrPtr := flag.String("addr", "tcp://0.0.0.0:46658", "Listen address")
-	abciPtr := flag.String("bft", "socket", "socket | grpc")
-	// persistencePtr := flag.String("persist", "", "directory to use for a database")
-	flag.Parse()
 
-	// Create the application - in memory or persisted to disk
-	var app types.Application
-	app = bft.NewBftApplication() //if *persistencePtr != "" => NewPersistentBftApplication(*persistencePtr)
-
-	// Start the listener
-	srv, err := server.NewServer(*addrPtr, *abciPtr, app)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println(srv)
-	fmt.Println("Version: " + version.Version)
-	fmt.Println(*addrPtr)
-
-	err = srv.Start()
-	if err != nil {
-		log.Fatal(err)
+	index := &tmConfig.TxIndexConfig{
+		Indexer:      "kv",
+		IndexTags:    "bftx.id",
+		IndexAllTags: false,
 	}
 
-	fmt.Println("Service created by " + *abciPtr + " server")
-	fmt.Println("Service running: " + strconv.FormatBool(srv.IsRunning()))
+	config := tmConfig.DefaultConfig()
 
-	client, err = abcicli.NewClient(*addrPtr, "socket", false)
+	config.P2P.Seeds = "0ce024c57fc1137bfbee70a1e520fba4c9163fbe@bftx0.blockfreight.net:8888,0537b4c4800b810858dc554e65f85b76217ff900@bftx1.blockfreight.net:8888,5a4833829cc5cec95a6194fb16e3ad75b605968b@bftx2.blockfreight.net:8888,5fe8f8847e4b87c6eea350bcd55269d3c492ffcb@bftx3.blockfreight.net:8888"
+	config.Consensus.CreateEmptyBlocks = false
+
+	config.TxIndex = index
+	config.DBPath = homeDir + "/.blockfreight/config/bft-db"
+	config.Genesis = homeDir + "/.blockfreight/config/genesis.json"
+	config.PrivValidator = homeDir + "/.blockfreight/config/priv_validator.json"
+	config.NodeKey = homeDir + "/.blockfreight/config/node_key.json"
+	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
+
+	logger.Info("Setting up config", "nodeInfo", config)
+
+	node, err := tmNode.NewNode(config,
+		privval.LoadOrGenFilePV(config.PrivValidatorFile()),
+		BlockfreightAppClientCreator(config.ProxyApp, config.ABCI, config.DBDir()),
+		tmNode.DefaultGenesisDocProviderFunc(config),
+		tmNode.DefaultDBProvider,
+		logger,
+	)
+
 	if err != nil {
-		log.Fatal(err.Error())
+		fmt.Errorf("Failed to create a node: %v", err)
 	}
 
-	err = client.Start()
-	if err != nil {
-		log.Fatal(err.Error())
+	if err = node.Start(); err != nil {
+		fmt.Errorf("Failed to start node: %v", err)
 	}
-	bf_tx.TendermintClient = client
+
+	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 
 	err = api.Start()
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Error(err.Error())
 	}
 
-	// Wait forever
-	tendermint.TrapSignal(func() {
-		// Cleanup
-		fmt.Println("Stopping service")
-		srv.Stop()
-	})
+	// Trap signal, run forever.
+	node.RunForever()
 
 }
 
