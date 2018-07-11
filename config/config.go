@@ -56,6 +56,7 @@ import (
 )
 
 var homeDir = os.Getenv("HOME")
+var GenesisJSONURL = "https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/genesis.json"
 var ConfigDir = homeDir + "/.blockfreight/config"
 var Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 var config = tmConfig.DefaultConfig()

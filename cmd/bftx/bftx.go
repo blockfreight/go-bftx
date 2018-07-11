@@ -46,7 +46,7 @@
 package main
 
 import (
-	"time"
+	"net/http"
 
 	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
 	// =======================
@@ -78,7 +78,6 @@ import (
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
 	rpc "github.com/tendermint/tendermint/rpc/client"
-	tmCoreTypes "github.com/tendermint/tendermint/types"
 	cmn "github.com/tendermint/tmlibs/common"
 
 	// ======================
@@ -431,16 +430,22 @@ func cmdInit(app *cli.App, c *cli.Context) error {
 	if cmn.FileExists(genFile) {
 		logger.Info("Found genesis file", "path", genFile)
 	} else {
-		genDoc := tmCoreTypes.GenesisDoc{
-			ChainID:     cmn.Fmt("test-chain-%v", cmn.RandStr(6)),
-			GenesisTime: time.Now(),
+		out, err := os.Create(bftxConfig.ConfigDir + "/genesis.json")
+		if err != nil {
+			return err
 		}
-		genDoc.Validators = []tmCoreTypes.GenesisValidator{{
-			PubKey: pv.GetPubKey(),
-			Power:  10,
-		}}
+		defer out.Close()
 
-		if err := genDoc.SaveAs(genFile); err != nil {
+		// Get the data
+		resp, err := http.Get(bftxConfig.GenesisJSONURL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Write the body to file
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
 			return err
 		}
 		logger.Info("Generated genesis file", "path", genFile)
