@@ -226,11 +226,10 @@
     "db",
     "flowrate",
     "log",
-    "merkle",
-    "merkle/tmhash"
+    "merkle"
   ]
-  revision = "8bbe43aa333e8637275afdbd9367fcbe1cf99bdf"
-  version = "v0.9.0-rc0"
+  revision = "692f1d86a6e2c0efa698fd1e4541b68c74ffaf38"
+  version = "v0.8.4"
 
 [[projects]]
   name = "github.com/urfave/cli"
@@ -290,7 +289,7 @@
 [[projects]]
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "11a468237815f3a3ddf9f7c6e8b6b3b382a24d15"
+  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -325,6 +324,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "794464e5895c812f2c9b6a9bd41328abf89cb207dbac0d27d5cd71dc67dba348"
+  inputs-digest = "9e198812059af0f0d58225638d5b49882cc6c162165eac6b1f0c5f4b0370f8dd"
   solver-name = "gps-cdcl"
   solver-version = 1
