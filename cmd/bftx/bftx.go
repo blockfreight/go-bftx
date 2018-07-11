@@ -404,22 +404,14 @@ func cmdInit(app *cli.App, c *cli.Context) error {
 		os.MkdirAll(bftxConfig.ConfigDir, 0700)
 	}
 
-	fmt.Print("1")
 	privValFile := config.PrivValidatorFile()
-	fmt.Print("2")
 	var pv *privval.FilePV
 	if cmn.FileExists(privValFile) {
-		fmt.Print("3")
-
 		pv = privval.LoadFilePV(privValFile)
 		logger.Info("Found private validator", "path", privValFile)
 	} else {
-		fmt.Print("4")
-
 		pv = privval.GenFilePV(privValFile)
-		fmt.Print("5")
 		pv.Save()
-		fmt.Print("6")
 
 		logger.Info("Generated private validator", "path", privValFile)
 	}
