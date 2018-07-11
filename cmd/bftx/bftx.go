@@ -73,7 +73,6 @@ import (
 	// Tendermint Core
 	// ===============
 	bftxConfig "github.com/blockfreight/go-bftx/config"
-	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
 	"github.com/tendermint/tendermint/p2p"
 	"github.com/tendermint/tendermint/privval"
