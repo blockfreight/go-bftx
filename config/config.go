@@ -48,25 +48,36 @@
 package config
 
 import (
-	"encoding/json"
+	"os"
 
-	"github.com/blockfreight/go-bftx/lib/pkg/common" // Implements common functions for Blockfreight™
+	// Implements common functions for Blockfreight™
+	tmConfig "github.com/tendermint/tendermint/config"
+	"github.com/tendermint/tmlibs/log"
 )
 
-//Config objetc to isolate all the app config in a single object
-type Config struct {
-	BFTX_API_ADDRESS string `json:"bftx-api-address"`
+var homeDir = os.Getenv("HOME")
+var ConfigDir = homeDir + "/.blockfreight/config"
+var Logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
+var config = tmConfig.DefaultConfig()
+var index = &tmConfig.TxIndexConfig{
+	Indexer:      "kv",
+	IndexTags:    "bftx.id",
+	IndexAllTags: false,
 }
 
-//LoadConfiguration loads the app config into an object
-func LoadConfiguration() (Config, error) {
-	var config Config
-	configFile, err := common.ReadJSON("./config.json")
-	if err != nil {
-		return config, err
-	}
-	json.Unmarshal(configFile, &config)
-	return config, nil
+func GetBlockfreightConfig() *tmConfig.Config {
+
+	config.P2P.Seeds = "0ce024c57fc1137bfbee70a1e520fba4c9163fbe@bftx0.blockfreight.net:8888,0537b4c4800b810858dc554e65f85b76217ff900@bftx1.blockfreight.net:8888,5a4833829cc5cec95a6194fb16e3ad75b605968b@bftx2.blockfreight.net:8888,5fe8f8847e4b87c6eea350bcd55269d3c492ffcb@bftx3.blockfreight.net:8888"
+	config.Consensus.CreateEmptyBlocks = false
+
+	config.TxIndex = index
+	config.DBPath = ConfigDir + "/bft-db"
+	config.Genesis = ConfigDir + "/genesis.json"
+	config.PrivValidator = ConfigDir + "/priv_validator.json"
+	config.NodeKey = ConfigDir + "/node_key.json"
+	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
+
+	return config
 }
 
 // =================================================

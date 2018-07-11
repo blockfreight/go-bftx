@@ -46,6 +46,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
 	// =======================
 	// Golang Standard library
@@ -70,9 +72,14 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
+	bftxConfig "github.com/blockfreight/go-bftx/config"
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
 	rpc "github.com/tendermint/tendermint/rpc/client"
+	tmCoreTypes "github.com/tendermint/tendermint/types"
+	cmn "github.com/tendermint/tmlibs/common"
 
 	// ======================
 	// Blockfreight™ packages
@@ -109,6 +116,8 @@ type queryResponse struct {
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
 var rpcClient *rpc.HTTP
+var config = bftxConfig.GetBlockfreightConfig()
+var logger = bftxConfig.Logger
 
 func main() {
 
@@ -151,6 +160,13 @@ func main() {
 			Usage: "Run a batch of Blockfreight™ commands against an application",
 			Action: func(c *cli.Context) error {
 				return cmdBatch(app, c)
+			},
+		},
+		{
+			Name:  "init",
+			Usage: "Initialize Blockfreight™ node",
+			Action: func(c *cli.Context) error {
+				return cmdInit(app, c)
 			},
 		},
 		{
@@ -380,6 +396,64 @@ func cmdBatch(app *cli.App, c *cli.Context) error {
 		args := persistentArgs(line)
 		app.Run(args) //cli prints error within its func call
 	}
+	return nil
+}
+
+func cmdInit(app *cli.App, c *cli.Context) error {
+	if _, err := os.Stat(bftxConfig.ConfigDir); os.IsNotExist(err) {
+		os.MkdirAll(bftxConfig.ConfigDir, 0700)
+	}
+
+	fmt.Print("1")
+	privValFile := config.PrivValidatorFile()
+	fmt.Print("2")
+	var pv *privval.FilePV
+	if cmn.FileExists(privValFile) {
+		fmt.Print("3")
+
+		pv = privval.LoadFilePV(privValFile)
+		logger.Info("Found private validator", "path", privValFile)
+	} else {
+		fmt.Print("4")
+
+		pv = privval.GenFilePV(privValFile)
+		fmt.Print("5")
+		pv.Save()
+		fmt.Print("6")
+
+		logger.Info("Generated private validator", "path", privValFile)
+	}
+
+	nodeKeyFile := config.NodeKeyFile()
+	if cmn.FileExists(nodeKeyFile) {
+		logger.Info("Found node key", "path", nodeKeyFile)
+	} else {
+		if _, err := p2p.LoadOrGenNodeKey(nodeKeyFile); err != nil {
+			return err
+		}
+		logger.Info("Generated node key", "path", nodeKeyFile)
+	}
+
+	// genesis file
+	genFile := config.GenesisFile()
+	if cmn.FileExists(genFile) {
+		logger.Info("Found genesis file", "path", genFile)
+	} else {
+		genDoc := tmCoreTypes.GenesisDoc{
+			ChainID:     cmn.Fmt("test-chain-%v", cmn.RandStr(6)),
+			GenesisTime: time.Now(),
+		}
+		genDoc.Validators = []tmCoreTypes.GenesisValidator{{
+			PubKey: pv.GetPubKey(),
+			Power:  10,
+		}}
+
+		if err := genDoc.SaveAs(genFile); err != nil {
+			return err
+		}
+		logger.Info("Generated genesis file", "path", genFile)
+	}
+
 	return nil
 }
 
