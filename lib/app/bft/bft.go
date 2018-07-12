@@ -145,7 +145,6 @@ func (app *BftApplication) DeliverTx(tx []byte) types.ResponseDeliverTx {
 
 // CheckTx checks a transaction
 func (app *BftApplication) CheckTx(tx []byte) types.ResponseCheckTx {
-	fmt.Println(string(tx[:]))
 	return types.ResponseCheckTx{Code: code.CodeTypeOK}
 	//if cpcash.validate("BFTXafe2242d45cc5e54041b2b52913ef9a1aede4998a32e3fee128cf7d1e7575a41") {
 	//	return types.ResponseCheckTx{Code: code.CodeTypeOK}
