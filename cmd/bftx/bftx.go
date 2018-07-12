@@ -46,6 +46,8 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"
 	// =======================
 	// Golang Standard library
@@ -70,9 +72,13 @@ import (
 	// ===============
 	// Tendermint Core
 	// ===============
+	bftxConfig "github.com/blockfreight/go-bftx/config"
 	"github.com/tendermint/abci/client"
 	"github.com/tendermint/abci/types"
+	"github.com/tendermint/tendermint/p2p"
+	"github.com/tendermint/tendermint/privval"
 	rpc "github.com/tendermint/tendermint/rpc/client"
+	cmn "github.com/tendermint/tmlibs/common"
 
 	// ======================
 	// Blockfreight™ packages
@@ -109,6 +115,8 @@ type queryResponse struct {
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
 var rpcClient *rpc.HTTP
+var config = bftxConfig.GetBlockfreightConfig()
+var logger = bftxConfig.Logger
 
 func main() {
 
@@ -151,6 +159,13 @@ func main() {
 			Usage: "Run a batch of Blockfreight™ commands against an application",
 			Action: func(c *cli.Context) error {
 				return cmdBatch(app, c)
+			},
+		},
+		{
+			Name:  "init",
+			Usage: "Initialize Blockfreight™ node",
+			Action: func(c *cli.Context) error {
+				return cmdInit(app, c)
 			},
 		},
 		{
@@ -380,6 +395,62 @@ func cmdBatch(app *cli.App, c *cli.Context) error {
 		args := persistentArgs(line)
 		app.Run(args) //cli prints error within its func call
 	}
+	return nil
+}
+
+func cmdInit(app *cli.App, c *cli.Context) error {
+	if _, err := os.Stat(bftxConfig.ConfigDir); os.IsNotExist(err) {
+		os.MkdirAll(bftxConfig.ConfigDir, 0700)
+	}
+
+	privValFile := config.PrivValidatorFile()
+	var pv *privval.FilePV
+	if cmn.FileExists(privValFile) {
+		pv = privval.LoadFilePV(privValFile)
+		logger.Info("Found private validator", "path", privValFile)
+	} else {
+		pv = privval.GenFilePV(privValFile)
+		pv.Save()
+
+		logger.Info("Generated private validator", "path", privValFile)
+	}
+
+	nodeKeyFile := config.NodeKeyFile()
+	if cmn.FileExists(nodeKeyFile) {
+		logger.Info("Found node key", "path", nodeKeyFile)
+	} else {
+		if _, err := p2p.LoadOrGenNodeKey(nodeKeyFile); err != nil {
+			return err
+		}
+		logger.Info("Generated node key", "path", nodeKeyFile)
+	}
+
+	// genesis file
+	genFile := config.GenesisFile()
+	if cmn.FileExists(genFile) {
+		logger.Info("Found genesis file", "path", genFile)
+	} else {
+		out, err := os.Create(bftxConfig.ConfigDir + "/genesis.json")
+		if err != nil {
+			return err
+		}
+		defer out.Close()
+
+		// Get the data
+		resp, err := http.Get(bftxConfig.GenesisJSONURL)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+
+		// Write the body to file
+		_, err = io.Copy(out, resp.Body)
+		if err != nil {
+			return err
+		}
+		logger.Info("Generated genesis file", "path", genFile)
+	}
+
 	return nil
 }
 

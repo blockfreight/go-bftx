@@ -51,27 +51,22 @@ import (
 	// =======================
 	// Implements command-line flag parsing.
 	"fmt" // Implements formatted I/O with functions analogous to C's printf and scanf.
-	"os"
 
 	// ===============
 	// Tendermint Core
 	// ===============
 
-	tmConfig "github.com/tendermint/tendermint/config"
 	tmNode "github.com/tendermint/tendermint/node"
 	"github.com/tendermint/tendermint/privval"
 	"github.com/tendermint/tendermint/proxy"
-	"github.com/tendermint/tmlibs/log"
 	// ======================
 	// Blockfreight™ packages
 	// ======================
 	"github.com/blockfreight/go-bftx/api/api"
+	"github.com/blockfreight/go-bftx/config"
 	"github.com/blockfreight/go-bftx/lib/app/bft"
 	// Implements the main functions to work with the Blockfreight™ Network.
 )
-
-var homeDir = os.Getenv("HOME")
-var logger = log.NewTMLogger(log.NewSyncWriter(os.Stdout))
 
 func BlockfreightAppClientCreator(addr, transport, dbDir string) proxy.ClientCreator {
 	return proxy.NewLocalClientCreator(bft.NewBftApplication())
@@ -81,32 +76,16 @@ func main() {
 
 	fmt.Println("Blockfreight™ Node")
 
-	index := &tmConfig.TxIndexConfig{
-		Indexer:      "kv",
-		IndexTags:    "bftx.id",
-		IndexAllTags: false,
-	}
+	var blockfreightConfig = config.GetBlockfreightConfig()
 
-	config := tmConfig.DefaultConfig()
+	config.Logger.Info("Setting up config", "nodeInfo", blockfreightConfig)
 
-	config.P2P.Seeds = "0ce024c57fc1137bfbee70a1e520fba4c9163fbe@bftx0.blockfreight.net:8888,0537b4c4800b810858dc554e65f85b76217ff900@bftx1.blockfreight.net:8888,5a4833829cc5cec95a6194fb16e3ad75b605968b@bftx2.blockfreight.net:8888,5fe8f8847e4b87c6eea350bcd55269d3c492ffcb@bftx3.blockfreight.net:8888"
-	config.Consensus.CreateEmptyBlocks = false
-
-	config.TxIndex = index
-	config.DBPath = homeDir + "/.blockfreight/config/bft-db"
-	config.Genesis = homeDir + "/.blockfreight/config/genesis.json"
-	config.PrivValidator = homeDir + "/.blockfreight/config/priv_validator.json"
-	config.NodeKey = homeDir + "/.blockfreight/config/node_key.json"
-	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
-
-	logger.Info("Setting up config", "nodeInfo", config)
-
-	node, err := tmNode.NewNode(config,
-		privval.LoadOrGenFilePV(config.PrivValidatorFile()),
-		BlockfreightAppClientCreator(config.ProxyApp, config.ABCI, config.DBDir()),
-		tmNode.DefaultGenesisDocProviderFunc(config),
+	node, err := tmNode.NewNode(blockfreightConfig,
+		privval.LoadOrGenFilePV(blockfreightConfig.PrivValidatorFile()),
+		BlockfreightAppClientCreator(blockfreightConfig.ProxyApp, blockfreightConfig.ABCI, blockfreightConfig.DBDir()),
+		tmNode.DefaultGenesisDocProviderFunc(blockfreightConfig),
 		tmNode.DefaultDBProvider,
-		logger,
+		config.Logger,
 	)
 
 	if err != nil {
@@ -117,11 +96,11 @@ func main() {
 		fmt.Errorf("Failed to start node: %v", err)
 	}
 
-	logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
+	config.Logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())
 
 	err = api.Start()
 	if err != nil {
-		logger.Error(err.Error())
+		config.Logger.Error(err.Error())
 	}
 
 	// Trap signal, run forever.
