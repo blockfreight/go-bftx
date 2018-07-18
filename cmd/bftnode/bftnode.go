@@ -85,6 +85,7 @@ func main() {
 		BlockfreightAppClientCreator(blockfreightConfig.ProxyApp, blockfreightConfig.ABCI, blockfreightConfig.DBDir()),
 		tmNode.DefaultGenesisDocProviderFunc(blockfreightConfig),
 		tmNode.DefaultDBProvider,
+		tmNode.DefaultMetricsProvider,
 		config.Logger,
 	)
 

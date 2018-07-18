@@ -76,9 +76,9 @@ import (
 	"github.com/tendermint/tendermint/abci/client"		// Defines an interface for an ABCI client.
 	"github.com/tendermint/tendermint/abci/types"		// Defines abstract types for an ABCI application.
 	"github.com/tendermint/tendermint/p2p"				// Provides an abstraction around peer-to-peer communication.
-	tmNode "github.com/tendermint/tendermint/node"		// Node is the highest level interface to a full Tendermint node.
+	// tmNode "github.com/tendermint/tendermint/node"		// Node is the highest level interface to a full Tendermint node.
 	"github.com/tendermint/tendermint/privval"			// Validator identity management, voting and signing functions.
-	"github.com/tendermint/tendermint/proxy"			// Abstracts runtime connections to ABCI application.
+	// "github.com/tendermint/tendermint/proxy"			// Abstracts runtime connections to ABCI application.
 	rpc "github.com/tendermint/tendermint/rpc/client"	// Provides interface (Client) for connecting to a node.
 	cmn "github.com/tendermint/tendermint/libs/common"	// Provides various small Tenderment packages.
 
@@ -86,7 +86,7 @@ import (
 	// Blockfreight™ packages
 	// ======================
 	
-	"github.com/blockfreight/go-bftx/api/api" // Defines the current version of the project.
+	// "github.com/blockfreight/go-bftx/api/api" // Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	bftxConfig "github.com/blockfreight/go-bftx/config" 	// Defines the Blockfreight™ Node configuration.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.

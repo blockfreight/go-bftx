@@ -52,7 +52,7 @@ import (
 
 	// Implements common functions for Blockfreight™
 	tmConfig "github.com/tendermint/tendermint/config"
-	"github.com/tendermint/tmlibs/log"
+	"github.com/tendermint/tendermint/libs/log"
 )
 
 var homeDir = os.Getenv("HOME")
