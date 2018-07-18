@@ -76,11 +76,6 @@ import (
 	//ctypes "github.com/tendermint/tendermint/rpc/core/types"
 	tmTypes "github.com/tendermint/tendermint/types"
 
-	// ====================
-	// Third-party packages
-	// ====================
-	"github.com/davecgh/go-spew/spew" // Implements a deep pretty printer for Go data structures to aid in debugging.
-
 	// ======================
 	// Blockfreight™ packages
 	// ======================
@@ -121,11 +116,6 @@ func HashByteArray(hash []byte, salt []byte) string {
 func BFTXContent(bftx BF_TX) (string, error) {
 	jsonContent, err := json.Marshal(bftx)
 	return string(jsonContent), err
-}
-
-// PrintBFTX receives a BF_TX and prints it clearly.
-func PrintBFTX(bftx BF_TX) {
-	spew.Dump(bftx)
 }
 
 // State reports the current state of a BF_TX

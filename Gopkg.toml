@@ -24,31 +24,17 @@
 #   go-tests = true
 #   unused-packages = true
 
-
-[[constraint]]
-  name = "github.com/davecgh/go-spew"
-  version = "1.1.0"
-
 [[constraint]]
   name = "github.com/golang/protobuf"
-  version = "1.0.0"
+  version = "v1.0.0"
 
 [[constraint]]
   branch = "master"
   name = "github.com/mnmtanish/go-graphiql"
 
 [[constraint]]
-  name = "github.com/tendermint/abci"
-  version = "~0.11.0"
-
-[[constraint]]
   name = "github.com/tendermint/tendermint"
-  version = "v0.20.0"
-
-
-[[constraint]]
-  name = "github.com/tendermint/tmlibs"
-  version = "~0.8.1"
+  version = "=v0.22.4"
 
 [[constraint]]
   name = "github.com/urfave/cli"
@@ -56,16 +42,19 @@
 
 [[constraint]]
   name = "google.golang.org/grpc"
-  version = "1.7.5"
+  version = "=1.11.3"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
   version = "2.2.1"
 
-
 [[override]]
   name = "google.golang.org/genproto"
   revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
+
+[[constraint]]
+  name = "golang.org/x/net"
+  revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
 
 [prune]
   go-tests = true

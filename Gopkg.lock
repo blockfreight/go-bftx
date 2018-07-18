@@ -2,9 +2,16 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/beorn7/perks"
+  packages = ["quantile"]
+  revision = "3a771d992973f24aa725d07868b467d1ddfceafb"
+
+[[projects]]
+  branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
-  revision = "1432d294a5b055c297457c25434efbf13384cc46"
+  revision = "bc3861a5a2779773d7d19408a7e2bed0f5feab2c"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -13,7 +20,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
   name = "github.com/ebuchman/fail-test"
   packages = ["."]
   revision = "95f809107225be108efcf10a3509e4ea6ceef3c4"
@@ -23,7 +29,11 @@
   packages = [
     "log",
     "log/level",
-    "log/term"
+    "log/term",
+    "metrics",
+    "metrics/discard",
+    "metrics/internal/lv",
+    "metrics/prometheus"
   ]
   revision = "4dc7be5d2d12881735283bcab7352178e190fc71"
   version = "v0.6.0"
@@ -92,12 +102,14 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "51e8a07b6f0348c492363059ce33f9a91f75f3f9"
+  revision = "1e23489041ba90a66f317fe0deccb236a2fff3cb"
+  version = "v0.7.5"
 
 [[projects]]
   name = "github.com/graphql-go/handler"
   packages = ["."]
-  revision = "c1c8ee7b173a5f70fe039529659fbb30f1a435a0"
+  revision = "f0393b2c10daeebea900292b8e092e73475399d9"
+  version = "v0.2.1"
 
 [[projects]]
   branch = "master"
@@ -112,6 +124,12 @@
   revision = "b84e30acd515aadc4b783ad4ff83aff3299bdfe0"
 
 [[projects]]
+  name = "github.com/matttproud/golang_protobuf_extensions"
+  packages = ["pbutil"]
+  revision = "c12348ce28de40eed0136aa2b644d0ee0650e56c"
+  version = "v1.0.1"
+
+[[projects]]
   branch = "master"
   name = "github.com/mnmtanish/go-graphiql"
   packages = ["."]
@@ -124,12 +142,47 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/prometheus/client_golang"
+  packages = [
+    "prometheus",
+    "prometheus/promhttp"
+  ]
+  revision = "ae27198cdd90bf12cd134ad79d1366a6cf49f632"
+
+[[projects]]
   branch = "master"
+  name = "github.com/prometheus/client_model"
+  packages = ["go"]
+  revision = "5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/common"
+  packages = [
+    "expfmt",
+    "internal/bitbucket.org/ww/goautoneg",
+    "model"
+  ]
+  revision = "7600349dcfe1abd18d72d3a1770870d9800a7801"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/prometheus/procfs"
+  packages = [
+    ".",
+    "internal/util",
+    "nfs",
+    "xfs"
+  ]
+  revision = "ae68e2d4c00fed4943b5f6698d504a5fe083da8a"
+
+[[projects]]
   name = "github.com/rcrowley/go-metrics"
   packages = ["."]
   revision = "e2704e165165ec55d062f5919b4b29494e9fa790"
 
 [[projects]]
+  branch = "master"
   name = "github.com/syndtr/goleveldb"
   packages = [
     "leveldb",
@@ -145,18 +198,7 @@
     "leveldb/table",
     "leveldb/util"
   ]
-  revision = "e6d6b529196422703d54ff5c40e79809ec2020b3"
-
-[[projects]]
-  name = "github.com/tendermint/abci"
-  packages = [
-    "client",
-    "example/code",
-    "example/kvstore",
-    "types"
-  ]
-  revision = "ebee2fe114020aa49c70bbbae50b7079fc7e7b90"
-  version = "v0.11.0"
+  revision = "c4c61651e9e37fa117f53c5a906d3b63090d8445"
 
 [[projects]]
   branch = "master"
@@ -171,24 +213,31 @@
 [[projects]]
   name = "github.com/tendermint/go-amino"
   packages = ["."]
-  revision = "ed62928576cfcaf887209dc96142cd79cdfff389"
-  version = "0.9.9"
-
-[[projects]]
-  name = "github.com/tendermint/go-crypto"
-  packages = ["."]
-  revision = "915416979bf70efa4bcbf1c6cd5d64c5fff9fc19"
-  version = "v0.6.2"
+  revision = "2106ca61d91029c931fd54968c2bb02dc96b1412"
+  version = "0.10.1"
 
 [[projects]]
   name = "github.com/tendermint/tendermint"
   packages = [
+    "abci/client",
+    "abci/example/code",
+    "abci/example/kvstore",
+    "abci/types",
     "blockchain",
     "config",
     "consensus",
     "consensus/types",
+    "crypto",
+    "crypto/merkle",
+    "crypto/tmhash",
     "evidence",
+    "libs/autofile",
+    "libs/clist",
+    "libs/common",
+    "libs/db",
     "libs/events",
+    "libs/flowrate",
+    "libs/log",
     "libs/pubsub",
     "libs/pubsub/query",
     "mempool",
@@ -214,33 +263,21 @@
     "types",
     "version"
   ]
-  revision = "27bd1deabe4ba6a2d9b463b8f3e3f1e31b993e61"
-  version = "v0.20.0"
-
-[[projects]]
-  name = "github.com/tendermint/tmlibs"
-  packages = [
-    "autofile",
-    "clist",
-    "common",
-    "db",
-    "flowrate",
-    "log",
-    "merkle"
-  ]
-  revision = "692f1d86a6e2c0efa698fd1e4541b68c74ffaf38"
-  version = "v0.8.4"
+  revision = "c64a3c74c870d725ba1356f75b4afadf0928c297"
+  version = "v0.22.4"
 
 [[projects]]
   name = "github.com/urfave/cli"
   packages = ["."]
-  revision = "0bdeddeeb0f650497d603c4ad7b20cfe685682f6"
-  version = "v1.19.1"
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
+  branch = "master"
   name = "golang.org/x/crypto"
   packages = [
     "curve25519",
+    "internal/subtle",
     "nacl/box",
     "nacl/secretbox",
     "openpgp/armor",
@@ -249,7 +286,7 @@
     "ripemd160",
     "salsa20/salsa"
   ]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   name = "golang.org/x/net"
@@ -260,9 +297,10 @@
     "http2/hpack",
     "idna",
     "internal/timeseries",
+    "netutil",
     "trace"
   ]
-  revision = "57065200b4b034a1c8ad54ff77069408c2218ae6"
+  revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -271,8 +309,6 @@
     "collate/build",
     "internal/colltab",
     "internal/gen",
-    "internal/language",
-    "internal/language/compact",
     "internal/tag",
     "internal/triegen",
     "internal/ucd",
@@ -284,7 +320,8 @@
     "unicode/norm",
     "unicode/rangetable"
   ]
-  revision = "5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877"
+  revision = "f21a4dfb5e38f5895301dc265a8def02365cc3d0"
+  version = "v0.3.0"
 
 [[projects]]
   name = "google.golang.org/genproto"
@@ -296,9 +333,13 @@
   packages = [
     ".",
     "balancer",
+    "balancer/base",
+    "balancer/roundrobin",
     "codes",
     "connectivity",
     "credentials",
+    "encoding",
+    "encoding/proto",
     "grpclb/grpc_lb_v1/messages",
     "grpclog",
     "internal",
@@ -307,13 +348,15 @@
     "naming",
     "peer",
     "resolver",
+    "resolver/dns",
+    "resolver/passthrough",
     "stats",
     "status",
     "tap",
     "transport"
   ]
-  revision = "5b3c4e850e90a4cf6a20ebd46c8b32a0a3afcb9e"
-  version = "v1.7.5"
+  revision = "d11072e7ca9811b1100b80ca0269ac831f06d024"
+  version = "v1.11.3"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -324,6 +367,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9e198812059af0f0d58225638d5b49882cc6c162165eac6b1f0c5f4b0370f8dd"
+  inputs-digest = "3b78414045cf838626106fefbbad67d5fe04d582a1839fac79f9d38c780994bf"
   solver-name = "gps-cdcl"
   solver-version = 1
