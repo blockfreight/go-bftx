@@ -1,5 +1,5 @@
-hash: 17838ea039129f9ea14cb0596c3db2e583f32fff13fddefe34b81c7e2b49899b
-updated: 2018-07-18T11:42:14.34021+10:00
+hash: 267aa234896ec9a16beff993e0b4fe292502b832e244e3101e11e30b3b6e25ff
+updated: 2018-07-18T13:23:15.37972+10:00
 imports:
 - name: github.com/beorn7/perks
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
@@ -30,7 +30,7 @@ imports:
 - name: github.com/go-stack/stack
   version: 259ab82a6cad3992b4e21ff5cac294ccb06474bc
 - name: github.com/gogo/protobuf
-  version: 7d68e886eac4f7e34d0d82241a6273d6c304c5cf
+  version: 636bf0302bc95575d69441b25a2603156ffdddf1
   subpackages:
   - gogoproto
   - jsonpb
@@ -117,12 +117,6 @@ imports:
   - leveldb/storage
   - leveldb/table
   - leveldb/util
-- name: github.com/tendermint/abci
-  version: ebee2fe114020aa49c70bbbae50b7079fc7e7b90
-  subpackages:
-  - client
-  - server
-  - types
 - name: github.com/tendermint/ed25519
   version: d8387025d2b9d158cf4efb07e7ebf814bcce2057
   subpackages:
@@ -150,6 +144,7 @@ imports:
   - crypto/merkle
   - crypto/tmhash
   - evidence
+  - libs
   - libs/autofile
   - libs/clist
   - libs/common
@@ -181,11 +176,6 @@ imports:
   - state/txindex/null
   - types
   - version
-- name: github.com/tendermint/tmlibs
-  version: 8bbe43aa333e8637275afdbd9367fcbe1cf99bdf
-  subpackages:
-  - common
-  - log
 - name: github.com/urfave/cli
   version: 8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff
 - name: golang.org/x/crypto

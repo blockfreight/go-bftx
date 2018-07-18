@@ -1,8 +1,8 @@
 package tenderhelper
 
 import (
-	"github.com/tendermint/abci/client"
-	"github.com/tendermint/abci/types"
+	"github.com/tendermint/tendermint/abci/client"
+	"github.com/tendermint/tendermint/abci/types"
 )
 
 // GetBlockAppHash uses the abcicli to get the last block app hash
