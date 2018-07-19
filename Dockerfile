@@ -29,9 +29,6 @@ RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 WORKDIR /go/src/github.com/blockfreight/go-bftx
 
-COPY Makefile /go/src/github.com/blockfreight/go-bftx/
-COPY glide.yaml /go/src/github.com/blockfreight/go-bftx/
-COPY glide.lock /go/src/github.com/blockfreight/go-bftx/
 COPY . /go/src/github.com/blockfreight/go-bftx
 
 RUN dep ensure
