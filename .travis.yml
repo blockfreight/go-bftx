@@ -2,7 +2,7 @@ language: go
 go:
  - 1.9.x
 install:
-  - go get github.com/Masterminds/glide
+  - dep ensure && go install ./cmd/...
 
  # Specify Import Path (optional)
  # Example: go_import_path: example.org/pkg/foo
