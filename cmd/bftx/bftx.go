@@ -46,22 +46,22 @@
 package main
 
 import (
-	
+
 	// =======================
 	// Golang Standard library
 	// =======================
-	
-	"bufio" 		// Implements buffered I/O.
-	"encoding/hex"	// Implements hexadecimal encoding and decoding.
-	"encoding/json"	// Implements encoding and decoding of JSON as defined in RFC 7159
-	"errors" 		// Implements functions to manipulate errors.
-	"fmt"     		// Implements formatted I/O with functions analogous to C's printf and scanf.
-	"io"      		// Provides basic interfaces to I/O primitives.
-	"net/http" 		// Provides HTTP client and server implementations.
-	"log"     		// Implements a simple logging package.
-	"os"      		// Provides a platform-independent interface to operating system functionality.
-	"strconv" 		// Implements conversions to and from string representations of basic data types.
-	"strings" 		// Implements simple functions to manipulate UTF-8 encoded strings.
+
+	"bufio"         // Implements buffered I/O.
+	"encoding/hex"  // Implements hexadecimal encoding and decoding.
+	"encoding/json" // Implements encoding and decoding of JSON as defined in RFC 7159
+	"errors"        // Implements functions to manipulate errors.
+	"fmt"           // Implements formatted I/O with functions analogous to C's printf and scanf.
+	"io"            // Provides basic interfaces to I/O primitives.
+	"log"           // Implements a simple logging package.
+	"net/http"      // Provides HTTP client and server implementations.
+	"os"            // Provides a platform-independent interface to operating system functionality.
+	"strconv"       // Implements conversions to and from string representations of basic data types.
+	"strings"       // Implements simple functions to manipulate UTF-8 encoded strings.
 
 	// ====================
 	// Third-party packages
@@ -73,29 +73,30 @@ import (
 	// Tendermint Core
 	// ===============
 
-	"github.com/tendermint/tendermint/abci/client"		// Defines an interface for an ABCI client.
-	"github.com/tendermint/tendermint/abci/types"		// Defines abstract types for an ABCI application.
-	"github.com/tendermint/tendermint/p2p"				// Provides an abstraction around peer-to-peer communication.
-	tmNode "github.com/tendermint/tendermint/node"		// Node is the highest level interface to a full Tendermint node.
-	"github.com/tendermint/tendermint/privval"			// Validator identity management, voting and signing functions.
-	"github.com/tendermint/tendermint/proxy"			// Abstracts runtime connections to ABCI application.
-	rpc "github.com/tendermint/tendermint/rpc/client"	// Provides interface (Client) for connecting to a node.
-	cmn "github.com/tendermint/tendermint/libs/common"	// Provides various small Tenderment packages.
+	"github.com/tendermint/tendermint/abci/client" // Defines an interface for an ABCI client.
+	"github.com/tendermint/tendermint/abci/types"  // Defines abstract types for an ABCI application.
+	"github.com/tendermint/tendermint/p2p"         // Provides an abstraction around peer-to-peer communication.
+	"github.com/tendermint/tendermint/privval"
+	//tmNode "github.com/tendermint/tendermint/node"		// Node is the highest level interface to a full Tendermint node.
+	//"github.com/tendermint/tendermint/privval"			// Validator identity management, voting and signing functions.
+	//"github.com/tendermint/tendermint/proxy"			// Abstracts runtime connections to ABCI application.
+	cmn "github.com/tendermint/tendermint/libs/common" // Provides various small Tenderment packages.
+	rpc "github.com/tendermint/tendermint/rpc/client"  // Provides interface (Client) for connecting to a node.
 
 	// ======================
 	// Blockfreight™ packages
 	// ======================
-	
-	"github.com/blockfreight/go-bftx/api/api" // Defines the current version of the project.
+
+	// Defines the current version of the project.
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
-	bftxConfig "github.com/blockfreight/go-bftx/config" 	// Defines the Blockfreight™ Node configuration.
+	bftxConfig "github.com/blockfreight/go-bftx/config"     // Defines the Blockfreight™ Node configuration.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"	// Defines the Blockfreight™ logger functions
-	"github.com/blockfreight/go-bftx/lib/app/blockchain"	// Provides information about current chain state.
-	"github.com/blockfreight/go-bftx/lib/app/validator"		// Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/common"       	// Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"      	// Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/saberservice" 	// Provides function for saber-service.
+	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"   // Defines the Blockfreight™ logger functions
+	"github.com/blockfreight/go-bftx/lib/app/blockchain"    // Provides information about current chain state.
+	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/common"        // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -415,7 +416,6 @@ func cmdInit(app *cli.App, c *cli.Context) error {
 	} else {
 		pv = privval.GenFilePV(privValFile)
 		pv.Save()
-
 		logger.Info("Generated private validator", "path", privValFile)
 	}
 
@@ -943,7 +943,7 @@ func cmdPrintBfTx(c *cli.Context) error {
 	json.Unmarshal(data, &bftx)
 
 	// Print the BF_TX clearly
-	bf_tx.PrintBFTX(bftx)
+	fmt.Printf("%+v\n", bftx)
 	return nil
 }
 

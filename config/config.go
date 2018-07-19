@@ -72,7 +72,7 @@ func GetBlockfreightConfig() *tmConfig.Config {
 	config.Consensus.CreateEmptyBlocks = false
 
 	config.TxIndex = index
-	config.DBPath = ConfigDir + "/bft-db"
+	config.DBPath = ConfigDir + "/data"
 	config.Genesis = ConfigDir + "/genesis.json"
 	config.PrivValidator = ConfigDir + "/priv_validator.json"
 	config.NodeKey = ConfigDir + "/node_key.json"

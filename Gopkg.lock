@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
-  revision = "bc3861a5a2779773d7d19408a7e2bed0f5feab2c"
+  revision = "f673a4b563b57b9a95832545c878669a7fa801d9"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -60,8 +60,8 @@
     "sortkeys",
     "types"
   ]
-  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
-  version = "v1.0.0"
+  revision = "7d68e886eac4f7e34d0d82241a6273d6c304c5cf"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/golang/protobuf"
@@ -72,8 +72,8 @@
     "ptypes/duration",
     "ptypes/timestamp"
   ]
-  revision = "925541529c1fa6821df4e44ce2723319eb2be768"
-  version = "v1.0.0"
+  revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -88,6 +88,7 @@
   version = "v1.2.0"
 
 [[projects]]
+  branch = "master"
   name = "github.com/graphql-go/graphql"
   packages = [
     ".",
@@ -102,14 +103,13 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "1e23489041ba90a66f317fe0deccb236a2fff3cb"
-  version = "v0.7.5"
+  revision = "bce6c5b4b8e25bf30d080543f46174b8c1cb29b1"
 
 [[projects]]
+  branch = "master"
   name = "github.com/graphql-go/handler"
   packages = ["."]
-  revision = "f0393b2c10daeebea900292b8e092e73475399d9"
-  version = "v0.2.1"
+  revision = "59006c0464d5638788d7b0051ea5c959e0d84253"
 
 [[projects]]
   branch = "master"
@@ -217,6 +217,7 @@
   version = "0.10.1"
 
 [[projects]]
+  branch = "develop"
   name = "github.com/tendermint/tendermint"
   packages = [
     "abci/client",
@@ -263,14 +264,13 @@
     "types",
     "version"
   ]
-  revision = "c64a3c74c870d725ba1356f75b4afadf0928c297"
-  version = "v0.22.4"
+  revision = "40342bfa4af115d7f06605225583a990b5771624"
 
 [[projects]]
+  branch = "master"
   name = "github.com/urfave/cli"
   packages = ["."]
-  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
-  version = "v1.20.0"
+  revision = "8e01ec4cd3e2d84ab2fe90d8210528ffbb06d8ff"
 
 [[projects]]
   branch = "master"
@@ -286,7 +286,7 @@
     "ripemd160",
     "salsa20/salsa"
   ]
-  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
+  revision = "a2144134853fc9a27a7b1e3eb4f19f1a76df13c9"
 
 [[projects]]
   name = "golang.org/x/net"
@@ -367,6 +367,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3b78414045cf838626106fefbbad67d5fe04d582a1839fac79f9d38c780994bf"
+  inputs-digest = "e3b6732360d26fba749ce6ebe8dc21808de49f43d918793e3d5f6fd2cb198a10"
   solver-name = "gps-cdcl"
   solver-version = 1
