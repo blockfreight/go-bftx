@@ -1,4 +1,4 @@
-gobuild_args: -x -ldflags "-X main.VersionString v1.2.3"
+gobuild_args: ./test/...
 
 language: go
 go:
