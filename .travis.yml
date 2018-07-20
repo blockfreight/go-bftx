@@ -1,3 +1,5 @@
+gobuild_args: -x -ldflags "-X main.VersionString v1.2.3"
+
 language: go
 go:
  - 1.9.x
@@ -7,4 +9,3 @@ before_install:
   - chmod +x $GOPATH/bin/dep
 install:
   - dep ensure && go install ./cmd/...
-script:
