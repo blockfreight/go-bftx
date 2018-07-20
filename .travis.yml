@@ -7,3 +7,4 @@ before_install:
   - chmod +x $GOPATH/bin/dep
 install:
   - dep ensure && go install ./cmd/...
+script:
