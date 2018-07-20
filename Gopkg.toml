@@ -46,7 +46,7 @@
 
 [[constraint]]
   name = "github.com/tendermint/tendermint"
-  branch = "develop"
+  version = "0.22.4"
 
 [[constraint]]
  branch = "master"
@@ -54,7 +54,7 @@
 
 [[constraint]]
  name = "google.golang.org/grpc"
- version = "1.11.3"
+ version = "v1.11.3"
 
 [[constraint]]
  name = "gopkg.in/yaml.v2"
@@ -71,6 +71,14 @@
  [[constraint]]
   name = "golang.org/x/net"
   revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
+
+  [[override]]
+  name = "github.com/gogo/protobuf"
+  version = "=1.1.0"
+
+[[override]]
+  name = "github.com/golang/protobuf"
+  version = "=1.1.0"
 
 
 [prune]

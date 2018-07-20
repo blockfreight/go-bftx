@@ -103,7 +103,7 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "bce6c5b4b8e25bf30d080543f46174b8c1cb29b1"
+  revision = "086b3bf7dccec03c5b8b16b80430ecc5acdec821"
 
 [[projects]]
   branch = "master"
@@ -217,7 +217,6 @@
   version = "0.10.1"
 
 [[projects]]
-  branch = "develop"
   name = "github.com/tendermint/tendermint"
   packages = [
     "abci/client",
@@ -264,7 +263,8 @@
     "types",
     "version"
   ]
-  revision = "40342bfa4af115d7f06605225583a990b5771624"
+  revision = "c64a3c74c870d725ba1356f75b4afadf0928c297"
+  version = "v0.22.4"
 
 [[projects]]
   branch = "master"
@@ -367,6 +367,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e3b6732360d26fba749ce6ebe8dc21808de49f43d918793e3d5f6fd2cb198a10"
+  inputs-digest = "317a3d46909d66b345d9e85a3f0b8e538de092a132b15af94267f48dffac0b64"
   solver-name = "gps-cdcl"
   solver-version = 1
