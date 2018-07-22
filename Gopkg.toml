@@ -80,6 +80,10 @@
   name = "github.com/golang/protobuf"
   version = "=1.1.0"
 
+[[override]]
+  name = "github.com/tendermint/go-amino"
+  version = "=v0.9.7"
+
 
 [prune]
  go-tests = true

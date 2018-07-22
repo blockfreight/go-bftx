@@ -11,7 +11,7 @@
   branch = "master"
   name = "github.com/btcsuite/btcd"
   packages = ["btcec"]
-  revision = "f673a4b563b57b9a95832545c878669a7fa801d9"
+  revision = "9a2f9524024889e129a5422aca2cff73cb3eabf6"
 
 [[projects]]
   name = "github.com/davecgh/go-spew"
@@ -103,7 +103,7 @@
     "language/typeInfo",
     "language/visitor"
   ]
-  revision = "086b3bf7dccec03c5b8b16b80430ecc5acdec821"
+  revision = "2800ba051d4ce68a642b958a6a98c25d54ce1c28"
 
 [[projects]]
   branch = "master"
@@ -213,8 +213,8 @@
 [[projects]]
   name = "github.com/tendermint/go-amino"
   packages = ["."]
-  revision = "2106ca61d91029c931fd54968c2bb02dc96b1412"
-  version = "0.10.1"
+  revision = "c7424fdd930314cc4c344b331e112dac004718ef"
+  version = "v0.9.7"
 
 [[projects]]
   name = "github.com/tendermint/tendermint"
@@ -367,6 +367,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "317a3d46909d66b345d9e85a3f0b8e538de092a132b15af94267f48dffac0b64"
+  inputs-digest = "3d63a420c8d120ecad8a337fcae13af6d0628d8973f938c6235d64480f59fbfe"
   solver-name = "gps-cdcl"
   solver-version = 1

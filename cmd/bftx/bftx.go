@@ -407,7 +407,6 @@ func cmdInit(app *cli.App, c *cli.Context) error {
 	if _, err := os.Stat(bftxConfig.ConfigDir); os.IsNotExist(err) {
 		os.MkdirAll(bftxConfig.ConfigDir, 0700)
 	}
-
 	privValFile := config.PrivValidatorFile()
 	var pv *privval.FilePV
 	if cmn.FileExists(privValFile) {
