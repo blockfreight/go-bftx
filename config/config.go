@@ -70,7 +70,7 @@ func GetBlockfreightConfig() *tmConfig.Config {
 
 	config.P2P.Seeds = "42cba48e9c5a96ad876f04581e52c11fd501f96c@bftx0.blockfreight.net:8888,6af1628b40c1b8f84882c27df07d36e4a797921a@bftx1.blockfreight.net:8888,ab263e441107837fb46f41f3c65004040b9f3814@bftx2.blockfreight.net:8888,1beae9f29ad2b231841d7de1ae91e136b6abb87f@bftx3.blockfreight.net:8888"
 	config.Consensus.CreateEmptyBlocks = false
-
+	config.RPC.ListenAddress = "tcp://0.0.0.0:46657"
 	config.TxIndex = index
 	config.DBPath = ConfigDir + "/data"
 	config.Genesis = ConfigDir + "/genesis.json"
