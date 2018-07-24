@@ -63,6 +63,14 @@ import (
 	"strconv"       // Implements conversions to and from string representations of basic data types.
 	"strings"       // Implements simple functions to manipulate UTF-8 encoded strings.
 
+	// =======================
+	// Golang Extended library
+	// =======================
+
+	// "golang.org/x/text/message"			// Implements formatted I/O for localized strings.
+	// "golang.org/x/text/language"			// Implements BCP 47 language tags.
+	// "golang.org/x/text/language/display"	// Provides display names for languages, scripts and regions.
+
 	// ====================
 	// Third-party packages
 	// ====================
