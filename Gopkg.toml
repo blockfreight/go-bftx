@@ -24,47 +24,67 @@
 #   go-tests = true
 #   unused-packages = true
 
+[[constraint]]
+ name = "github.com/golang/protobuf"
+ version = "=1.1.0"
 
 [[constraint]]
-  name = "github.com/davecgh/go-spew"
-  version = "1.1.0"
+ branch = "master"
+ name = "github.com/graphql-go/graphql"
 
 [[constraint]]
-  name = "github.com/golang/protobuf"
-  version = "1.0.0"
+ branch = "master"
+ name = "github.com/graphql-go/handler"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/graphql-go/graphql"
+ branch = "master"
+ name = "github.com/mnmtanish/go-graphiql"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/graphql-go/handler"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/mnmtanish/go-graphiql"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/syndtr/goleveldb"
+ branch = "master"
+ name = "github.com/syndtr/goleveldb"
 
 [[constraint]]
   name = "github.com/tendermint/tendermint"
   version = "0.22.4"
 
 [[constraint]]
-  branch = "master"
-  name = "github.com/urfave/cli"
+ branch = "master"
+ name = "github.com/urfave/cli"
 
 [[constraint]]
-  name = "google.golang.org/grpc"
-  version = "1.11.3"
+ name = "google.golang.org/grpc"
+ version = "v1.11.3"
 
 [[constraint]]
-  name = "gopkg.in/yaml.v2"
-  version = "2.2.1"
+ name = "gopkg.in/yaml.v2"
+ version = "2.2.1"
+
+[[override]]
+  name = "google.golang.org/genproto"
+  revision = "7fd901a49ba6a7f87732eb344f6e3c5b19d1b200"
+
+[[override]]
+  name = "github.com/rcrowley/go-metrics"
+  revision = "e2704e165165ec55d062f5919b4b29494e9fa790"
+
+ [[constraint]]
+  name = "golang.org/x/net"
+  revision = "292b43bbf7cb8d35ddf40f8d5100ef3837cced3f"
+
+  [[override]]
+  name = "github.com/gogo/protobuf"
+  version = "=1.1.0"
+
+[[override]]
+  name = "github.com/golang/protobuf"
+  version = "=1.1.0"
+
+[[override]]
+  name = "github.com/tendermint/go-amino"
+  version = "=v0.9.7"
+
 
 [prune]
-  go-tests = true
-  unused-packages = true
+ go-tests = true
+ unused-packages = true

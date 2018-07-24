@@ -90,11 +90,13 @@ func main() {
 	)
 
 	if err != nil {
-		fmt.Errorf("Failed to create a node: %v", err)
+		fmt.Printf("Failed to start node: %+v\n", err)
+		return
 	}
 
 	if err = node.Start(); err != nil {
-		fmt.Errorf("Failed to start node: %v", err)
+		fmt.Printf("Failed to start node: %+v\n", err)
+		return
 	}
 
 	config.Logger.Info("Started node", "nodeInfo", node.Switch().NodeInfo())

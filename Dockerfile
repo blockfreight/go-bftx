@@ -24,17 +24,15 @@ RUN apk add --no-cache bash curl jq
 
 FROM golang:latest
 
-RUN apt-get update && apt-get install -y jq ssh
-RUN go get github.com/Masterminds/glide
+RUN apt-get update && apt-get install -y jq ssh curl
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 WORKDIR /go/src/github.com/blockfreight/go-bftx
 
-COPY Makefile /go/src/github.com/blockfreight/go-bftx/
-COPY glide.yaml /go/src/github.com/blockfreight/go-bftx/
-COPY glide.lock /go/src/github.com/blockfreight/go-bftx/
 COPY . /go/src/github.com/blockfreight/go-bftx
 
-RUN make
+RUN dep ensure
+RUN go install ./cmd/...
 
 EXPOSE 12345
 
