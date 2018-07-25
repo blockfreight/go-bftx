@@ -81,14 +81,13 @@ import (
 	// Tendermint Core
 	// ===============
 
-	"github.com/tendermint/tendermint/abci/client" // Defines an interface for an ABCI client.
-	"github.com/tendermint/tendermint/abci/types"  // Defines abstract types for an ABCI application.
-	"github.com/tendermint/tendermint/p2p"         // Provides an abstraction around peer-to-peer communication.
-	"github.com/tendermint/tendermint/privval"
-	//tmNode "github.com/tendermint/tendermint/node"		// Node is the highest level interface to a full Tendermint node.
-	//"github.com/tendermint/tendermint/privval"			// Validator identity management, voting and signing functions.
-	//"github.com/tendermint/tendermint/proxy"			// Abstracts runtime connections to ABCI application.
+	"github.com/tendermint/tendermint/abci/client"     // Defines an interface for an ABCI client.
+	"github.com/tendermint/tendermint/abci/types"      // Defines abstract types for an ABCI application.
 	cmn "github.com/tendermint/tendermint/libs/common" // Provides various small Tenderment packages.
+	tmNode "github.com/tendermint/tendermint/node"     // Node is the highest level interface to a full Tendermint node.
+	"github.com/tendermint/tendermint/p2p"             // Provides an abstraction around peer-to-peer communication.
+	"github.com/tendermint/tendermint/privval"         // Validator identity management, voting and signing functions.
+	"github.com/tendermint/tendermint/proxy"           // Abstracts runtime connections to ABCI application.
 	rpc "github.com/tendermint/tendermint/rpc/client"  // Provides interface (Client) for connecting to a node.
 
 	// ======================
@@ -96,15 +95,18 @@ import (
 	// ======================
 
 	// Defines the current version of the project.
+
+	"github.com/blockfreight/go-bftx/api/api"
 	"github.com/blockfreight/go-bftx/build/package/version" // Defines the current version of the project.
 	bftxConfig "github.com/blockfreight/go-bftx/config"     // Defines the Blockfreight™ Node configuration.
 	"github.com/blockfreight/go-bftx/lib/app/bf_tx"         // Defines the Blockfreight™ Transaction (BF_TX) transaction standard and provides some useful functions to work with the BF_TX.
-	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"   // Defines the Blockfreight™ logger functions
-	"github.com/blockfreight/go-bftx/lib/app/blockchain"    // Provides information about current chain state.
-	"github.com/blockfreight/go-bftx/lib/app/validator"     // Provides functions to assure the input JSON is correct.
-	"github.com/blockfreight/go-bftx/lib/pkg/common"        // Provides useful functions to sign BF_TX.
-	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"       // Provides some useful functions to work with LevelDB.
-	"github.com/blockfreight/go-bftx/lib/pkg/saberservice"  // Provides function for saber-service.
+	"github.com/blockfreight/go-bftx/lib/app/bft"
+	"github.com/blockfreight/go-bftx/lib/app/bftx_logger"  // Defines the Blockfreight™ logger functions
+	"github.com/blockfreight/go-bftx/lib/app/blockchain"   // Provides information about current chain state.
+	"github.com/blockfreight/go-bftx/lib/app/validator"    // Provides functions to assure the input JSON is correct.
+	"github.com/blockfreight/go-bftx/lib/pkg/common"       // Provides useful functions to sign BF_TX.
+	"github.com/blockfreight/go-bftx/lib/pkg/leveldb"      // Provides some useful functions to work with LevelDB.
+	"github.com/blockfreight/go-bftx/lib/pkg/saberservice" // Provides function for saber-service.
 )
 
 // Structure for data passed to print response.
@@ -128,7 +130,6 @@ type queryResponse struct {
 // client is a global variable so it can be reused by the console
 var client abcicli.Client
 var rpcClient *rpc.HTTP
-var config = bftxConfig.GetBlockfreightConfig()
 var logger = bftxConfig.Logger
 
 func main() {
@@ -175,26 +176,52 @@ func main() {
 			},
 		},
 		{
-			Name:  "init",
-			Usage: "Initialize Blockfreight™ node",
-			Action: func(c *cli.Context) error {
-				return cmdInit(app, c)
-			},
-		},
-		{
 			Name:  "console",
 			Usage: "Start an interactive Blockfreight™ console for multiple commands",
 			Action: func(c *cli.Context) error {
 				return cmdConsole(app, c)
 			},
 		},
-		/*{
-		    Name:  "echo",
-		    Usage: "Have the application echo a message (Parameters: value_to_print)",
-		    Action: func(c *cli.Context) error {
-		        return cmdEcho(c)
-		    },
-		},*/
+		{
+			Name:  "node",
+			Usage: "TODO: get wording with Julian",
+			Subcommands: []cli.Command{
+				{
+					Name:  "init",
+					Usage: "Initialize Blockfreight™ node",
+					Action: func(c *cli.Context) error {
+						return cmdInit(c)
+					},
+				},
+				{
+					Name:  "start",
+					Usage: "Start a Blockfreight Node.",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "verbose, v",
+							Usage: "print the command and results as if it were a console session",
+						},
+					},
+					Action: func(c *cli.Context) error {
+						return cmdStartNode(c)
+					},
+				},
+				{
+					Name:  "stop",
+					Usage: "Stop a Blockfreight Node.",
+					Flags: []cli.Flag{
+						cli.BoolFlag{
+							Name:  "verbose, v",
+							Usage: "print the command and results as if it were a console session",
+						},
+					},
+					Action: func(c *cli.Context) error {
+						fmt.Println("removed task template: ", c.Args().First())
+						return nil
+					},
+				},
+			},
+		},
 		{
 			Name:  "info",
 			Usage: "Get some info about the application (Parameters: none)",
@@ -411,10 +438,13 @@ func cmdBatch(app *cli.App, c *cli.Context) error {
 	return nil
 }
 
-func cmdInit(app *cli.App, c *cli.Context) error {
+func cmdInit(c *cli.Context) error {
 	if _, err := os.Stat(bftxConfig.ConfigDir); os.IsNotExist(err) {
 		os.MkdirAll(bftxConfig.ConfigDir, 0700)
 	}
+
+	var config = bftxConfig.GetBlockfreightConfig(true)
+
 	privValFile := config.PrivValidatorFile()
 	var pv *privval.FilePV
 	if cmn.FileExists(privValFile) {
@@ -603,6 +633,52 @@ func cmdSaberDcpTest(c *cli.Context) error {
 	fmt.Print(bftx)
 	return nil
 
+}
+
+func cmdStartNode(c *cli.Context) error {
+	fmt.Println("Blockfreight™ Node")
+
+	showVerboseOutput := c.Bool("verbose")
+	blockfreightConfig := bftxConfig.GetBlockfreightConfig(showVerboseOutput)
+
+	privValFile := blockfreightConfig.PrivValidatorFile()
+	nodeKey := blockfreightConfig.NodeKeyFile()
+	genesis := blockfreightConfig.GenesisFile()
+
+	if cmn.FileExists(privValFile) || cmn.FileExists(nodeKey) || cmn.FileExists(genesis) {
+		cmdInit(c)
+	}
+
+	bftxConfig.Logger.Info("Setting up config", "nodeInfo", blockfreightConfig)
+
+	node, err := tmNode.NewNode(blockfreightConfig,
+		privval.LoadOrGenFilePV(blockfreightConfig.PrivValidatorFile()),
+		blockfreightAppClientCreator(blockfreightConfig.ProxyApp, blockfreightConfig.ABCI, blockfreightConfig.DBDir()),
+		tmNode.DefaultGenesisDocProviderFunc(blockfreightConfig),
+		tmNode.DefaultDBProvider,
+		tmNode.DefaultMetricsProvider,
+		bftxConfig.Logger,
+	)
+
+	if err != nil {
+		fmt.Printf("Failed to start node: %+v\n", err)
+		return nil
+	}
+
+	if err = node.Start(); err != nil {
+		fmt.Printf("Failed to start node: %+v\n", err)
+		return nil
+	}
+
+	err = api.Start()
+	if err != nil {
+		bftxConfig.Logger.Error(err.Error())
+	}
+
+	// Trap signal, run forever.
+	node.RunForever()
+
+	return nil
 }
 
 // Get some info from the application
@@ -1030,6 +1106,10 @@ func stringOrHexToBytes(s string) ([]byte, error) {
 	}
 
 	return []byte(s[1 : len(s)-1]), nil
+}
+
+func blockfreightAppClientCreator(addr, transport, dbDir string) proxy.ClientCreator {
+	return proxy.NewLocalClientCreator(bft.NewBftApplication())
 }
 
 func introduction(c *cli.Context) {

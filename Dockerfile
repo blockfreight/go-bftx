@@ -36,4 +36,4 @@ RUN go install ./cmd/...
 
 EXPOSE 12345
 
-ENTRYPOINT /go/bin/bftnode
+ENTRYPOINT /go/bin/bftx
