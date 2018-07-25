@@ -80,7 +80,7 @@ func GetBlockfreightConfig(verbose bool) *tmConfig.Config {
 	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
 
 	if !verbose {
-		config.LogLevel = "none"
+		config.LogLevel = "mempool:error,*:none"
 	}
 
 	fmt.Printf("%+v\n", config)
