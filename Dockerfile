@@ -25,6 +25,7 @@ RUN apk add --no-cache bash curl jq
 FROM golang:latest
 
 RUN apt-get update && apt-get install -y jq ssh curl
+RUN curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
 
 WORKDIR /go/src/github.com/blockfreight/go-bftx
 
