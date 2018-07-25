@@ -21,5 +21,6 @@
 # Folders
 bft-db/
 vendor/
+.idea
 data/
 /LOG
