@@ -48,7 +48,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	// Implements common functions for Blockfreight™
@@ -80,10 +79,8 @@ func GetBlockfreightConfig(verbose bool) *tmConfig.Config {
 	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
 
 	if !verbose {
-		config.LogLevel = "mempool:error,*:none"
+		config.LogLevel = "error"
 	}
-
-	fmt.Printf("%+v\n", config)
 
 	return config
 }
