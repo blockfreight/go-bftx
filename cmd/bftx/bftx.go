@@ -1116,7 +1116,7 @@ func introduction(c *cli.Context) {
 	fmt.Println("\n...........................................")
 	fmt.Println("Blockfreight™ Go App")
 	fmt.Println("Address " + c.GlobalString("address"))
-	fmt.Println("API Address http://localhost:12345")
+	fmt.Println("API Address http://localhost:8080")
 	fmt.Println("BFT Implementation:  " + c.GlobalString("call"))
 	fmt.Println("...........................................\n")
 	/*name := "Blockfreight Community"
