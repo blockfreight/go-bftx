@@ -34,6 +34,6 @@ COPY . /go/src/github.com/blockfreight/go-bftx
 RUN dep ensure
 RUN go install ./cmd/...
 
-EXPOSE 12345
+EXPOSE 8080
 
 ENTRYPOINT /go/bin/bftx

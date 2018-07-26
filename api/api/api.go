@@ -214,8 +214,8 @@ func Start() error {
 	}
 	file, err := os.Stat(ex)
 	fmt.Println("Compiled: " + file.ModTime().String())
-	fmt.Println("Now server is running on: http://localhost:12345")
-	return http.ListenAndServe(":12345", nil)
+	fmt.Println("Now server is running on: http://localhost:8080")
+	return http.ListenAndServe(":8080", nil)
 }
 
 func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request) {
