@@ -645,7 +645,7 @@ func cmdStartNode(c *cli.Context) error {
 	nodeKey := blockfreightConfig.NodeKeyFile()
 	genesis := blockfreightConfig.GenesisFile()
 
-	if cmn.FileExists(privValFile) || cmn.FileExists(nodeKey) || cmn.FileExists(genesis) {
+	if !cmn.FileExists(privValFile) || !cmn.FileExists(nodeKey) || !cmn.FileExists(genesis) {
 		cmdInit(c)
 	}
 
