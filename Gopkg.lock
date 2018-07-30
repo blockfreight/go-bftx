@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  name = "github.com/BurntSushi/toml"
+  packages = ["."]
+  revision = "b26d9c308763d68093482582cea63d69be07a0f0"
+  version = "v0.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -367,6 +373,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3d63a420c8d120ecad8a337fcae13af6d0628d8973f938c6235d64480f59fbfe"
+  inputs-digest = "7fa79f769cea096fa8e78a65630928e6aa14a8ef80663ab314cbc769dd3f0cb9"
   solver-name = "gps-cdcl"
   solver-version = 1

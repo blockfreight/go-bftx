@@ -52,6 +52,7 @@ import (
 	"os"
 
 	// Implements common functions for Blockfreight™
+	"github.com/BurntSushi/toml"
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 )
@@ -69,21 +70,62 @@ var index = &tmConfig.TxIndexConfig{
 
 func GetBlockfreightConfig(verbose bool) *tmConfig.Config {
 
-	config.P2P.Seeds = "42cba48e9c5a96ad876f04581e52c11fd501f96c@bftx0.blockfreight.net:8888,6af1628b40c1b8f84882c27df07d36e4a797921a@bftx1.blockfreight.net:8888,ab263e441107837fb46f41f3c65004040b9f3814@bftx2.blockfreight.net:8888,1beae9f29ad2b231841d7de1ae91e136b6abb87f@bftx3.blockfreight.net:8888"
-	config.Consensus.CreateEmptyBlocks = false
-	config.RPC.ListenAddress = "tcp://0.0.0.0:46657"
+	var blockfreightConfig Config
+
+	if _, err := toml.DecodeFile("config.toml", &blockfreightConfig); err != nil {
+		fmt.Println(err)
+		return config
+	}
+
+	config.P2P.Seeds = blockfreightConfig.getValidatorsSeedString()
+	config.Consensus.CreateEmptyBlocks = blockfreightConfig.CreateEmptyBlocks
+	config.RPC.ListenAddress = blockfreightConfig.RPC_ListenAddress
 	config.TxIndex = index
 	config.DBPath = ConfigDir + "/data"
 	config.Genesis = ConfigDir + "/genesis.json"
 	config.PrivValidator = ConfigDir + "/priv_validator.json"
 	config.NodeKey = ConfigDir + "/node_key.json"
-	config.P2P.ListenAddress = "tcp://0.0.0.0:8888"
+	config.P2P.ListenAddress = blockfreightConfig.P2P_ListenAddress
 
 	if !verbose {
 		config.LogLevel = fmt.Sprintf("*:%s", tmConfig.DefaultLogLevel())
 	}
 
+	fmt.Printf("%+v\n", config)
+	fmt.Printf("%+v\n", config.P2P)
+	fmt.Printf("%+v\n", config.RPC)
+
 	return config
+}
+
+type Config struct {
+	GenesisJSON_URL   string
+	RPC_ListenAddress string
+	P2P_ListenAddress string
+	Validator_Domain  string
+	P2P_PORT          string
+	CreateEmptyBlocks bool
+	Validators        map[string]Validator
+}
+
+func (config Config) getValidatorsSeedString() string {
+	bftx0 := config.Validators["bftx0"]
+	bftx1 := config.Validators["bftx1"]
+	bftx2 := config.Validators["bftx2"]
+	bftx3 := config.Validators["bftx3"]
+
+	seedsString := fmt.Sprintf("%s,%s,%s,%s", bftx0.getValidatorSeedString(config), bftx1.getValidatorSeedString(config), bftx2.getValidatorSeedString(config), bftx3.getValidatorSeedString(config))
+	return seedsString
+}
+
+type Validator struct {
+	NodeID        string
+	ValidatorName string
+}
+
+func (validator Validator) getValidatorSeedString(config Config) string {
+	seedString := fmt.Sprintf("%s@%s.%s:%s", validator.NodeID, validator.ValidatorName, config.Validator_Domain, config.P2P_PORT)
+	return seedString
 }
 
 // =================================================

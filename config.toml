@@ -1,0 +1,23 @@
+GenesisJSON_URL = "https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/genesis.json"
+RPC_ListenAddress = "tcp://0.0.0.0:46657"
+P2P_ListenAddress = "tcp://0.0.0.0:8888"
+Validator_Domain = "blockfreight.net"
+P2P_PORT = "8888"
+CreateEmptyBlocks = false
+
+[validators]
+  [validators.bftx0]
+  NodeID = "42cba48e9c5a96ad876f04581e52c11fd501f96c"
+  ValidatorName = "bftx0"
+
+  [validators.bftx1]
+  nodeID = "6af1628b40c1b8f84882c27df07d36e4a797921a"
+  ValidatorName = "bftx1"
+
+  [validators.bftx2]
+  nodeID = "ab263e441107837fb46f41f3c65004040b9f3814"
+  ValidatorName = "bftx2"
+
+  [validators.bftx3]
+  nodeID = "1beae9f29ad2b231841d7de1ae91e136b6abb87f"
+  ValidatorName = "bftx3"
