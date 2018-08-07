@@ -26,11 +26,7 @@ do
     kubectl delete secrets --all --grace-period=0 --force;\
     kubectl create secret generic node.private.keys --from-literal=privateKey=$private_key --from-literal=privateNodeKey=$private_node_key --from-literal=validatorName=$validator_name;\
     curl https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/app.yaml > app.yaml;\
-    sed -i -- 's|<VALIDATOR_NAME>|$validator_name|g' app.yaml;\
     sed -i -- 's|'$OLD_TAG'|'$NEW_TAG'|g' app.yaml;\
-    echo old_tag: $OLD_TAG;\
-    echo new_tag: $NEW_TAG;\
-    cat app.yaml | grep $NEW_TAG | sed 's/^ *//;s/ *$//';\
     kubectl apply -f app.yaml;\
     kubectl delete pods --all --grace-period=0 --force;" <<-'ENDSSH'
 
