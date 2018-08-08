@@ -88,7 +88,7 @@ func NVCsvConverterNew(line []string) *BFTXTransaction {
 // convert an array of bftx parameters to BF_TX structure.
 // This is used for the converting the Lading.csv to bftx.BFTX
 //--------------------------------------------------------------------------------
-func NVCsvConverterOld(line []string) btx.BF_TX {
+/*func NVCsvConverterOld(line []string) btx.BF_TX {
 	msg := btx.BF_TX{
 		Properties: btx.Properties{
 			Shipper:         line[0],
@@ -115,7 +115,7 @@ func NVCsvConverterOld(line []string) btx.BF_TX {
 		},
 	}
 	return msg
-}
+}*/
 
 // NVCsvConverter helper functions
 // nvparseasfloat provides error handling necessary for bf_tx.Properties single-value float context

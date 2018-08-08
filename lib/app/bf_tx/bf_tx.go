@@ -452,7 +452,7 @@ type BF_TX struct {
 }
 
 // Properties struct
-type Properties struct {
+/*type Properties struct {
 	Shipper             string       `protobuf:"bytes,1,opt,name=Shipper" json:"Shipper"`
 	BolNum              string       `protobuf:"varint,1,opt,name=BolNum" json:"BolNum"`
 	RefNum              string       `protobuf:"varint,2,opt,name=RefNum" json:"RefNum"`
@@ -488,6 +488,61 @@ type Properties struct {
 	AgentForMaster      AgentMaster  `json:"AgentForMaster"`
 	AgentForOwner       AgentOwner   `json:"AgentForOwner"`
 	EncryptionMetaData  string       `json:"EncryptionMetaData"`
+}*/
+
+type Properties struct {
+	// Consol Level
+	Consol Consol
+	// Shipment Level
+	Shipment Shipment
+	// Extension
+	Extension Extension
+}
+
+type Extension struct {
+	ServiceLevel string
+}
+
+type Consol struct {
+	Masterbill               string
+	ContainerMode            string
+	PaymentMethod            string
+	PortOfDischarge          string
+	PortOfLoading            string
+	ShipmentType             string
+	TransportMode            string
+	VesselName               string
+	VoyageFlightNo           string
+	EstimatedTimeOfDeparture string
+	EstimatedTimeOfArrival   string
+	Carrier                  string
+	ContainerNumber          string
+	ContainerType            string
+	DeliveryMode             string
+	Seal                     string
+}
+
+type Shipment struct {
+	Housebill                string
+	ContainerMode            string
+	GoodsDescription         string
+	MarksAndNumbers          string
+	HBLAWBChargesDisplay     string
+	PackQuantity             string
+	PackType                 string
+	Weight                   string
+	Volume                   string
+	ShippedOnBoard           string
+	TransportMode            string
+	EstimatedTimeOfDeparture string
+	EstimatedTimeOfArrival   string
+	Consignee                string
+	Consignor                string
+	PackingLineCommodity     string
+	ContainerNumber          string
+	INCOTERM                 string
+	ShipmentType             string
+	ReleaseType              string
 }
 
 // Date struct

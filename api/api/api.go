@@ -31,7 +31,7 @@ var queryType = graphql.NewObject(
 			"getTransaction": &graphql.Field{
 				Type: graphqlObj.TransactionType,
 				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
+					"Id": &graphql.ArgumentConfig{
 						Type: graphql.String,
 					},
 				},
@@ -47,12 +47,12 @@ var queryType = graphql.NewObject(
 			"queryTransaction": &graphql.Field{
 				Type: graphql.NewList(graphqlObj.TransactionType),
 				Args: graphql.FieldConfigArgument{
-					"id": &graphql.ArgumentConfig{
+					"Id": &graphql.ArgumentConfig{
 						Type: graphql.String,
 					},
 				},
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftxID, isOK := p.Args["id"].(string)
+					bftxID, isOK := p.Args["Id"].(string)
 					if !isOK {
 						return nil, errors.New(strconv.Itoa(http.StatusBadRequest))
 					}
@@ -95,44 +95,6 @@ var mutationType = graphql.NewObject(
 					}
 
 					return apiHandler.ConstructBfTx(bftx)
-				},
-			},
-			"fullBFTXCycleWithoutEncryption": &graphql.Field{
-				Type: graphqlObj.TransactionType,
-				Args: graphql.FieldConfigArgument{
-					"Properties": &graphql.ArgumentConfig{
-						Description: "Transaction properties.",
-						Type:        graphqlObj.PropertiesInput,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftx := bf_tx.BF_TX{}
-					jsonProperties, err := json.Marshal(p.Args)
-					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-					}
-
-					//return apiHandler.FullBFTXCycleWithoutEncryption(bftx)
-					return apiHandler.QueryTransaction("bftx")
-				},
-			},
-			"fullBFTXCycle": &graphql.Field{
-				Type: graphqlObj.TransactionType,
-				Args: graphql.FieldConfigArgument{
-					"Properties": &graphql.ArgumentConfig{
-						Description: "Transaction properties.",
-						Type:        graphqlObj.PropertiesInput,
-					},
-				},
-				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-					bftx := bf_tx.BF_TX{}
-					jsonProperties, err := json.Marshal(p.Args)
-					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
-						return nil, errors.New(strconv.Itoa(http.StatusInternalServerError))
-					}
-
-					//return apiHandler.FullBFTXCycle(bftx)
-					return apiHandler.QueryTransaction("bftx")
 				},
 			},
 			"encryptBFTX": &graphql.Field{
