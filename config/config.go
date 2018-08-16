@@ -56,7 +56,8 @@ import (
 	tmConfig "github.com/tendermint/tendermint/config"
 	"github.com/tendermint/tendermint/libs/log"
 )
-
+var GOPATH = os.Getenv("GOPATH")
+var configTomlLocation = GOPATH + "/src/github.com/blockfreight/go-bftx/config.toml"
 var homeDir = os.Getenv("HOME")
 var GenesisJSONURL = "https://raw.githubusercontent.com/blockfreight/tools/master/blockfreightnet-kubernetes/examples/blockfreight/genesis.json"
 var ConfigDir = homeDir + "/.blockfreight/config"
@@ -70,9 +71,10 @@ var index = &tmConfig.TxIndexConfig{
 
 func GetBlockfreightConfig(verbose bool) *tmConfig.Config {
 
-	var blockfreightConfig Config
+		fmt.Println(configTomlLocation)
+		var blockfreightConfig Config
 
-	if _, err := toml.DecodeFile("config.toml", &blockfreightConfig); err != nil {
+	if _, err := toml.DecodeFile(configTomlLocation, &blockfreightConfig); err != nil {
 		fmt.Println(err)
 		return config
 	}
@@ -85,6 +87,7 @@ func GetBlockfreightConfig(verbose bool) *tmConfig.Config {
 	config.Genesis = ConfigDir + "/genesis.json"
 	config.PrivValidator = ConfigDir + "/priv_validator.json"
 	config.NodeKey = ConfigDir + "/node_key.json"
+	config.P2P.AddrBook = ConfigDir + "/addrbook.json"
 	config.P2P.ListenAddress = blockfreightConfig.P2P_ListenAddress
 
 	if !verbose {
