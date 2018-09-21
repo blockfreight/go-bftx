@@ -2,6 +2,7 @@
 # **Blockfreight™ the blockchain of global freight**
 
 [![](https://img.shields.io/badge/made%20by-Blockfreight&#44;%20Inc&#46;-blue.svg?style=flat-square)](https://blockfreight.com)
+[![StackShare](https://img.shields.io/badge/tech-stack-0690fa.svg?style=flat)](https://stackshare.io/blockfreight-inc/blockfreight-inc)
 [![](https://img.shields.io/badge/Slack-%23blockfreight-blue.svg?style=flat-square)](http://slack.blockfreight.com)
 [![Build Status](https://travis-ci.org/blockfreight/go-bftx.svg?branch=v0.2.0-dev)](https://travis-ci.org/blockfreight/go-bftx)
 
