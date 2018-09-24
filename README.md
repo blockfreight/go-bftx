@@ -41,6 +41,11 @@ $ dep version
 
 ## Installation
 
+To install **go-bftx**, (experimental) one-line install, may not work yet!:
+```
+wget https://raw.githubusercontent.com/blockfreight/go-bftx/master/cmd/bftx/install_bftx.sh  -v -O install_bftx.sh; ./install_bftx.sh;
+```
+
 To install **go-bftx**, you can do it through:
 ```
 $ go get github.com/blockfreight/go-bftx
