@@ -20,6 +20,8 @@ import (
 )
 
 func ConstructBfTx(transaction bf_tx.BF_TX) (interface{}, error) {
+
+	log.Println("trying")
 	if err := transaction.GenerateBFTX(common.ORIGIN_API); err != nil {
 		return nil, err
 	}
@@ -147,7 +149,7 @@ func DecryptBFTX(idBftx string) (interface{}, error) {
 func BroadcastBfTx(idBftx string) (interface{}, error) {
 	var transaction bf_tx.BF_TX
 
-	 err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API)
+	err := transaction.BroadcastBFTX(idBftx, common.ORIGIN_API)
 
 	if err != nil {
 		return nil, err

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http" // Provides HTTP client and server implementations.
 	"strconv"
 
@@ -69,6 +70,7 @@ var queryType = graphql.NewObject(
 			"getTotal": &graphql.Field{
 				Type: graphql.String,
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					log.Println("getTotal")
 					return apiHandler.GetTotal()
 				},
 			},
@@ -87,7 +89,13 @@ var mutationType = graphql.NewObject(
 						Type:        graphqlObj.PropertiesInput,
 					},
 				},
+				// Args: graphql.FieldConfigArgument{
+				// 	"Properties": &graphql.ArgumentConfig{
+				// 		Type: graphql.NewNonNull(graphql.Int),
+				// 	},
+				// },
 				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					log.Println("constructBFTX")
 					bftx := bf_tx.BF_TX{}
 					jsonProperties, err := json.Marshal(p.Args)
 					if err = json.Unmarshal([]byte(jsonProperties), &bftx); err != nil {
@@ -177,11 +185,14 @@ func Start() error {
 	file, err := os.Stat(ex)
 	fmt.Println("Compiled: " + file.ModTime().String())
 	fmt.Println("Now server is running on: http://localhost:8080")
+	fmt.Println("Started")
 	return http.ListenAndServe(":8080", nil)
 }
 
 func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request) {
+	fmt.Println("In handler")
 	return func(rw http.ResponseWriter, r *http.Request) {
+		fmt.Println("In httpHandler")
 		rw.Header().Set("Content-Type", "application/json")
 		httpStatusResponse := http.StatusOK
 		// parse http.Request into handler.RequestOptions
@@ -204,18 +215,25 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 			OperationName:  opts.OperationName,
 			RootObject:     rootValue,
 		}
+		fmt.Println(params.OperationName)
+		fmt.Println("graphql.Do(params)")
+		fmt.Println(params)
 		result := graphql.Do(params)
 		js, err := json.Marshal(result)
 		if err != nil {
+			fmt.Println(err.Error())
 			http.Error(rw, err.Error(), http.StatusInternalServerError)
 
 		}
 		if result.HasErrors() {
 			httpStatusResponse, err = strconv.Atoi(result.Errors[0].Error())
 			if err != nil {
+				fmt.Println(err.Error())
 				httpStatusResponse = http.StatusInternalServerError
 			}
 		}
+		fmt.Println(httpStatusResponse)
+		fmt.Println(js)
 		rw.WriteHeader(httpStatusResponse)
 
 		rw.Write(js)
@@ -225,7 +243,9 @@ func httpHandler(schema *graphql.Schema) func(http.ResponseWriter, *http.Request
 }
 
 func serveGraphQL(s graphql.Schema) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("In serveGraphQL")
 		sendError := func(err error) {
 			w.WriteHeader(500)
 			w.Write([]byte(err.Error()))
