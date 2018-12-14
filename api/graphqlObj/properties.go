@@ -62,16 +62,16 @@ var PropertiesType = graphql.NewObject(
 				Type: graphql.String,
 			},
 			"IssueDetails": &graphql.Field{
-				Type: graphql.String,
+				Type: IssueDetails,
 			},
 			"MasterInfo": &graphql.Field{
-				Type: graphql.String,
+				Type: MasterInfo,
 			},
 			"AgentForMaster": &graphql.Field{
-				Type: graphql.String,
+				Type: AgentForMaster,
 			},
 			"AgentForOwner": &graphql.Field{
-				Type: graphql.String,
+				Type: AgentForOwner,
 			},
 		},
 	},
@@ -137,16 +137,16 @@ var PropertiesInput = graphql.NewInputObject(
 				Type: graphql.String,
 			},
 			"IssueDetails": &graphql.InputObjectFieldConfig{
-				Type: graphql.String,
+				Type: IssueDetailsInput,
 			},
 			"MasterInfo": &graphql.InputObjectFieldConfig{
-				Type: graphql.String,
+				Type: MasterInfoInput,
 			},
 			"AgentForMaster": &graphql.InputObjectFieldConfig{
-				Type: graphql.String,
+				Type: AgentForMasterInput,
 			},
 			"AgentForOwner": &graphql.InputObjectFieldConfig{
-				Type: graphql.String,
+				Type: AgentForOwnerInput,
 			},
 		},
 	},
